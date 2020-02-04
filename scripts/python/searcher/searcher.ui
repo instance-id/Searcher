@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>420</width>
+    <height>495</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLabel" name="projectTitle">
+       <property name="font">
+        <font>
+         <pointsize>15</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Searcher DB Viewer</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="projectPath_lbl">
+       <property name="text">
+        <string>/obj/sops/houdini</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="setproject">
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(255, 96, 0);</string>
+       </property>
+       <property name="text">
+        <string>Set Project</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="projectName_lbl">
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Project Name</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QListWidget" name="sceneList_lst">
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(39, 39, 39);</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QListWidget" name="searchresults_lst"/>
+     </item>
+     <item>
+      <widget class="QTableWidget" name="searchresults_tbl"/>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="searchbox"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="test1_btn">
+       <property name="text">
+        <string>Display</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="test2_btn">
+       <property name="text">
+        <string>Index Items</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QPushButton" name="getHotkeys_btn">
+         <property name="text">
+          <string>Get Hotkeys</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="saveHotkeys_btn">
+         <property name="text">
+          <string>Save HotKeys</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="loadHotkeys_btn">
+         <property name="text">
+          <string>Load Hotkeys</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QPushButton" name="callGo_btn">
+         <property name="text">
+          <string>Call Go</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="other_btn">
+         <property name="text">
+          <string>Clear Data</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_2"/>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
