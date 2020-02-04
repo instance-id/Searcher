@@ -6,10 +6,11 @@ from hutil.Qt.QtWidgets import *
 # import hutil.Qt
 from parse import parsers
 from . import database
-
+from . import gofunctions
 
 reload(parsers)
 reload(database)
+reload(gofunctions)
 
 scriptpath = os.path.dirname(os.path.realpath(__file__))
 
@@ -85,9 +86,8 @@ class Searcher(QtWidgets.QWidget):
             txt = self.parser.searchText(text)
             for line in txt:
                 self.searchresultslst.addItem(str(line))
-        
             self.searchtablepopulate(txt)
-        else: 
+        else:
             self.searchresultstbl.clearContents()
             self.searchresultslst.clear()
 

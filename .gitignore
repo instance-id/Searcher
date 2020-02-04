@@ -1,4 +1,7 @@
-# Golang -------------------------------------------------------------
+#General ------------------------------------------------------------
+**.idea*
+
+#Golang -------------------------------------------------------------
 # Binaries for programs and plugins
 *.exe
 *.exe~
@@ -45,7 +48,7 @@ share/python-wheels/
 *.egg
 MANIFEST
 scripts/python/searcher/db
-scripts/python/searcher/go/houdini/*
+scripts/python/searcher/go/houdini
 
 
 # PyInstaller
