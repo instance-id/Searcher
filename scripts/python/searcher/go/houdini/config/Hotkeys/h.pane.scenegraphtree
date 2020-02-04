@@ -1,0 +1,7 @@
+//
+// Scene Graph Tree
+//
+
+HCONTEXT h.pane.scenegraphtree		"Scene Graph Tree"	"These keys apply to the Scene Graph Tree pane."
+HCONTEXT h.pane.scenegraphtree.menu	"Scene Graph Tree Menu"	"These keys apply to the Scene Graph Tree context menu."
+

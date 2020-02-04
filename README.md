@@ -1,2 +1,2 @@
-# Searcher
-Houdini Searcher
+# FU-Houdini
+Fuzzy Houdini

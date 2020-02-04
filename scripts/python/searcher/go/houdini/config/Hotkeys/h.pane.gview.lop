@@ -1,0 +1,27 @@
+HCONTEXT h.pane.gview.lop	"Scene Graph View"	"These keys apply to the Scene Graph Viewer."
+
+h.pane.gview.lop.select_all	"Select All"		"Select all types"
+h.pane.gview.lop.select_geo	"Select Geometry"	"Select geometry types"
+h.pane.gview.lop.select_cam	"Select Cameras"	"Select camera types"
+h.pane.gview.lop.select_light	"Select Lights"		"Select light types"
+h.pane.gview.lop.select_light_cam "Select Lights and Cameras"	"Select light and camera types"
+
+h.pane.gview.lop.select_leafprims	"Select Leaf Primitives"    "Select light and camera types"
+h.pane.gview.lop.select_components	"Select Components"	    "Select components"
+h.pane.gview.lop.select_subcomponents	"Select Subcomponents"	    "Select subcomponents"
+h.pane.gview.lop.select_models		"Select Models"		    "Select models"
+h.pane.gview.lop.select_groups		"Select Groups"		    "Select groups"
+h.pane.gview.lop.select_assemblies	"Select Assemblies"	    "Select assemblies"
+h.pane.gview.lop.select_point_instances	"Select Point Instances"    "Select point instances"
+h.pane.gview.lop.select_leaf_point_instances	"Select Leaf Point Instances"    "Select leaf point instances"
+
+h.pane.gview.lop.select_parent_prim     "Select Parent Primitives" "Select parent primitives" -
+h.pane.gview.lop.select_child_prim      "Select First Child Primitive" "Select first child primitive" =
+h.pane.gview.lop.select_children_prims  "Select Children Primitives" "Select children primitives" +
+h.pane.gview.lop.select_prev_sibling    "Select Previous Sibling" "Select previous sibling" [
+h.pane.gview.lop.select_next_sibling    "Select Next Sibling" "Select next sibling" ]
+h.pane.gview.lop.restore_prev_selection "Restore Previous Selection" "Restore previous selection" {
+h.pane.gview.lop.restore_next_selection "Restore Next Selection" "Restore next selection" }
+
+h.pane.gview.lop.toggle_renderer "Toggle Renderer" "Toggle renderer" Shift+R
+h.pane.gview.lop.tool_follows_current "Tool Follows Current Node" "Tool follows current node" 
