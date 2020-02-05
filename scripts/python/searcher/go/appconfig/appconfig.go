@@ -3,6 +3,10 @@ package appconfig
 import (
 	"github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/ini"
+	"github.com/sirupsen/logrus"
+	"os"
+	"os/user"
+	"path/filepath"
 )
 
 type ConfigData struct {
@@ -26,7 +30,16 @@ func (m *MainSettings) GetConfig() *MainSettings {
 
 func (m *MainSettings) loadConfig() *MainSettings {
 
-	hConfigLocation = "C:\\Users\\mosthated\\Documents\\houdini18.0\\Searcher\\searcher_config.ini"
+	hpath := os.Getenv("HOUDINI_USER_PREF_DIR")
+	if len(hpath) == 0 {
+		userData, err := user.Current()
+		if err != nil {
+			logrus.Errorf("Could not get current user data: %s", err)
+		}
+		hConfigLocation = filepath.Join(userData.HomeDir, "Documents", "houdini18.0", "Searcher", "searcher_config.ini")
+	} else {
+		hConfigLocation = filepath.Join(hpath, "Searcher", "searcher_config.ini")
+	}
 
 	config.AddDriver(ini.Driver)
 	filename := hConfigLocation

@@ -4,7 +4,7 @@ import requests
 import subprocess
 
 independent_process = subprocess.Popen(
-    'main.exe',
+    'searcher.exe',
     creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
 )
 
