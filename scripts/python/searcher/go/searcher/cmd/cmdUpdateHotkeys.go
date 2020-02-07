@@ -5,25 +5,25 @@ import (
 	"github.com/sarulabs/di/v2"
 )
 
-type AddHotkeys struct {
+type UpdateHotkeys struct {
 	di di.Container
 }
 
-const AddHotkeysRoute = "ahk"
-const AddHotkeysDescription = "Add an HContext"
+const UpdateHotkeysRoute = "uhk"
+const UpdateHotkeysDescription = "Parse configs and update current hotkey data"
 
-func (t *AddHotkeys) GetCommand() string {
-	return AddHotkeysRoute
+func (t *UpdateHotkeys) GetCommand() string {
+	return UpdateHotkeysRoute
 }
 
-func (t *AddHotkeys) GetDescription() string {
-	return AddHotkeysDescription
+func (t *UpdateHotkeys) GetDescription() string {
+	return UpdateHotkeysDescription
 }
 
-func (t *AddHotkeys) Handle(method string) {
-	models.HotkeysDAO.AddAllHotkeys(t.di, method)
+func (t *UpdateHotkeys) Handle() {
+	models.HotkeysDAO.ProcessHotkeys(t.di, "update")
 }
 
-func NewAddHotkeys(di di.Container) *AddHotkeys {
-	return &AddHotkeys{di: di}
+func NewUpdateHotkeys(di di.Container) *UpdateHotkeys {
+	return &UpdateHotkeys{di: di}
 }

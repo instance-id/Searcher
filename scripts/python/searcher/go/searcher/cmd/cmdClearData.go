@@ -5,25 +5,25 @@ import (
 	"github.com/sarulabs/di/v2"
 )
 
-type AddHotkeys struct {
+type ClearData struct {
 	di di.Container
 }
 
-const AddHotkeysRoute = "ahk"
-const AddHotkeysDescription = "Add all hotkeys to database"
+const ClearDataRoute = "c"
+const ClearDataDescription = "Clear current data from database"
 
-func (t *AddHotkeys) GetCommand() string {
-	return AddHotkeysRoute
+func (t *ClearData) GetCommand() string {
+	return ClearDataRoute
 }
 
-func (t *AddHotkeys) GetDescription() string {
-	return AddHotkeysDescription
+func (t *ClearData) GetDescription() string {
+	return ClearDataDescription
 }
 
-func (t *AddHotkeys) Handle() {
-	models.HotkeysDAO.ProcessHotkeys(t.di, "insert")
+func (t *ClearData) Handle() {
+	models.ClearDataDAO.ClearData(t.di)
 }
 
-func NewAddHotkeys(di di.Container) *AddHotkeys {
-	return &AddHotkeys{di: di}
+func NewClearData(di di.Container) *ClearData {
+	return &ClearData{di: di}
 }

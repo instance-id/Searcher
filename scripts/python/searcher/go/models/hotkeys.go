@@ -31,6 +31,7 @@ type Hotkeys struct {
 }
 
 var HotkeysDAO *HotkeysDataAccessObject
+var whichReader = 0
 
 func (hk *HotkeysDataAccessObject) TableName() string {
 	return "hotkeys"
@@ -47,16 +48,7 @@ func NewHotkeysObject(hotkeySymbol string, context string, label string, descrip
 	}
 }
 
-// --- Add new user to database -------------------------------------------------------------------
-func (hk *HotkeysDataAccessObject) Query(hotkeys *Hotkeys, di di.Container) {
-	db := DatabaseAccessContainer(di)
-	_, err := db.Table(HotkeysDAO.TableName()).InsertOne(hotkeys)
-	LogFatalf("Unable to insert hotkey", err)
-	log := LogAccessContainer(di)
-	log.Infof("Data from insert: %v", hotkeys.Id)
-}
-
-// --- Add new user to database -------------------------------------------------------------------
+// --- Add new hotkeys to database -------------------------------------------------------------------
 func (hk *HotkeysDataAccessObject) AddHotkeys(hotkeys *Hotkeys, di di.Container) {
 	db := DatabaseAccessContainer(di)
 	_, err := db.Table(HotkeysDAO.TableName()).InsertOne(hotkeys)
@@ -65,10 +57,10 @@ func (hk *HotkeysDataAccessObject) AddHotkeys(hotkeys *Hotkeys, di di.Container)
 	log.Infof("Data from insert: %v", hotkeys.Id)
 }
 
-// --- Add new user to database -------------------------------------------------------------------
-func (hk *HotkeysDataAccessObject) AddAllHotkeys(di di.Container) {
+// --- Add all hotkeys to database -------------------------------------------------------------------
+func (hk *HotkeysDataAccessObject) ProcessHotkeys(di di.Container, method string) {
 	db := DatabaseAccessContainer(di)
-	UpdateAll(db)
+	ParseHotkeys(db, method)
 }
 
 // --- Add all hotkeys ----------------------------------------------------------------------------
@@ -93,45 +85,49 @@ func (r *reader) Read(p []byte) (int, error) {
 		inlineComment := "// "
 		line = strings.Split(line, inlineComment)[0]
 
-		if line == "" || strings.HasPrefix(line, "    ") || strings.HasPrefix(line, "//") || strings.HasPrefix(line, "HCONTEXT") || strings.HasPrefix(line, "#include") {
-			continue
+		if whichReader == 0 {
+			if line == "" || strings.HasPrefix(line, "    ") || strings.HasPrefix(line, "//") || strings.HasPrefix(line, "HCONTEXT") || strings.HasPrefix(line, "#include") {
+				continue
+			}
+
+			line = space.ReplaceAllString(line, " ")
+			line = strings.ReplaceAll(line, `" "`, `","`)
+			line = strings.ReplaceAll(line, `" `, `",`)
+			line = strings.ReplaceAll(line, ` "`, `,"`)
+			line = strings.ReplaceAll(line, `, "`, `,"`)
+			line = strings.ReplaceAll(line, `, `, ` `)
+			line = strings.ReplaceAll(line, `\",`, ``)
+
+			r.buf.WriteString(line)
+			r.buf.WriteString(",,")
+			r.buf.WriteByte('\n')
+			break
+
+		} else if whichReader == 1 {
+			if line == "" || !strings.HasPrefix(line, "HCONTEXT") || strings.HasPrefix(line, "    ") || strings.HasPrefix(line, "//") || strings.HasPrefix(line, "#include") {
+				continue
+			}
+
+			line = space.ReplaceAllString(line, " ")
+			line = strings.ReplaceAll(line, `" "`, `","`)
+			line = strings.ReplaceAll(line, `" `, `",`)
+			line = strings.ReplaceAll(line, ` "`, `,"`)
+			line = strings.ReplaceAll(line, `, "`, `,"`)
+			line = strings.ReplaceAll(line, `, `, ` `)
+			line = strings.ReplaceAll(line, `\",`, ``)
+			line = strings.ReplaceAll(line, `HCONTEXT`, ``)
+
+			r.buf.WriteString(line)
+			r.buf.WriteString(",,")
+			r.buf.WriteByte('\n')
+			break
 		}
-
-		line = space.ReplaceAllString(line, " ")
-		line = strings.ReplaceAll(line, `" "`, `","`)
-		line = strings.ReplaceAll(line, `" `, `",`)
-		line = strings.ReplaceAll(line, ` "`, `,"`)
-		line = strings.ReplaceAll(line, `, "`, `,"`)
-		line = strings.ReplaceAll(line, `, `, ` `)
-		line = strings.ReplaceAll(line, `\",`, ``)
-
-		r.buf.WriteString(line)
-		r.buf.WriteString(",,")
-		r.buf.WriteByte('\n')
-		break
 	}
 
 	if err := r.sc.Err(); err != nil {
 		return 0, err
 	}
 	return r.buf.Read(p)
-}
-
-func WriteFile(data []string) {
-	t := time.Now()
-	f, err := os.Create(fmt.Sprintf("E:\\GitHub\\Searcher\\scripts\\python\\searcher\\go\\output\\%stest.txt", t.Format("20060102150405.000000")))
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	datawriter := bufio.NewWriter(f)
-
-	for _, data1 := range data {
-		_, _ = datawriter.WriteString(data1 + "\n")
-	}
-	datawriter.Flush()
-	f.Close()
 }
 
 func getEnv(key, fallback string) string {
@@ -141,7 +137,7 @@ func getEnv(key, fallback string) string {
 	return fallback
 }
 
-func UpdateAll(db *xorm.Engine) {
+func ParseHotkeys(db *xorm.Engine, method string) {
 	var files []string
 
 	root := getEnv("HFS", "houdini/config/Hotkeys/")
@@ -164,20 +160,67 @@ func UpdateAll(db *xorm.Engine) {
 			fmt.Println(fmt.Sprintf("Error Opening File: %s", err))
 		}
 
-		var b strings.Builder
-		if _, err := io.Copy(&b, newReader(strings.NewReader(string(csvFile)))); err != nil {
+		whichReader = 0
+		var hk strings.Builder
+		if _, err := io.Copy(&hk, newReader(strings.NewReader(string(csvFile)))); err != nil {
 			fmt.Println(fmt.Sprintf("Error With Reader: %s", err))
 		}
-		fmt.Println(b.String())
-		reader := csv.NewReader(strings.NewReader(b.String()))
+		//fmt.Println(hk.String())
 
+		whichReader = 0
+		reader := csv.NewReader(strings.NewReader(hk.String()))
 		for {
 			line, err := reader.Read()
 			if err == io.EOF {
 				break
 			}
+
+			method = "insert"
+
 			hkey := NewHotkeysObject(line[0], filepath.Base(file), line[1], line[2], line[3])
-			_, err = db.Table(HotkeysDAO.TableName()).InsertOne(hkey)
+			if method == "insert" {
+				_, err := db.Table(HotkeysDAO.TableName()).Insert(hkey)
+				if err != nil {
+					fmt.Println(fmt.Sprintf("Error inserting record: %s", err))
+				}
+
+			} else if method == "update" {
+				_, err := db.Table(HotkeysDAO.TableName()).Update(hkey)
+				if err != nil {
+					fmt.Println(fmt.Sprintf("Error updating record: %s", err))
+				}
+			}
+		}
+
+		whichReader = 1
+		var hc strings.Builder
+		if _, err := io.Copy(&hc, newReader(strings.NewReader(string(csvFile)))); err != nil {
+			fmt.Println(fmt.Sprintf("Error With Reader: %s", err))
+		}
+
+		whichReader = 1
+		hcreader := csv.NewReader(strings.NewReader(hc.String()))
+
+		for {
+			hcline, err := hcreader.Read()
+			if err == io.EOF {
+				break
+			}
+
+			hcontext := NewHContextObject(hcline[0], hcline[0], hcline[2], hcline[1])
+			if method == "insert" {
+				_, err = db.Table(HContextDAO.TableName()).Insert(hcontext)
+				if err != nil {
+					fmt.Println(fmt.Sprintf("Error updating record: %s", err))
+				}
+
+			} else if method == "update" {
+				_, err := db.Table(HContextDAO.TableName()).Update(hcontext)
+				if err != nil {
+					fmt.Println(fmt.Sprintf("Error updating record: %s", err))
+				}
+			}
+
 		}
 	}
 }

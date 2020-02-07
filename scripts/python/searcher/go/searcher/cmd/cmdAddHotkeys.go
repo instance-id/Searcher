@@ -10,7 +10,7 @@ type AddHotkeys struct {
 }
 
 const AddHotkeysRoute = "ahk"
-const AddHotkeysDescription = "Add an HContext"
+const AddHotkeysDescription = "Add all hotkeys to database"
 
 func (t *AddHotkeys) GetCommand() string {
 	return AddHotkeysRoute
@@ -21,7 +21,7 @@ func (t *AddHotkeys) GetDescription() string {
 }
 
 func (t *AddHotkeys) Handle() {
-	models.HotkeysDAO.AddAllHotkeys(t.di)
+	models.HotkeysDAO.ProcessHotkeys(t.di, "insert")
 }
 
 func NewAddHotkeys(di di.Container) *AddHotkeys {

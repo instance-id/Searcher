@@ -5,6 +5,8 @@ import (
 	"os"
 	"sort"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/instance-id/Searcher/searcher/cmd"
 
 	"github.com/instance-id/Searcher/appconfig"
@@ -32,30 +34,42 @@ func init() {
 func main() {
 	var appContext appContext
 
-	log, appData := DISetup()
+	_, appData := DISetup()
 	defer appData.Delete()
-
-	message := []string{
-		"Starting Searcher"}
-	for s := range message {
-		msg := fmt.Sprintf("%s", message[s])
-		log.Infof("%s", msg)
-	}
 
 	config := appData.Get("configData").(*appconfig.MainSettings)
 	_, _ = appContext.Searcher.SearcherRun(config, appData)
 
+	var datastring string
+
 	app := &cli.App{
 		Flags: []cli.Flag{
+			// --- Query term --------------------------------------------------------------------------
 			&cli.StringFlag{
-				Name:  "lang, l",
-				Value: "english",
-				Usage: "Language for the greeting",
+				Name: func() string {
+					result := fmt.Sprintf((*cmd.QueryStatement).GetCommand(cmd.NewQueryStatement(appData)))
+					return result
+				}(),
+				Value: "",
+				Usage: func() string {
+					result := fmt.Sprintf((*cmd.QueryStatement).GetDescription(cmd.NewQueryStatement(appData)))
+					return result
+				}(),
+				Destination: &datastring,
 			},
-			&cli.StringFlag{
-				Name:  "config, c",
-				Usage: "Load configuration from `FILE`",
-			},
+		},
+		Action: func(c *cli.Context) error {
+			if c.NArg() > 0 {
+				datastring = c.Args().Get(0)
+			}
+
+			if c.IsSet(func() string { // --- Query database for term ----------------------------------
+				result := fmt.Sprintf((*cmd.QueryStatement).GetCommand(cmd.NewQueryStatement(appData)))
+				return result
+			}()) {
+				(*cmd.QueryStatement).Handle(cmd.NewQueryStatement(appData), datastring)
+			}
+			return nil
 		},
 		Commands: []*cli.Command{
 			{
@@ -91,19 +105,19 @@ func main() {
 					return nil
 				},
 			}, {
-				// ----------------------------------------------------------------------------------------------------- cmdAddHContext
+				// ----------------------------------------------------------------------------------------------------- cmdClearData
 				Name: func() string {
-					result := fmt.Sprintf((*cmd.AddHContext).GetCommand(cmd.NewAddHContext(appData)))
+					result := fmt.Sprintf((*cmd.ClearData).GetCommand(cmd.NewClearData(appData)))
 					return result
 				}(),
-				Aliases: []string{"addhcontext"},
+				Aliases: []string{"cleardata"},
 				Usage: func() string {
-					result := fmt.Sprintf((*cmd.AddHContext).GetDescription(cmd.NewAddHContext(appData)))
+					result := fmt.Sprintf((*cmd.ClearData).GetDescription(cmd.NewClearData(appData)))
 					return result
 				}(),
 				Action: func(c *cli.Context) error {
-					(*cmd.AddHContext).Handle(cmd.NewAddHContext(appData))
-					log.Infof("Add HContext Complete")
+					(*cmd.ClearData).Handle(cmd.NewClearData(appData))
+					log.Infof("Cleared data")
 					return nil
 				},
 			}, {
@@ -112,31 +126,30 @@ func main() {
 					result := fmt.Sprintf((*cmd.AddHotkeys).GetCommand(cmd.NewAddHotkeys(appData)))
 					return result
 				}(),
-				Aliases: []string{"addhotkeys"},
+				Aliases: []string{"cleardata"},
 				Usage: func() string {
 					result := fmt.Sprintf((*cmd.AddHotkeys).GetDescription(cmd.NewAddHotkeys(appData)))
 					return result
 				}(),
 				Action: func(c *cli.Context) error {
 					(*cmd.AddHotkeys).Handle(cmd.NewAddHotkeys(appData))
-					log.Infof("Add HContext Complete")
+					log.Infof("Hotkeys added")
 					return nil
 				},
 			}, {
-				// ----------------------------------------------------------------------------------------------------- cmdAddHotkeys
+				// ----------------------------------------------------------------------------------------------------- cmdUpdateHotkeys
 				Name: func() string {
-					result := fmt.Sprintf((*cmd.QueryStatement).GetCommand(cmd.NewQueryStatement(appData)))
+					result := fmt.Sprintf((*cmd.UpdateHotkeys).GetCommand(cmd.NewUpdateHotkeys(appData)))
 					return result
 				}(),
-				Aliases: []string{"querystatement"},
+				Aliases: []string{"cleardata"},
 				Usage: func() string {
-					result := fmt.Sprintf((*cmd.QueryStatement).GetDescription(cmd.NewQueryStatement(appData)))
+					result := fmt.Sprintf((*cmd.UpdateHotkeys).GetDescription(cmd.NewUpdateHotkeys(appData)))
 					return result
 				}(),
 				Action: func(c *cli.Context) error {
-					fmt.Printf("Query term: %s\n", c.Args().First())
-					(*cmd.QueryStatement).Handle(cmd.NewQueryStatement(appData), c.Args().First())
-					log.Infof("Querying")
+					(*cmd.UpdateHotkeys).Handle(cmd.NewUpdateHotkeys(appData))
+					log.Infof("Hotkeys updated")
 					return nil
 				},
 			},
@@ -153,7 +166,7 @@ func DISetup() (*zap.SugaredLogger, di.Container) {
 	builder, _ := di.NewBuilder()
 	_ = builder.Add(services.Services...)
 	app := builder.Build()
-	log := app.Get("logData").(*zap.SugaredLogger)
+	log1 := app.Get("logData").(*zap.SugaredLogger)
 
-	return log, app
+	return log1, app
 }

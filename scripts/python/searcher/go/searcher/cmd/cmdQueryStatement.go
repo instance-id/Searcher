@@ -2,12 +2,12 @@ package cmd
 
 import (
 	"bytes"
-	"fmt"
 
 	"github.com/olekukonko/tablewriter"
 
 	"github.com/instance-id/Searcher/models"
 	"github.com/sarulabs/di/v2"
+	ffmt "gopkg.in/ffmt.v1"
 )
 
 type QueryStatement struct {
@@ -27,12 +27,25 @@ func (q *QueryStatement) GetDescription() string {
 
 func (q *QueryStatement) Handle(input string) {
 	result := models.QueryStatementDAO.Query(q.di, input)
-	table := q.renderMarkDownTable(result)
-	resultTable := fmt.Sprintf("\n" + "```" + table + "```")
-	fmt.Printf(resultTable)
-	//fmt.Printf("result: %s\n", result[0]["assignments"])
-	//fmt.Printf("result: %s\n", result)
-	//fmt.Printf("result: %s\n", result[2])
+
+	var tableData [][]string
+
+	for k := range result {
+		row := []string{
+			string(result[k]["label"]),
+			string(result[k]["description"]),
+			string(result[k]["context"]),
+			string(result[k]["assignments"]),
+		}
+		tableData = append(tableData, row)
+	}
+
+	m1 := ffmt.FmtTable(tableData) // [][]string Table format.
+	ffmt.Puts(m1)
+
+	//table := q.renderMarkDownTable(result)
+	//resultTable := fmt.Sprintf("\n" + table)
+	//fmt.Printf(resultTable)
 }
 
 func NewQueryStatement(di di.Container) *QueryStatement {

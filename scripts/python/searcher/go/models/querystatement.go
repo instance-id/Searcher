@@ -33,7 +33,7 @@ func (q *QueryStatementDataAccessObject) Query(di di.Container, input string) []
 
 	sql := ("SELECT id, label, assignments,context, description FROM hotkeys WHERE label LIKE '%" + input + "%'")
 	result, err := db.Query(sql)
-	LogFatalf("Unable to insert hotkey", err)
+	LogFatalf("Unable to query DB - QueryStatementDAO : ", err)
 	//log.Infof("Data from query : %s", result[0])
 	return result
 }

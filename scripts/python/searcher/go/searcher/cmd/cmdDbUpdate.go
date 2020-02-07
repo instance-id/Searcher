@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	. "github.com/instance-id/Searcher/utils"
+	Log "github.com/sirupsen/logrus"
 
 	"github.com/instance-id/Searcher/models"
 	"github.com/sarulabs/di/v2"
@@ -36,8 +37,8 @@ func (dbu *DbUpdate) Handle() {
 	LogFatalf(fmt.Sprintf("Verifier could not update table: user_packages : "), err)
 
 	if resultv && resultp {
-		Log.Infow("Schema applied: hcontext: %t - hotkeys: %t", resultv, resultp)
-		Log.Infow("Database schema creation/update successful")
+		Log.Infof("Schema applied: hcontext: %t - hotkeys: %t", resultv, resultp)
+		Log.Infof("Database schema creation/update successful")
 	}
 }
 

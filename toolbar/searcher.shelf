@@ -6,16 +6,20 @@
  a single file. -->
 
   <tool name="searcher" label="Searcher" icon="hicon:/SVGIcons.index?BUTTONS_link.svg">
-    <script scriptType="python"><![CDATA[import sys
+    <script scriptType="python"><![CDATA[from searcher import searcher
+import sys
 
-import searcher
 reload(searcher)
 
 index = 0
 desktop = hou.ui.curDesktop()
 
-pane_tab = desktop.createFloatingPaneTab(hou.paneTabType.PythonPanel, python_panel_interface="searcher", size=(1000, 450), position=(750, 300))
-pane_tab.setIsCurrentTab()
-]]></script>
+searcher.CreateSearcherPanel()
+
+#pane_tab = desktop.createFloatingPaneTab(hou.paneTabType.PythonPanel, python_panel_interface="searcher", size=(1000, 450), position=(750, 300))
+#pane_tab.setIsCurrentTab()
+
+
+    ]]></script>
   </tool>
 </shelfDocument>

@@ -4,7 +4,8 @@ import (
 	. "github.com/instance-id/Searcher/utils"
 
 	"github.com/instance-id/Searcher/models"
-
+	Log "github.com/sirupsen/logrus"
+	
 	"github.com/sarulabs/di/v2"
 )
 
@@ -28,11 +29,11 @@ func (ds *DbSetup) Handle() {
 
 	if !(func() bool { value, _ := d.IsTableExist("hcontext"); return value }() &&
 		func() bool { value, _ := d.IsTableExist("hotkeys"); return value }()) {
-		Log.Infow("Database schema incomplete. Creating/Updating table schema now...")
+		Log.Infof("Database schema incomplete. Creating/Updating table schema now...")
 
 		err := d.Sync(new(models.HContext), new(models.Hotkeys))
 		if err != nil {
-			Log.Infow("Verifier was unable to create tables: %s", err)
+			Log.Infof("Verifier was unable to create tables: %s", err)
 		}
 
 		resultv, err := d.IsTableExist("hcontext")
@@ -42,13 +43,13 @@ func (ds *DbSetup) Handle() {
 		}
 
 		if resultp && resultv {
-			Log.Infow("Schema applied: hcontext: %t - hotkeys: %t", resultv, resultp)
+			Log.Infof("Schema applied: hcontext: %t - hotkeys: %t", resultv, resultp)
 		}
 
-		Log.Infow("Database schema creation/update successful")
+		Log.Infof("Database schema creation/update successful")
 
 	} else {
-		Log.Infow("Database schema already up to date")
+		Log.Infof("Database schema already up to date")
 	}
 }
 

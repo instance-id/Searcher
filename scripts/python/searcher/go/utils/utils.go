@@ -6,13 +6,16 @@ import (
 	"github.com/sarulabs/di/v2"
 	"go.uber.org/zap"
 	"xorm.io/xorm"
+
+	Log "github.com/sirupsen/logrus"
+
 )
 
 var (
 	Dba *xorm.Engine
 	Dbd *appconfig.DbSettings
 	Dac *appconfig.MainSettings
-	Log *zap.SugaredLogger
+	//Log *zap.SugaredLogger
 )
 
 // --- Interfaces for container types -------------------------------------------------------------------------------------- TODO Probably remove if not used
@@ -34,7 +37,7 @@ func CmdInitialize(di di.Container) {
 	Dac = DataAccessContainer(di)
 	Dbd = DatabaseContainer(di)
 	Dba = DatabaseAccessContainer(di)
-	Log = LogAccessContainer(di)
+	//Log = LogAccessContainer(di)
 
 }
 

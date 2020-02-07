@@ -7,6 +7,7 @@ db = database.Databases()
 
 class DataHandler(object):
     """Loads data from Houdini config files"""
+
     def __init__(self):
         self.scriptpath = os.path.dirname(os.path.realpath(__file__))
 
@@ -14,8 +15,11 @@ class DataHandler(object):
     def updatehotkeys(self):
         # for filename in os.listdir(self.hotkeypath):
         return
-    
-    
+
+    @staticmethod
+    def gethcontext():
+        results = db.gethcontexts()
+        return results
 
     @staticmethod
     def searchtext(txt):

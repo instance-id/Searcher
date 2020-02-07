@@ -27,7 +27,7 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="3" column="0">
+   <item row="4" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <widget class="QLabel" name="label">
@@ -75,6 +75,13 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
+        <widget class="QPushButton" name="addhotkeys_btn">
+         <property name="text">
+          <string>Add All Hotkeys</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="updatehotkeys_btn">
          <property name="text">
           <string>Update HotKeys</string>
@@ -83,16 +90,16 @@
        </item>
       </layout>
      </item>
-    </layout>
-   </item>
-   <item row="2" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QPushButton" name="other_btn">
-       <property name="text">
-        <string>Clear Data</string>
-       </property>
-      </widget>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QPushButton" name="cleardata_btn">
+         <property name="text">
+          <string>Clear Data</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>

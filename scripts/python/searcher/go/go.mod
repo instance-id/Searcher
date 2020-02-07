@@ -21,6 +21,7 @@ require (
 	golang.org/x/crypto v0.0.0-20190621222207-cc06ce4a13d4 // indirect
 	golang.org/x/sys v0.0.0-20190621203818-d432491b9138 // indirect
 	google.golang.org/appengine v1.6.1 // indirect
+	gopkg.in/ffmt.v1 v1.5.6
 	xorm.io/xorm v0.8.1
 )
 

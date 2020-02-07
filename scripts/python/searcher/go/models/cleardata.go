@@ -1,39 +1,33 @@
 package models
 
 import (
-	"time"
+	"github.com/sirupsen/logrus"
 
 	. "github.com/instance-id/Searcher/utils"
 
 	"github.com/sarulabs/di/v2"
 )
 
-type QueryStatementDataAccessObject struct{}
+type ClearDataDataAccessObject struct{}
 
-type QueryStatement struct {
-	Id           int64     `xorm:"'id' pk autoincr notnull"`
-	HotkeySymbol string    `xorm:"'hotkey_symbol' not null VARCHAR(75)"`
-	Context      string    `xorm:"'context' VARCHAR(75)"`
-	Label        string    `xorm:"'label' index(par_ind) VARCHAR(75)"`
-	Description  string    `xorm:"'description' VARCHAR(75)"`
-	Assignments  string    `xorm:"'assignments' VARCHAR(75)"`
-	LastModified time.Time `xorm:"'lastmodified' created"`
-}
+var ClearDataDAO *ClearDataDataAccessObject
 
-var QueryStatementDAO *QueryStatementDataAccessObject
-
-func (q *QueryStatementDataAccessObject) TableName() string {
+func (q *ClearDataDataAccessObject) TableName() string {
 	return "hotkeys"
 }
 
 // --- Add new user to database -------------------------------------------------------------------
-func (q *QueryStatementDataAccessObject) Query(di di.Container, input string) []map[string][]byte {
+func (q *ClearDataDataAccessObject) ClearData(di di.Container) {
 	db := DatabaseAccessContainer(di)
-	//log := LogAccessContainer(di)
 
-	sql := ("SELECT id, label, assignments,context, description FROM hotkeys WHERE label LIKE '%" + input + "%'")
+	sql := ("DELETE FROM hotkeys")
 	result, err := db.Query(sql)
-	LogFatalf("Unable to query DB - QueryStatementDAO : ", err)
-	//log.Infof("Data from query : %s", result[0])
-	return result
+	LogFatalf("Unable to clear DB - ClearDataDAO : ", err)
+
+	sql = ("DELETE FROM h_context")
+	result2, err2 := db.Query(sql)
+	LogFatalf("Unable to clear DB - ClearDataDAO : ", err2)
+
+	logrus.Infof("Clear data results - hotkeys: %s", result)
+	logrus.Infof("Clear data results: - hcontext %s", result2)
 }
