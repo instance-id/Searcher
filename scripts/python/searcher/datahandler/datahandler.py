@@ -5,7 +5,7 @@ from .. import database
 db = database.Databases()
 
 
-class ParseData(object):
+class DataHandler(object):
     """Loads data from Houdini config files"""
     def __init__(self):
         self.scriptpath = os.path.dirname(os.path.realpath(__file__))
@@ -14,6 +14,8 @@ class ParseData(object):
     def updatehotkeys(self):
         # for filename in os.listdir(self.hotkeypath):
         return
+    
+    
 
     @staticmethod
     def searchtext(txt):
