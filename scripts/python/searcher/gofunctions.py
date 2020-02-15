@@ -1,7 +1,6 @@
 import subprocess
 import os
 import sys
-from tempfile import SpooledTemporaryFile as tempfile
 
 script_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -24,7 +23,8 @@ class GoFunctions(object):
         self.a = 1
         self.execlocation = os.environ["HOUDINI_USER_PREF_DIR"]
 
-    def callgofunction(self, cmd, params):
+    @staticmethod
+    def callgofunction(cmd, params):
         houdinienv = os.environ.copy()
         path = os.path.join(script_path, "go\searcher.exe")
 
@@ -50,4 +50,3 @@ class GoFunctions(object):
             import sys
 
             print sys.exc_info()[1]
-

@@ -12,8 +12,26 @@ class DataHandler(object):
         self.scriptpath = os.path.dirname(os.path.realpath(__file__))
 
     # ------------------------------------------------------------------------------------------------------------------ Function calls
-    def updatehotkeys(self):
-        # for filename in os.listdir(self.hotkeypath):
+    # --------------------------------------------------- Retrieve
+    def getchangeindex(self):
+        index = db.getchangeindex()
+        return index
+
+    def getdefaulthotkey(self):
+        index = db.getdefhotkey()
+        return index
+
+    # --------------------------------------------------- Updates
+    def updatechangeindex(self, indexval, new=False):
+        db.updatechangeindex(indexval, new)
+        return
+
+    def updatedata(self):
+        db.updatecontext()
+        return
+
+    def updatetmphotkey(self, tmpkey):
+        db.updatetmphk(tmpkey)
         return
 
     @staticmethod
@@ -21,7 +39,10 @@ class DataHandler(object):
         results = db.gethcontexts()
         return results
 
-    @staticmethod
-    def searchtext(txt):
+    def gethcontextod(self, inputtext):
+        results = db.gethcontextod(inputtext)
+        return results
+
+    def searchtext(self, txt):
         results = db.searchresults(txt)
         return results

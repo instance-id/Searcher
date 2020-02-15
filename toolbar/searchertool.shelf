@@ -7,5 +7,6 @@
 
   <toolshelf name="searchershelf" label="Searcher Shelf">
     <memberTool name="searcher"/>
+    <memberTool name="pyside"/>
   </toolshelf>
 </shelfDocument>

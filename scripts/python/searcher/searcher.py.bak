@@ -4,7 +4,6 @@ from . import searcher_settings
 from . import gofunctions
 from . import database
 from . import data
-from . import cwidgets
 from datahandler import datahandler
 
 from pyautogui import press, typewrite, hotkey
@@ -37,7 +36,6 @@ reload(datahandler)
 reload(database)
 reload(gofunctions)
 reload(searcher_settings)
-reload(cwidgets)
 
 mousePos = None
 cur_screen = QtWidgets.QDesktopWidget().screenNumber(QtWidgets.QDesktopWidget().cursor().pos())
@@ -46,7 +44,10 @@ centerPoint = QtWidgets.QDesktopWidget().availableGeometry(cur_screen).center()
 
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 script_path = os.path.dirname(os.path.realpath(__file__))
-# gofuncs = gofunctions.GoFunctions()
+
+gofuncs = gofunctions.GoFunctions()
+ui = searcher_settings.SearcherSettings()
+ui.getgofunctions(gofuncs)
 name = "Searcher"
 
 parent_widget = hou.qt.mainWindow()
@@ -66,9 +67,8 @@ class Searcher(QtWidgets.QWidget):
         super(Searcher, self).__init__(parent)
         self.installEventFilter(self)
         self.window = QtWidgets.QMainWindow()
-        self.handler, self.tmpkey = self.initialsetup()
-        self.ui = searcher_settings.SearcherSettings(self.handler, self.tmpkey)
-
+        self.handler = datahandler.DataHandler()
+        self.tmpkey = u"Alt+Ctrl+Shift+F7"
         self.keys_changed = False
         self.tmpsymbol = None
         self.winactive = 0
@@ -79,13 +79,13 @@ class Searcher(QtWidgets.QWidget):
 
         # Load UI File
         loader = QtUiTools.QUiLoader()
-        mainui = loader.load(script_path + "/searcher.ui")
+        self.ui = loader.load(script_path + "/searcher.ui")
 
         # Get UI Elements
-        self.opensettings = mainui.findChild(QtWidgets.QPushButton, "opensettings_btn")
-        self.searchresultstree = mainui.findChild(QtWidgets.QTreeWidget, "searchresults_tree")
+        self.opensettings = self.ui.findChild(QtWidgets.QPushButton, "opensettings_btn")
+        self.searchresultstree = self.ui.findChild(QtWidgets.QTreeWidget, "searchresults_tree")
 
-        self.searchbox = mainui.findChild(
+        self.searchbox = self.ui.findChild(
             QtWidgets.QLineEdit, "searchbox_txt")
         self.searchbox.setPlaceholderText("Search..")
         self.searchbox.setFocusPolicy(QtCore.Qt.StrongFocus)
@@ -100,7 +100,7 @@ class Searcher(QtWidgets.QWidget):
         mainlayout.setAlignment(QtCore.Qt.AlignTop)
         mainlayout.setContentsMargins(0, 0, 0, 0)
         mainlayout.setGeometry(QtCore.QRect(0, 0, 1400, 1200))
-        mainlayout.addWidget(mainui)
+        mainlayout.addWidget(self.ui)
         self.setLayout(mainlayout)
 
         self.setupContext()
@@ -122,16 +122,24 @@ class Searcher(QtWidgets.QWidget):
     def searchclick_cb(self, item, column):
         hk = item.text(2)
         self.tmpsymbol = item.text(3)
+        print ("Symbol: ", self.tmpsymbol, "Key: ", hk)
 
         if hk == "":
             self.chindex = hou.hotkeys.changeIndex()
+            print ("Current Hotkey Change Index: ", self.chindex)
             result = self.createtemphotkey(self.tmpsymbol)
             if result is True:
                 hou.ui.waitUntil(lambda: hou.hotkeys.changeIndex() > self.chindex)
                 self.chindex = hou.hotkeys.changeIndex()
                 hk = hou.hotkeys.assignments(self.tmpsymbol)
+                print ("Temp HK: ", hk)
+                print ("Symbol: ", self.tmpsymbol)
                 self.processkey(hk)
+                print ("Current Assignment for :", self.tmpsymbol, hou.hotkeys.assignments(self.tmpsymbol))
         else:
+            print (hk)
+            print ("Current Assignment for :", self.tmpsymbol, hou.hotkeys.assignments(self.tmpsymbol))
+
             hk = hou.hotkeys.assignments(self.tmpsymbol)
             self.processkey(hk)
             self.tmpsymbol = None
@@ -139,7 +147,7 @@ class Searcher(QtWidgets.QWidget):
     # ------------------------------------------------------------------------------------------------------------------ Actions
     # ---------------------------------------------- Navigation
     def open_settings(self):
-        self.ui.show()
+        ui.show()
 
     # ---------------------------------------------- UI
     def setupContext(self):
@@ -180,37 +188,16 @@ class Searcher(QtWidgets.QWidget):
                             hcontext_tli[base_keys[j]], [data[i][0], data[i][1], data[i][2], data[i][3]]
                         ))
 
-    # ---------------------------------------------- Initial Setup
-    def initialsetup(self):
-        self.handler = datahandler.DataHandler()
-        currentidx = hou.hotkeys.changeIndex()
-
-        chindex = self.handler.getchangeindex()
-        if len(chindex) is 0:
-            chindex = int(currentidx)
-            self.handler.updatechangeindex(chindex, True)
-            self.handler.updatedata()
-        else:
-            chindex = int(chindex[0][0])
-
-        if int(currentidx) != chindex:
-            self.handler.updatedata()
-            self.handler.updatechangeindex(int(currentidx))
-
-        tmpkey = self.handler.getdefaulthotkey()
-        self.tmpkey = tmpkey[0][0]
-        return self.handler, self.tmpkey
-
     # ---------------------------------------------- Hotkey Processing
     def processkey(self, key):
         if self.tmpsymbol is None:
             key = key.split(' ')
             key = key[0].split('+')
         else:
-            print (self.tmpsymbol)
             key = key[0].split('+')
 
         key = keyconversion(key)
+        print (str(key[0]), str(key[1]))
         self.searchbox.releaseKeyboard()
         self.searchbox.clearFocus()
 
@@ -233,8 +220,6 @@ class Searcher(QtWidgets.QWidget):
             if not hou.hotkeys.saveOverrides():
                 print("ERROR: Couldn't save hotkey override file.")
         self.keys_changed = changed
-        self.chindex = hou.hotkeys.changeIndex()
-        self.handler.updatechangeindex(self.chindex)
 
     def createtemphotkey(self, symbol):
         hou.hotkeys._createBackupTables()
@@ -244,6 +229,7 @@ class Searcher(QtWidgets.QWidget):
         return result
 
     def removetemphotkey(self, symbol, tmpkey):
+        # hou.hotkeys.removeAssignment(symbol, tmpkey)
         hou.hotkeys._restoreBackupTables()
         hou.hotkeys.revertToDefaults(symbol, True)
         self.keys_changed = True
@@ -252,11 +238,9 @@ class Searcher(QtWidgets.QWidget):
     # ------------------------------------------------------------------------------------------------------------------ Events
     def eventFilter(self, object, event):
         if event.type() == QtCore.QEvent.WindowActivate:
-            self.searchbox.grabKeyboard()
             pass
         elif event.type() == QtCore.QEvent.WindowDeactivate:
-            if self.ui.isVisible():
-                self.searchbox.releaseKeyboard()
+            if ui.isVisible():
                 pass
             else:
                 self.searchbox.releaseKeyboard()
@@ -269,19 +253,14 @@ class Searcher(QtWidgets.QWidget):
         return False
 
     def closeEvent(self, event):
-        self.searchbox.releaseKeyboard()
         if self.tmpsymbol is not None:
             self.searchbox.releaseKeyboard()
-            print("Close from Event.")
             hd.execute_deferred_after_waiting(self.removetemphotkey, 3, self.tmpsymbol, self.tmpkey)
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Escape:
-            if self.ui.isVisible():
-                pass
             if self.tmpsymbol is not None:
-                print ("Close from Esc")
-                hd.execute_deferred_after_waiting(self.removetemphotkey, 10, self.tmpsymbol, self.tmpkey)
+                hd.execute_deferred_after_waiting(self.removetemphotkey, 3, self.tmpsymbol, self.tmpkey)
             self.searchbox.releaseKeyboard()
             self.kill_pane_tab()
 
@@ -327,6 +306,8 @@ def CreateSearcherPanel(kwargs, searcher_window=None):
 
     searcher_window = Searcher()
     searcher_window.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
+
+    # searcher_window.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowSystemMenuHint)
     searcher_window.resize(1000, 600)
     searcher_window.setParent(parent_widget, QtCore.Qt.Window)
 

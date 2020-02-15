@@ -5,6 +5,14 @@
   <property name="windowModality">
    <enum>Qt::NonModal</enum>
   </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>182</height>
+   </rect>
+  </property>
   <property name="sizePolicy">
    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
     <horstretch>0</horstretch>
@@ -30,14 +38,31 @@
    <item row="4" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
-      <widget class="QLabel" name="label">
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="discard_btn">
        <property name="text">
-        <string>Searcher executable location</string>
+        <string>Discard</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEdit"/>
+      <widget class="QPushButton" name="save_btn">
+       <property name="text">
+        <string>Save</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -45,7 +70,7 @@
     <layout class="QVBoxLayout" name="verticalLayout_4">
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_4">
-       <item>
+       <item alignment="Qt::AlignLeft">
         <widget class="QLabel" name="projectTitle">
          <property name="font">
           <font>
@@ -60,15 +85,32 @@
          </property>
         </widget>
        </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
        <item>
-        <widget class="QLineEdit" name="gocommand_txt"/>
-       </item>
-       <item>
-        <widget class="QPushButton" name="sendgocommand_btn">
+        <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Send Go Cmd</string>
+          <string>Temporary assign for opening unassigned items: </string>
          </property>
         </widget>
+       </item>
+       <item>
+        <widget class="InputLineEdit" name="defaulthk_txt">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+         <property name="placeholderText">
+          <string>Double click to change...</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QKeySequenceEdit" name="hkinput_txt"/>
        </item>
       </layout>
      </item>
@@ -88,10 +130,38 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="test_context_btn">
+         <property name="text">
+          <string>Test HContext</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
      <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Maintenance utilities</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QPushButton" name="pushButton_4">
+         <property name="text">
+          <string>PushButton</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_3">
+         <property name="text">
+          <string>PushButton</string>
+         </property>
+        </widget>
+       </item>
        <item>
         <widget class="QPushButton" name="cleardata_btn">
          <property name="text">

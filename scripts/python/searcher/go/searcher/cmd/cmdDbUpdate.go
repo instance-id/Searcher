@@ -26,7 +26,7 @@ func (dbu *DbUpdate) GetDescription() string {
 }
 
 func (dbu *DbUpdate) Handle() {
-	err := Dba.Sync2(new(models.HContext), new(models.Hotkeys))
+	err := Dba.Sync2(new(models.Hcontext), new(models.Hotkeys))
 	if err != nil {
 		LogFatalf("Unable to send table creation reply through Discord: ", err)
 	}

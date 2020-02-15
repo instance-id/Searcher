@@ -7,27 +7,25 @@ import (
 	"github.com/sarulabs/di/v2"
 )
 
-type HContextAccessObject struct{}
+type HcontextAccessObject struct{}
 
-type HContext struct {
+type Hcontext struct {
 	Id           int64     `xorm:"'id' pk autoincr notnull"`
-	HCONTEXT     string    `xorm:"'hcontext' not null index(par_ind) VARCHAR(75)"`
-	Context      string    `xorm:"'context' unique VARCHAR(75)"`
+	Context      string    `xorm:"'context' unique not null index(par_ind) VARCHAR(75)"`
 	Description  string    `xorm:"'description' VARCHAR(75)"`
 	Title        string    `xorm:"'title' VARCHAR(75)"`
 	LastModified time.Time `xorm:"'lastmodified' created"`
 }
 
-var HContextDAO *HContextAccessObject
+var HcontextDAO *HcontextAccessObject
 
-func (h *HContextAccessObject) TableName() string {
-	return "h_context"
+func (h *HcontextAccessObject) TableName() string {
+	return "hcontext"
 }
 
 // --- Create new hcontext object --------------------------------------------------------------------
-func NewHContextObject(hcontext string, context string, description string, title string) *HContext {
-	return &HContext{
-		HCONTEXT:    hcontext,
+func NewHcontextObject(context string, description string, title string) *Hcontext {
+	return &Hcontext{
 		Context:     context,
 		Description: description,
 		Title:       title,
@@ -35,9 +33,9 @@ func NewHContextObject(hcontext string, context string, description string, titl
 }
 
 // --- Add new user to database -------------------------------------------------------------------
-func (h *HContextAccessObject) AddHContext(hcontext *HContext, di di.Container) {
+func (h *HcontextAccessObject) AddHcontext(hcontext *Hcontext, di di.Container) {
 	db := DatabaseAccessContainer(di)
-	_, err := db.Table(HContextDAO.TableName()).InsertOne(hcontext)
+	_, err := db.Table(HcontextDAO.TableName()).InsertOne(hcontext)
 	LogFatalf("Unable to insert hcontext", err)
 	log := LogAccessContainer(di)
 	log.Infof("Data from insert: %v", hcontext.Id)

@@ -5,26 +5,26 @@ import (
 	"github.com/sarulabs/di/v2"
 )
 
-type AddHContext struct {
+type AddHcontext struct {
 	di di.Container
 }
 
-const addHContextRoute = "ahc"
-const addHContextDescription = "Add an HContext"
+const addHcontextRoute = "ahc"
+const addHcontextDescription = "Add an Hcontext"
 
-func (t *AddHContext) GetCommand() string {
-	return addHContextRoute
+func (t *AddHcontext) GetCommand() string {
+	return addHcontextRoute
 }
 
-func (t *AddHContext) GetDescription() string {
-	return addHContextDescription
+func (t *AddHcontext) GetDescription() string {
+	return addHcontextDescription
 }
 
-func (t *AddHContext) Handle() {
-	hcontext := models.NewHContextObject("deskmgr", "deskmgr", "The Desktop Managers items", "Desktop Manager")
-	models.HContextDAO.AddHContext(hcontext, t.di)
+func (t *AddHcontext) Handle() {
+	hcontext := models.NewHcontextObject("deskmgr", "The Desktop Managers items", "Desktop Manager")
+	models.HcontextDAO.AddHcontext(hcontext, t.di)
 }
 
-func NewAddHContext(di di.Container) *AddHContext {
-	return &AddHContext{di: di}
+func NewAddHcontext(di di.Container) *AddHcontext {
+	return &AddHcontext{di: di}
 }

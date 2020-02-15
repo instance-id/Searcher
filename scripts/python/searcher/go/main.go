@@ -126,7 +126,7 @@ func main() {
 					result := fmt.Sprintf((*cmd.AddHotkeys).GetCommand(cmd.NewAddHotkeys(appData)))
 					return result
 				}(),
-				Aliases: []string{"cleardata"},
+				Aliases: []string{"addhotkeys"},
 				Usage: func() string {
 					result := fmt.Sprintf((*cmd.AddHotkeys).GetDescription(cmd.NewAddHotkeys(appData)))
 					return result
@@ -142,7 +142,7 @@ func main() {
 					result := fmt.Sprintf((*cmd.UpdateHotkeys).GetCommand(cmd.NewUpdateHotkeys(appData)))
 					return result
 				}(),
-				Aliases: []string{"cleardata"},
+				Aliases: []string{"updatehotkeys"},
 				Usage: func() string {
 					result := fmt.Sprintf((*cmd.UpdateHotkeys).GetDescription(cmd.NewUpdateHotkeys(appData)))
 					return result

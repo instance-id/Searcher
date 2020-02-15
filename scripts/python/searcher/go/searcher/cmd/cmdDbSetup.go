@@ -5,7 +5,7 @@ import (
 
 	"github.com/instance-id/Searcher/models"
 	Log "github.com/sirupsen/logrus"
-	
+
 	"github.com/sarulabs/di/v2"
 )
 
@@ -31,7 +31,7 @@ func (ds *DbSetup) Handle() {
 		func() bool { value, _ := d.IsTableExist("hotkeys"); return value }()) {
 		Log.Infof("Database schema incomplete. Creating/Updating table schema now...")
 
-		err := d.Sync(new(models.HContext), new(models.Hotkeys))
+		err := d.Sync(new(models.Hcontext), new(models.Hotkeys))
 		if err != nil {
 			Log.Infof("Verifier was unable to create tables: %s", err)
 		}

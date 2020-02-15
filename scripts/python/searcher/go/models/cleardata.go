@@ -20,12 +20,18 @@ func (q *ClearDataDataAccessObject) TableName() string {
 func (q *ClearDataDataAccessObject) ClearData(di di.Container) {
 	db := DatabaseAccessContainer(di)
 
-	sql := ("DELETE FROM hotkeys")
+	sql := "DELETE FROM hotkeys"
+	sql2 := "DELETE FROM sqlite_sequence WHERE name='hotkeys'"
 	result, err := db.Query(sql)
 	LogFatalf("Unable to clear DB - ClearDataDAO : ", err)
+	result, err = db.Query(sql2)
+	LogFatalf("Unable to reset increment - ClearDataDAO : ", err)
 
-	sql = ("DELETE FROM h_context")
+	sql = "DELETE FROM hcontext"
+	sql2 = "DELETE FROM sqlite_sequence WHERE name='hcontext'"
 	result2, err2 := db.Query(sql)
+	LogFatalf("Unable to clear DB - ClearDataDAO : ", err2)
+	result2, err2 = db.Query(sql2)
 	LogFatalf("Unable to clear DB - ClearDataDAO : ", err2)
 
 	logrus.Infof("Clear data results - hotkeys: %s", result)
