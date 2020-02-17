@@ -90,27 +90,34 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_5">
        <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Temporary assign for opening unassigned items: </string>
+          <string>Hotkey to use for opening unassigned items: </string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="InputLineEdit" name="defaulthk_txt">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
+        <widget class="QLineEdit" name="hkinput_txt">
          <property name="readOnly">
           <bool>true</bool>
          </property>
          <property name="placeholderText">
-          <string>Double click to change...</string>
+          <string>Double Click</string>
          </property>
         </widget>
-       </item>
-       <item>
-        <widget class="QKeySequenceEdit" name="hkinput_txt"/>
        </item>
       </layout>
      </item>

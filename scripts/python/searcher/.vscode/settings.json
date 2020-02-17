@@ -1,3 +1,7 @@
 {
-    "python.pythonPath": "C:\\Python27\\python.exe"
+    "python.pythonPath": "e:\\GitHub\\Searcher\\scripts\\python\\searcher\\venv\\Scripts\\python.exe",
+    "python.formatting.provider": "autopep8",
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true,
+    "python.linting.enabled": true
 }

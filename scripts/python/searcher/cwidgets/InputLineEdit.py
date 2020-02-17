@@ -12,6 +12,6 @@ class InputLineEdit(QtWidgets.QLineEdit):
 
     def mouseDoubleClickEvent(self, event):
         # if event.button() == QtCore.Qt.MouseButton.LeftButton:
-
+        self.setPlaceholderText("Input key sequence")
         self.selectAll()
         self.double_clicked.emit(self.text())

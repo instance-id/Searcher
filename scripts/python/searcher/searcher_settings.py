@@ -52,7 +52,8 @@ class SearcherSettings(QtWidgets.QFrame):
     def __init__(self, handler, tmphotkey, parent=None):
         super(SearcherSettings, self).__init__(parent=parent)
 
-        self._keysToIgnore = [QtCore.Qt.Key.Key_Enter, QtCore.Qt.Key.Key_Return, QtCore.Qt.Key.Key_Escape, QtCore.Qt.Key.Key_Tab]
+        self._keysToIgnore = [QtCore.Qt.Key.Key_Enter, QtCore.Qt.Key.Key_Return, QtCore.Qt.Key.Key_Escape,
+                              QtCore.Qt.Key.Key_Tab]
         self.context_dict = {}
         self.command_dict = {}
         self.contexts = None
@@ -61,6 +62,11 @@ class SearcherSettings(QtWidgets.QFrame):
         self.context_data = None
         self.command_data = None
         self.keys_changed = False
+        self.keystring = ""
+        self.keyindex = 0
+        self.canedit = False
+        self.KeySequence = None
+        self.hkholder = ""
 
         self.datahandler = handler
         self.tmphotkey = tmphotkey
@@ -77,19 +83,21 @@ class SearcherSettings(QtWidgets.QFrame):
         self.ui = loader.load(scriptpath + '/searchersettings.ui')
 
         # Get UI Elements
-        self.defaulthk = self.ui.findChild(InputLineEdit.InputLineEdit, "defaulthk_txt")
-        # self.defaulthk = InputLineEdit.InputLineEdit()
-        self.hkinput = self.ui.findChild(QtWidgets.QKeySequenceEdit, "hkinput_txt")
-        self.addhkeys = self.ui.findChild(QtWidgets.QPushButton, "addhotkeys_btn")
-        self.updatehkeys = self.ui.findChild(QtWidgets.QPushButton, "updatehotkeys_btn")
-        self.testcontext = self.ui.findChild(QtWidgets.QPushButton, "test_context_btn")
-        self.cleardata = self.ui.findChild(QtWidgets.QPushButton, "cleardata_btn")
+        self.hkinput = self.ui.findChild(QtWidgets.QLineEdit, "hkinput_txt")
+        self.addhkeys = self.ui.findChild(
+            QtWidgets.QPushButton, "addhotkeys_btn")
+        self.updatehkeys = self.ui.findChild(
+            QtWidgets.QPushButton, "updatehotkeys_btn")
+        self.testcontext = self.ui.findChild(
+            QtWidgets.QPushButton, "test_context_btn")
+        self.cleardata = self.ui.findChild(
+            QtWidgets.QPushButton, "cleardata_btn")
         self.savedata = self.ui.findChild(QtWidgets.QPushButton, "save_btn")
-        self.discarddata = self.ui.findChild(QtWidgets.QPushButton, "discard_btn")
+        self.discarddata = self.ui.findChild(
+            QtWidgets.QPushButton, "discard_btn")
 
         # Create Connections
-        self.defaulthk.double_clicked.connect(self.defaulthk_cb)
-        self.hkinput.setKeySequence(QtGui.QKeySequence(self.tmphotkey))
+        self.hkinput.setText(self.tmphotkey)
         self.addhkeys.clicked.connect(self.addhotkeys_cb)
         self.updatehkeys.clicked.connect(self.updatehotkeys_cb)
         self.testcontext.clicked.connect(self.testcontext_cb)
@@ -101,7 +109,6 @@ class SearcherSettings(QtWidgets.QFrame):
         mainlayout = QtWidgets.QVBoxLayout()
         mainlayout.addWidget(self.ui)
         self.setLayout(mainlayout)
-        self.defaulthk.installEventFilter(self)
         self.hkinput.installEventFilter(self)
 
     # ------------------------------------------------------------------------------------------------------------------ Callbacks
@@ -118,11 +125,19 @@ class SearcherSettings(QtWidgets.QFrame):
         self.gofunc.callgofunction("c", self.gocommandtext.text().strip())
 
     def save_cb(self):
-        self.tmphotkey = self.hkinput.keySequence().toString()
-        self.datahandler.updatetmphotkey(self.tmphotkey)
+        if self.hkinput.text() == "":
+            buttonindex = hou.ui.displayMessage("Please enter a hotkey")
+            self.activateWindow()
+            self.hkinput.setFocus()
+            self.canedit = True
+        else:
+            self.tmphotkey = self.hkinput.text()
+            self.datahandler.updatetmphotkey(self.tmphotkey)
+            self.close()
 
     def discard_cb(self):
-        self.gofunc.callgofunction("c", self.gocommandtext.text().strip())
+        self.hkinput.setText(self.tmphotkey)
+        self.close()
 
     def testcontext_cb(self):
         self.symbol = self.gocommandtext.text()
@@ -143,21 +158,33 @@ class SearcherSettings(QtWidgets.QFrame):
         self.gofunc.callgofunction("c", self.gocommandtext.text().strip())
 
     def eventFilter(self, object, event):
-        # if event.type() == QtCore.QEvent.
+        if event.type() == QtCore.QEvent.MouseButtonDblClick:
+            self.hkholder = self.hkinput.text()
+            self.hkinput.setText("")
+            self.hkinput.setPlaceholderText("Input key sequence")
+            self.canedit = True
 
         if event.type() == QtCore.QEvent.KeyPress:
-            # keystring = event.text()
-            keystring = hou.qt.qtKeyToString(event.key(), int(event.modifiers()), event.text())
-            print ("Line ", get_linenumber(), "-", keystring, "-", event.text())
-            if keystring in ["Esc", "Backspace"]:
-                if self.hkinput.hasFocus():
-                    self.hkinput.clear()
-                if keystring == QtCore.Qt.Key_Escape:
+            self.keyindex += 1
+            self.keystring = hou.qt.qtKeyToString(
+                event.key(), int(event.modifiers()), event.text())
+            # print("Line ", get_linenumber(), "-", self.keystring, "-", event.text())
+            if self.canedit:
+                if self.keystring not in ["Esc", "Backspace"]:
                     if self.hkinput.hasFocus():
-                        self.hkinput.clear()
-            elif keystring not in ["Esc", "Backspace"]:
-                if self.hkinput.hasFocus():
-                    self.hkinput.setKeySequence(keystring)
+                        self.KeySequence = QtGui.QKeySequence(
+                            self.keystring).toString()
+                        self.hkinput.setText(self.KeySequence)
+                if self.keystring in ["Esc", "Backspace"]:
+                    self.hkinput.setText(self.hkholder)
+
+        if event.type() == QtCore.QEvent.KeyRelease:
+            self.keyindex -= 1
+            if self.keyindex == 0:
+                if self.hkinput.text() == "":
+                    self.hkinput.setText(self.hkholder)
+                if self.hkinput.text() != "":
+                    self.canedit = False
         return False
 
 
