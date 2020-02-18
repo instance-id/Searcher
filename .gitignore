@@ -48,6 +48,7 @@ share/python-wheels/
 *.egg
 MANIFEST
 scripts/python/searcher/db
+scripts/python/searcher/.history
 scripts/python/searcher/go/houdini
 
 

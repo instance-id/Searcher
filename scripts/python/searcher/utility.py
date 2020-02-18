@@ -1,10 +1,103 @@
-from hutil.Qt import QtCore
+# region Imports
+from sys import platform
 from typing import Tuple
+import os
+import hou
+if os.environ["HFS"] != "":
+    from hutil.Qt import QtGui
+    from hutil.Qt import QtCore
+    from hutil.Qt import QtWidgets
+    from hutil.Qt import QtUiTools
+else:
+    os.environ['QT_API'] = 'pyside2'
+    from PySide import QtUiTools
+    from qtpy import QtGui
+    from qtpy import QtCore
+    from qtpy import QtWidgets
+# endregion
 
 SequenceT = Tuple[str, ...]
 
-keyconversions = {"DownArrow": "down", "UpArrow": "up",
-                  "LeftArrow": "left", "RightArrow": "right"}
+keyconversions = {
+    "DownArrow":  "down",
+    "UpArrow":    "up",
+    "LeftArrow":  "left",
+    "RightArrow": "right"
+}
+
+# Used to detect if a keypress was just a modifier
+MODIFIER_KEYS = {
+    QtCore.Qt.Key_Shift:    "s",
+    QtCore.Qt.Key_Control:  "C",
+    QtCore.Qt.Key_Alt:      "M",
+    QtCore.Qt.Key_AltGr:    "M",
+    QtCore.Qt.Key_Meta:     "Meta",
+    QtCore.Qt.Key_Super_L:  "S",
+    QtCore.Qt.Key_Super_R:  "S"
+}
+
+# Used for bitmasking to determine modifiers
+MODIFIERS = {}
+# Used for constructing a bitmasked modifier
+REVERSE_MODIFIERS = {}
+
+# Special keys for Next
+SPECIAL_KEYS = {
+    QtCore.Qt.Key_Backspace:    "BACKSPACE",
+    QtCore.Qt.Key_Delete:       "DELETE",
+    QtCore.Qt.Key_Escape:       "ESCAPE",
+    QtCore.Qt.Key_hyphen:       "HYPHEN",
+    QtCore.Qt.Key_Return:       "RETURN",
+    QtCore.Qt.Key_Enter:        "RETURN",
+    QtCore.Qt.Key_Space:        "SPACE",
+    QtCore.Qt.Key_Tab:          "TAB",
+    QtCore.Qt.Key_Left:         "Left",
+    QtCore.Qt.Key_Right:        "Right",
+    QtCore.Qt.Key_Up:           "Up",
+    QtCore.Qt.Key_Down:         "Down",
+    QtCore.Qt.Key_PageUp:       "Page_Up",
+    QtCore.Qt.Key_PageDown:     "Page_Down",
+    QtCore.Qt.Key_End:          "Page_End",
+    QtCore.Qt.Key_Home:         "Page_Home",
+}
+
+if platform == "linux" or platform == "linux2":
+    tmp = {QtCore.Qt.ShiftModifier:     "s",
+           QtCore.Qt.ControlModifier:   "C",
+           QtCore.Qt.AltModifier:       "M",
+           QtCore.Qt.MetaModifier:      "M"}
+    MODIFIERS.update(tmp)
+    tmp = {"s": QtCore.Qt.ShiftModifier,
+           "C": QtCore.Qt.ControlModifier,
+           "M": QtCore.Qt.MetaModifier}
+    REVERSE_MODIFIERS.update(tmp)
+elif platform == "darwin":
+    tmp = {QtCore.Qt.ShiftModifier:     "s",
+           QtCore.Qt.ControlModifier:   "S",
+           QtCore.Qt.AltModifier:       "M",
+           QtCore.Qt.MetaModifier:      "C"}
+    MODIFIERS.update(tmp)
+    tmp = {"s": QtCore.Qt.ShiftModifier,
+           "S": QtCore.Qt.ControlModifier,
+           "M": QtCore.Qt.AltModifier,
+           "C": QtCore.Qt.MetaModifier}
+    REVERSE_MODIFIERS.update(tmp)
+elif platform == "win32" or platform == "win64":
+    tmp = {QtCore.Qt.ShiftModifier:     "s",
+           QtCore.Qt.ShiftModifier:     "Shift",
+           QtCore.Qt.ControlModifier:   "C",
+           QtCore.Qt.ControlModifier:   "Ctrl",
+           QtCore.Qt.AltModifier:       "M",
+           QtCore.Qt.AltModifier:       "Alt",
+           QtCore.Qt.MetaModifier:      "M"}
+    MODIFIERS.update(tmp)
+    tmp = {"s":     QtCore.Qt.ShiftModifier,
+           "Shift": QtCore.Qt.ShiftModifier,
+           "C":     QtCore.Qt.ControlModifier,
+           "Ctrl":  QtCore.Qt.ControlModifier,
+           "M":     QtCore.Qt.MetaModifier,
+           "Alt":   QtCore.Qt.AltModifier}
+    REVERSE_MODIFIERS.update(tmp)
 
 MODIFIERS = {
     "Shift":        QtCore.Qt.ShiftModifier,
@@ -154,4 +247,46 @@ KEY_DICT = {
     "Bar":          QtCore.Qt.Key_Bar,
     "BraceRight":   QtCore.Qt.Key_BraceRight,
     "AsciiTilde":   QtCore.Qt.Key_AsciiTilde,
+}
+
+CONTEXTTYPE = {
+    "Cop2": "COP",
+    "CopNet": "COPNET",
+    "Chop": "CHOP",
+    "ChopNet": "CHOPNET",
+    "Dop": "DOP",
+    "Driver": "ROP",
+    "Object": "OBJ",
+    "Particle": "PART",
+    "Pop": "POP",
+    "Sop": "SOP",
+    "Shop": "SHOP",
+    "Tsop": "TSOP",
+    "Vop": "VOP",
+    "VopNet": "VEX",
+}
+
+PANETYPES = {
+    hou.paneTabType.AssetBrowser: ["h.pane.projectm"],
+    hou.paneTabType.BundleList: ["h.pane.bundle"],
+    hou.paneTabType.ChannelEditor: ["h.pane.chedit", "h.pane.chedit.dope", "h.pane.chedit.dope.py", "h.pane.chedit.graph", "h.pane.chedit.graph.py", "h.pane.chedit.table", "h.pane.chedit.table.py"],
+    hou.paneTabType.ChannelList: ["h.pane.chlist", "h.pane.chlist.ch", "h.pane.chlist.layers", "h.pane.chlist.parmbox"],
+    hou.paneTabType.ChannelViewer: ["h.pane.gview.selmodechview"],
+    hou.paneTabType.CompositorViewer: ["h.pane.imgui.state", "h.pane.imgui.state.cop"],
+    hou.paneTabType.DetailsView: ["h.pane.details"],
+    hou.paneTabType.HandleList: ["h.pane.manip"],
+    hou.paneTabType.HelpBrowser: [""],
+    hou.paneTabType.IPRViewer: ["h.pane.ipr"],
+    hou.paneTabType.LightLinker: ["h.pane.linkeditor", "h.pane.linkeditor.sheet", ],
+    hou.paneTabType.MaterialPalette: ["h.pane.material"],
+    hou.paneTabType.NetworkEditor: ["h.pane.wsheet"],
+    hou.paneTabType.OutputViewer: ["h.pane.outputsview"],
+    hou.paneTabType.Parm: ["h.pane.editparms", "h.pane.parms"],
+    hou.paneTabType.ParmSpreadsheet: ["h.pane.parmsheet"],
+    hou.paneTabType.PerformanceMonitor: ["h.pane.perfmon"],
+    hou.paneTabType.PythonPanel: ["h.pane.pythonshell", "h.py"],
+    hou.paneTabType.SceneViewer: ["h.pane.gview.selmode", "h.pane.gview.state.select"],
+    hou.paneTabType.TakeList: ["h.pane.take", "h.pane.take.content", "h.pane.take.list"],
+    hou.paneTabType.Textport: ["h.pane.textport"],
+    hou.paneTabType.TreeView: ["tree"],
 }

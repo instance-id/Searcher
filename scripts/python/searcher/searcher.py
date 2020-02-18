@@ -1,10 +1,11 @@
+# region Imports
 from __future__ import print_function
 import weakref
 
 from . import searcher_settings
 from . import gofunctions
 from . import database
-from . import data
+from . import utility
 from . import cwidgets
 from datahandler import datahandler
 
@@ -19,6 +20,7 @@ import objecttoolutils
 import os
 import sys
 import hdefereval as hd
+import stateutils
 if os.environ["HFS"] != "":
     # noinspection PyUnresolvedReferences
     from hutil.Qt import QtGui
@@ -35,18 +37,20 @@ else:
     # noinspection PyUnresolvedReferences
     from qtpy import QtWidgets
 
+reload(datahandler)
+reload(database)
+reload(gofunctions)
+reload(searcher_settings)
+reload(utility)
+reload(cwidgets)
+# endregion
+
 # info
 __author__ = "instance.id"
 __copyright__ = "2020 All rights reserved. See LICENSE for more details."
 __status__ = "Prototype"
 
-reload(datahandler)
-reload(database)
-reload(gofunctions)
-reload(searcher_settings)
-reload(data)
-reload(cwidgets)
-
+kwargs = {}
 mousePos = None
 cur_screen = QtWidgets.QDesktopWidget().screenNumber(
     QtWidgets.QDesktopWidget().cursor().pos())
@@ -55,16 +59,22 @@ centerPoint = QtWidgets.QDesktopWidget().availableGeometry(cur_screen).center()
 
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 script_path = os.path.dirname(os.path.realpath(__file__))
-# gofuncs = gofunctions.GoFunctions()
 name = "Searcher"
 
 parent_widget = hou.qt.mainWindow()
+ICON_SIZE = hou.ui.scaledSize(32)
+EDIT_ICON_SIZE = hou.ui.scaledSize(28)
+SETTINGS_ICON = hou.ui.createQtIcon(
+    'BUTTONS_chooser',
+    EDIT_ICON_SIZE,
+    EDIT_ICON_SIZE
+)
 
 
 def keyconversion(key):
     for i in range(len(key)):
-        if key[i] in data.keyconversions:
-            key[i] = data.keyconversions[key[i]]
+        if key[i] in utility.keyconversions:
+            key[i] = utility.keyconversions[key[i]]
     return key
 
 
@@ -72,39 +82,164 @@ class Searcher(QtWidgets.QWidget):
     """instance.id Searcher for Houdini"""
     hotkeyInvoked = QtCore.Signal(str)
 
-    def __init__(self, parent=None):
+    def __init__(self, kwargs, parent=None):
         super(Searcher, self).__init__(parent)
+        kwargs = kwargs
+
         self.installEventFilter(self)
         self.window = QtWidgets.QMainWindow()
         self.handler, self.tmpkey = self.initialsetup()
         self.ui = searcher_settings.SearcherSettings(self.handler, self.tmpkey)
-
-        self.hktest = True
-
         self.keys_changed = False
         self.tmpsymbol = None
         self.searching = True
-
+        self.ctxsearch = False
+        self.showglobal = True
+        self.searchdescription = False
+        self.searchprefix = False
+        self.searchcurrentcontext = False
         hou.hotkeys._createBackupTables()
 
-        self.main_widget = QtWidgets.QWidget(self)
+        self.uisetup()
 
+    # region ---------------------------------------------------------------------------------------------------------- Callbacks
+    def opensettings_cb(self):
+        self.open_settings()
+
+    def ctxsearcher(self):
+        tucctx = hou.ui.paneTabUnderCursor().type()
+        print(tucctx)
+        ctx = []
+        ctx = utility.PANETYPES[tucctx]
+        # if self.showglobal:
+        #     ctx.append("h")
+        print(ctx)
+        results = self.handler.searchctx(ctx)
+        self.searchtablepopulate(results)
+
+    def textchange_cb(self, text):
+        if len(text) > 1:
+            txt = self.handler.searchtext(text)
+            self.searchtablepopulate(txt)
+        else:
+            self.searchresultstree.clear()
+
+    def searchclick_cb(self, item, column):
+        hk = item.text(2)
+        self.tmpsymbol = item.text(3)
+
+        if hk == "":
+            self.chindex = hou.hotkeys.changeIndex()
+            result = self.createtemphotkey(self.tmpsymbol)
+            if result is True:
+                self.chindex = hou.hotkeys.changeIndex()
+                hk = hou.hotkeys.assignments(self.tmpsymbol)
+                self.processkey(hk)
+        else:
+            hk = hou.hotkeys.assignments(self.tmpsymbol)
+            self.processkey(hk)
+            self.tmpsymbol = None
+        return
+    # endregion
+
+    # region ---------------------------------------------------------------------------------------------------------- Actions
+    # endregion
+
+    # region -------------------------------------------------------------- Test
+
+    def panetest(self):
+        ctxes = "h.pane.datatree.styler.stylesheet"
+
+        # current = hou.ui.paneTabUnderCursor()
+        # print ("Context Under Mouse: ", current)
+        # print ("Context Under Mouse Type: ", current.type())
+        # print ("Context Under Mouse Name: ", current.name())
+        # ctxname = self.getContext(current)
+        # if ctxname is not None:
+        # print("Node Context Name: ", ctxname)
+
+        tabs = hou.ui.paneTabs()
+
+    def getContext(self, ctx):
+        """Return houdini context string."""
+        try:
+            hou_context = ctx.pwd().childTypeCategory().name()
+        except:
+            return None
+
+        print ("Hou Context: ", hou_context)
+        return utility.CONTEXTTYPE[hou_context]
+
+        # panetab = None
+        # for pane in hou.ui.floatingPaneTabs():
+        #     if pane.type() == hou.paneTabType.PythonPanel:
+        #         print(pane.activeInterface().name())
+        #         if pane.activeInterface().name() == 'SceneGraphDetailsPanel':
+        #             panetab = pane
+        #             break
+
+        # ret = []
+        # for t in tabs:
+        #     if t.type() == hou.paneTabType.PythonPanel:
+        #         if t.activeInterface() == pytype:
+        #             t.pane().setIsSplitMaximized(False)
+        #             ret.append(t)
+    # endregion
+
+    # region -------------------------------------------------------------- Navigation
+    def open_settings(self):
+        self.ui.show()
+    # endregion
+
+    # region -------------------------------------------------------------- UI
+    def setupContext(self):
+        cols = 4
+        self.searchresultstree.setColumnCount(cols)
+        self.searchresultstree.setColumnWidth(0, 250)
+        self.searchresultstree.setColumnWidth(1, 450)
+        self.searchresultstree.setColumnWidth(2, 100)
+        self.searchresultstree.setColumnWidth(3, 150)
+        self.searchresultstree.setHeaderLabels([
+            "Label",
+            "Description",
+            "Assignments",
+            "Symbol"
+        ])
+
+    def uisetup(self):
+        self.main_widget = QtWidgets.QWidget(self)
         # Load UI File
         loader = QtUiTools.QUiLoader()
         mainui = loader.load(script_path + "/searcher.ui")
 
         # Get UI Elements
+        self.opensettingstool = mainui.findChild(
+            QtWidgets.QPushButton,
+            "opensettings_btn"
+        )
         self.opensettings = mainui.findChild(
-            QtWidgets.QPushButton, "opensettings_btn")
+            QtWidgets.QPushButton,
+            "opensettings_btn"
+        )
         self.searchresultstree = mainui.findChild(
-            QtWidgets.QTreeWidget, "searchresults_tree")
-
+            QtWidgets.QTreeWidget,
+            "searchresults_tree"
+        )
         self.searchbox = mainui.findChild(
-            QtWidgets.QLineEdit, "searchbox_txt")
+            QtWidgets.QLineEdit,
+            "searchbox_txt"
+        )
         self.searchbox.setPlaceholderText("Search..")
         self.searchbox.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         # Create Connections
+        self.opensettingstool.clicked.connect(self.opensettings_cb)
+        self.opensettingstool.setIcon(SETTINGS_ICON)
+        settings_button_size = hou.ui.scaledSize(16)
+        self.opensettingstool.setProperty("flat", True)
+        self.opensettingstool.setIcon(SETTINGS_ICON)
+        self.opensettingstool.setIconSize(QtCore.QSize(
+            settings_button_size, settings_button_size))
         self.opensettings.clicked.connect(self.opensettings_cb)
         self.searchbox.textChanged.connect(self.textchange_cb)
         self.searchresultstree.itemDoubleClicked.connect(self.searchclick_cb)
@@ -122,72 +257,12 @@ class Searcher(QtWidgets.QWidget):
         self.activateWindow()
         self.searchbox.setFocus()
         self.searchbox.grabKeyboard()
+    # endregion
 
-    # ------------------------------------------------------------------------------------------------------------------ Callbacks
-    def _emitHotkey(self, symbol):
-        print (symbol)
-        self.hotkeyInvoked.emit(symbol)
-
-    def opensettings_cb(self):
-        self.open_settings()
-
-    def textchange_cb(self, text):
-        if len(text) > 1:
-            txt = self.handler.searchtext(text)
-            self.searchtablepopulate(txt)
-        else:
-            self.searchresultstree.clear()
-
-    def searchclick_cb(self, item, column):
-        hk = item.text(2)
-        self.tmpsymbol = item.text(3)
-
-        if self.hktest == True:
-            if hk == "":
-                self.chindex = hou.hotkeys.changeIndex()
-                result = self.createtemphotkey(self.tmpsymbol)
-                if result is True:
-                    self.chindex = hou.hotkeys.changeIndex()
-                    hk = hou.hotkeys.assignments(self.tmpsymbol)
-                    self.processmenukey(item.text(0), self.tmpsymbol, hk)
-            else:
-                hk = hou.hotkeys.assignments(self.tmpsymbol)
-                self.processmenukey(item.text(0), self.tmpsymbol, hk)
-                self.tmpsymbol = None
-            return
-
-        if hk == "":
-            self.chindex = hou.hotkeys.changeIndex()
-            result = self.createtemphotkey(self.tmpsymbol)
-            if result is True:
-                self.chindex = hou.hotkeys.changeIndex()
-                hk = hou.hotkeys.assignments(self.tmpsymbol)
-                self.processkey(hk)
-        else:
-            hk = hou.hotkeys.assignments(self.tmpsymbol)
-            self.processkey(hk)
-            self.tmpsymbol = None
-
-    # ------------------------------------------------------------------------------------------------------------------ Actions
-    # ---------------------------------------------- Navigation
-    def open_settings(self):
-        self.ui.show()
-
-    # ---------------------------------------------- UI
-    def setupContext(self):
-        cols = 4
-        self.searchresultstree.setColumnCount(cols)
-        self.searchresultstree.setColumnWidth(0, 250)
-        self.searchresultstree.setColumnWidth(1, 450)
-        self.searchresultstree.setColumnWidth(2, 100)
-        self.searchresultstree.setColumnWidth(3, 150)
-        self.searchresultstree.setHeaderLabels(
-            ["Label", "Description", "Assignments", "Symbol"])
-
-    # ---------------------------------------------- Search Functionality
+    # region -------------------------------------------------------------- Search Functionality
     def searchtablepopulate(self, data):
+        ctxsearch = True
         rows = len(data)
-
         if rows > 0:
             self.searchresultstree.clear()
             hcontext_tli = {}
@@ -196,7 +271,10 @@ class Searcher(QtWidgets.QWidget):
 
             for i in range(rows):
                 if data[i][4] not in context_list:
-                    context_list.append(data[i][4])
+                    if ctxsearch:
+                        context_list.append(data[i][4])
+                    else:
+                        context_list.append(data[i][4])
 
             result = self.handler.gethcontextod(context_list)
 
@@ -211,23 +289,26 @@ class Searcher(QtWidgets.QWidget):
                     if base_keys[j] in data[i][4]:
                         hotkeys.append(QtWidgets.QTreeWidgetItem(
                             hcontext_tli[base_keys[j]], [
-                                data[i][0], data[i][1], data[i][2], data[i][3]]
+                                data[i][0],
+                                data[i][1],
+                                data[i][2],
+                                data[i][3]
+                            ]
                         ))
+    # endregion
 
-    # ---------------------------------------------- Initial Setup
+    # region -------------------------------------------------------------- Initial Setup
     def initialsetup(self):
         self.handler = datahandler.DataHandler()
         currentidx = hou.hotkeys.changeIndex()
-
-        # print("Current Index:", currentidx)
-
         chindex = self.handler.getchangeindex()
-        # print("Current db Index:", chindex)
-        # print("DB Index len=", len(chindex))
+
         if len(chindex) == 0:
             chindex = int(currentidx)
             self.handler.updatechangeindex(chindex, True)
             self.handler.updatedata()
+            hou.ui.setStatusMessage(
+                "Searcher database updated", severity=hou.severityType.Message)
         else:
             chindex = int(chindex[0][0])
 
@@ -238,12 +319,11 @@ class Searcher(QtWidgets.QWidget):
         tmpkey = self.handler.getdefaulthotkey()
         self.tmpkey = tmpkey[0][0]
         return self.handler, self.tmpkey
+    # endregion
 
-    # ---------------------------------------------- Hotkey Processing
-    def _hotkeyMenuAction(self, symbol, owner):
-        owner._emitHotkey(symbol)
+    # region -------------------------------------------------------------- Hotkey Processing
 
-    def processmenukey(self, label, symbol, key):
+    def processkey(self, key):
         hk = key
         if self.tmpsymbol is None:
             key = key.split(' ')
@@ -251,69 +331,28 @@ class Searcher(QtWidgets.QWidget):
         else:
             key = key[0].split('+')
 
-        key = keyconversion(key)
-        modifiers = data.MODIFIERS
         mods = []
-        ikey = None
         skey = None
+        ikey = None
+        key = keyconversion(key)
+        modifiers = utility.MODIFIERS
+        mod_flag = QtCore.Qt.KeyboardModifiers()
         for i in range(len(key)):
             if str(key[i]) in modifiers:
-                mods.append(data.MODIFIERS[str(key[i])])
+                mod_flag = mod_flag | utility.MODIFIERS[str(key[i])]
             else:
-                ikey = data.KEY_DICT[str(key[i])]
                 skey = key[i]
+                ikey = utility.KEY_DICT[str(key[i])]
 
         keypress = QtGui.QKeyEvent(
-            QtGui.QKeyEvent.KeyPress, ikey, QtCore.Qt.NoModifier, skey)
+            QtGui.QKeyEvent.KeyPress,
+            ikey,
+            mod_flag,
+            skey
+        )
 
         QtGui.QGuiApplication.sendEvent(self.parent(), keypress)
-
-        # if len(key) == 2:
-        #     print("Initiating len(2) Hotkey")
-        #     keypress = QtGui.QKeyEvent(
-        #         QtGui.QKeyEvent.KeyPress, ikey, mods[0], skey)
-        # if len(key) == 3:
-        #     hotkey(str(key[0]), str(key[1]), str(key[2]))
-        # if len(key) == 4:
-        #     keypress = QtGui.QShortcutEvent(keysequence, True)
-        #     # QtGui.QKeyEvent.KeyPress, ikey, (mods[0] & mods[1] & mods[2]), str(skey))
-        # if len(key) == 5:
-        #     hotkey(str(key[0]), str(key[1]), str(
-        #         key[2]), str(key[3]), str(key[4]))
-        # else:
-
-        # keypress = QtGui.QKeyEvent(
-        #     QtGui.QKeyEvent.KeyPress, QtGui.QKeySequence(key), QtCore.Qt.NoModifier, str(key))
-
-        # QtGui.QGuiApplication.sendEvent(perfMonWidget, keypress)
-        # self.hotkeyInvoked.emit(self.tmpsymbol)
-
-    def processkey(self, key):
-        if self.tmpsymbol is None:
-            key = key.split(' ')
-            key = key[0].split('+')
-        else:
-            key = key[0].split('+')
-
-        key = keyconversion(key)
-        self.searchbox.releaseKeyboard()
-        self.searchbox.clearFocus()
-
-        parent_widget.activateWindow()
-        parent_widget.setFocus()
-        parent_widget.focusWidget()
-
-        if len(key) == 2:
-            hotkey(str(key[0]), str(key[1]))
-        if len(key) == 3:
-            hotkey(str(key[0]), str(key[1]), str(key[2]))
-        if len(key) == 4:
-            hotkey(str(key[0]), str(key[1]), str(key[2]), str(key[3]))
-        if len(key) == 5:
-            hotkey(str(key[0]), str(key[1]), str(
-                key[2]), str(key[3]), str(key[4]))
-        else:
-            hotkey(str(key))
+        self.close()
 
     def setKeysChanged(self, changed):
         if self.keys_changed and not changed:
@@ -335,8 +374,9 @@ class Searcher(QtWidgets.QWidget):
         hou.hotkeys.revertToDefaults(symbol, True)
         self.keys_changed = True
         self.setKeysChanged(False)
+    # endregion
 
-    # ------------------------------------------------------------------------------------------------------------------ Events
+    # region ---------------------------------------------------------------------------------------------------------- Events
     def eventFilter(self, object, event):
         if event.type() == QtCore.QEvent.WindowActivate:
             self.searchbox.grabKeyboard()
@@ -354,35 +394,41 @@ class Searcher(QtWidgets.QWidget):
     def closeEvent(self, event):
         if self.tmpsymbol is not None:
             hd.execute_deferred_after_waiting(
-                self.removetemphotkey, 5, self.tmpsymbol, self.tmpkey)
+                self.removetemphotkey,
+                5,
+                self.tmpsymbol,
+                self.tmpkey
+            )
         self.searchbox.releaseKeyboard()
-        self.parent().setFocus()
-        self.setParent(None)
-        self.deleteLater()
+        try:
+            self.parent().setFocus()
+            self.setParent(None)
+            self.deleteLater()
+        except:
+            self.setParent(None)
+            self.deleteLater()
 
     def keyPressEvent(self, event):
-
         if event.key() in (QtCore.Qt.Key_Enter, QtCore.Qt.Key_Return):
             pass
         if event.key() == QtCore.Qt.Key_Tab:
-            self.searching = False
-            self.searchbox.releaseKeyboard()
-            self.searchresultstree.setFocus()
-            self.searchresultstree.setCurrentItem(
-                self.searchresultstree.topLevelItem(0).child(0))
+            if self.searchbox.text() == "":
+                self.ctxsearcher()
+            else:
+                self.searching = False
+                self.searchbox.releaseKeyboard()
+                self.searchresultstree.setFocus()
+                self.searchresultstree.setCurrentItem(
+                    self.searchresultstree.topLevelItem(0).child(0))
 
         if event.key() == QtCore.Qt.Key_Escape:
             if self.ui.isVisible():
                 pass
             else:
                 self.close()
+    # endregion
 
-    # ------------------------------------------------------------------------------------------------------------------ Event Callbacks
-    def kill_pane_tab(self):
-        self.searchbox.releaseKeyboard()
-        self.parent().setFocus()
-        self.setParent(None)
-        self.close()
+# region -------------------------------------------------------------------------------------------------------------- Setup Functions
 
 
 def center():
@@ -411,19 +457,27 @@ def CreateSearcherPanel(kwargs, searcher_window=None):
     try:
         searcher_window.close()
         searcher_window.deleteLater()
-
     except:
         pass
 
-    searcher_window = Searcher()
+    searcher_window = Searcher(kwargs)
     searcher_window.setWindowFlags(
-        QtCore.Qt.Window | QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
+        QtCore.Qt.Window |
+        QtCore.Qt.FramelessWindowHint |
+        QtCore.Qt.WindowStaysOnTopHint
+    )
     searcher_window.resize(1000, 600)
     searcher_window.setParent(parent_widget, QtCore.Qt.Window)
 
     pos = center()
-    searcher_window.setGeometry(pos.x() - (searcher_window.width() / 2), pos.y() - (
-        searcher_window.height() / 2), searcher_window.width(), searcher_window.height())
+    searcher_window.setGeometry(
+        pos.x() - (searcher_window.width() / 2),
+        pos.y() - (searcher_window.height() / 2),
+        searcher_window.width(),
+        searcher_window.height()
+    )
 
     searcher_window.searchbox.setFocus()
+    searcher_window.setWindowTitle('Searcher')
     searcher_window.show()
+# endregion

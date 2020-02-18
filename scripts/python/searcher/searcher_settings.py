@@ -22,8 +22,6 @@ from .widgets import *
 
 import hou
 import os
-# from .datahandler import datahandler
-# from . import gofunctions
 from .cwidgets import InputLineEdit
 
 the_scaled_icon_size = hou.ui.scaledSize(16)
@@ -52,8 +50,12 @@ class SearcherSettings(QtWidgets.QFrame):
     def __init__(self, handler, tmphotkey, parent=None):
         super(SearcherSettings, self).__init__(parent=parent)
 
-        self._keysToIgnore = [QtCore.Qt.Key.Key_Enter, QtCore.Qt.Key.Key_Return, QtCore.Qt.Key.Key_Escape,
-                              QtCore.Qt.Key.Key_Tab]
+        self._keysToIgnore = [
+            QtCore.Qt.Key.Key_Enter,
+            QtCore.Qt.Key.Key_Return,
+            QtCore.Qt.Key.Key_Escape,
+            QtCore.Qt.Key.Key_Tab
+        ]
         self.context_dict = {}
         self.command_dict = {}
         self.contexts = None
@@ -83,18 +85,34 @@ class SearcherSettings(QtWidgets.QFrame):
         self.ui = loader.load(scriptpath + '/searchersettings.ui')
 
         # Get UI Elements
-        self.hkinput = self.ui.findChild(QtWidgets.QLineEdit, "hkinput_txt")
+        self.hkinput = self.ui.findChild(
+            QtWidgets.QLineEdit,
+            "hkinput_txt"
+        )
         self.addhkeys = self.ui.findChild(
-            QtWidgets.QPushButton, "addhotkeys_btn")
+            QtWidgets.QPushButton,
+            "addhotkeys_btn"
+        )
         self.updatehkeys = self.ui.findChild(
-            QtWidgets.QPushButton, "updatehotkeys_btn")
+            QtWidgets.QPushButton,
+            "updatehotkeys_btn"
+        )
         self.testcontext = self.ui.findChild(
-            QtWidgets.QPushButton, "test_context_btn")
+            QtWidgets.QPushButton,
+            "test_context_btn"
+        )
         self.cleardata = self.ui.findChild(
-            QtWidgets.QPushButton, "cleardata_btn")
-        self.savedata = self.ui.findChild(QtWidgets.QPushButton, "save_btn")
+            QtWidgets.QPushButton,
+            "cleardata_btn"
+        )
+        self.savedata = self.ui.findChild(
+            QtWidgets.QPushButton,
+            "save_btn"
+        )
         self.discarddata = self.ui.findChild(
-            QtWidgets.QPushButton, "discard_btn")
+            QtWidgets.QPushButton,
+            "discard_btn"
+        )
 
         # Create Connections
         self.hkinput.setText(self.tmphotkey)
@@ -167,8 +185,11 @@ class SearcherSettings(QtWidgets.QFrame):
         if event.type() == QtCore.QEvent.KeyPress:
             self.keyindex += 1
             self.keystring = hou.qt.qtKeyToString(
-                event.key(), int(event.modifiers()), event.text())
-            # print("Line ", get_linenumber(), "-", self.keystring, "-", event.text())
+                event.key(),
+                int(event.modifiers()),
+                event.text()
+            )
+
             if self.canedit:
                 if self.keystring not in ["Esc", "Backspace"]:
                     if self.hkinput.hasFocus():

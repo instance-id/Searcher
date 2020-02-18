@@ -43,6 +43,10 @@ class DataHandler(object):
         results = db.gethcontextod(inputtext)
         return results
 
+    def searchctx(self, txt):
+        results = db.ctxfilterresults(txt)
+        return results
+
     def searchtext(self, txt):
         results = db.searchresults(txt)
         return results
