@@ -1,0 +1,9 @@
+
+    def addhotkeys_cb(self):
+        self.gofunc.callgofunction("ahk", self.gocommandtext.text().strip())
+
+    def updatehotkeys_cb(self):
+        self.gofunc.callgofunction("uhk", self.gocommandtext.text().strip())
+
+    def cleardata_cb(self):
+        self.gofunc.callgofunction("c", self.gocommandtext.text().strip())

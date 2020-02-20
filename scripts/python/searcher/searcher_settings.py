@@ -69,6 +69,7 @@ class SearcherSettings(QtWidgets.QFrame):
         self.canedit = False
         self.KeySequence = None
         self.hkholder = ""
+        self.hkinput = tmphotkey
 
         self.datahandler = handler
         self.tmphotkey = tmphotkey
@@ -127,20 +128,22 @@ class SearcherSettings(QtWidgets.QFrame):
         mainlayout = QtWidgets.QVBoxLayout()
         mainlayout.addWidget(self.ui)
         self.setLayout(mainlayout)
+        self.installEventFilter(self)
         self.hkinput.installEventFilter(self)
 
-    # ------------------------------------------------------------------------------------------------------------------ Callbacks
+    # ----------------------------------------------------------------------------------- Callbacks
     def defaulthk_cb(self):
         return
 
     def addhotkeys_cb(self):
-        self.gofunc.callgofunction("ahk", self.gocommandtext.text().strip())
+        return
 
     def updatehotkeys_cb(self):
-        self.gofunc.callgofunction("uhk", self.gocommandtext.text().strip())
+        self.datahandler.updatedata()
+        return
 
     def cleardata_cb(self):
-        self.gofunc.callgofunction("c", self.gocommandtext.text().strip())
+        self.datahandler.cleardb()
 
     def save_cb(self):
         if self.hkinput.text() == "":
@@ -155,57 +158,65 @@ class SearcherSettings(QtWidgets.QFrame):
 
     def discard_cb(self):
         self.hkinput.setText(self.tmphotkey)
+        self.hkholder = ""
         self.close()
 
     def testcontext_cb(self):
-        self.symbol = self.gocommandtext.text()
-        hk = hou.hotkeys.assignments(self.symbol)
-        print("Hotkey Value before revert: ", hk)
 
-        hou.hotkeys._restoreBackupTables()
-        hou.hotkeys.saveOverrides()
-        hk = hou.hotkeys.assignments(self.symbol)
-        print("Hotkey Value after restore: ", hk)
-
-        hou.hotkeys.revertToDefaults(self.symbol, True)
-        hou.hotkeys.saveOverrides()
-        hk = hou.hotkeys.assignments(self.symbol)
         print("Hotkey Value after revert: ", hk)
 
-    def cleardata_cb(self):
-        self.gofunc.callgofunction("c", self.gocommandtext.text().strip())
+    # ----------------------------------------------------------------------------------- Actions
+    def savecheck(self):
+        buttonindex = hou.ui.displayMessage(
+            "Save changes?", buttons=('Save', 'Discard'), default_choice=0, title="Unsaved Changes:",)
+        if buttonindex == 0:
+            self.tmphotkey = self.hkinput.text()
+            self.datahandler.updatetmphotkey(self.tmphotkey)
+            self.hkholder = ""
+        elif buttonindex == 1:
+            self.hkinput.setText(self.hkholder)
+            self.hkholder = ""
+    # ----------------------------------------------------------------------------------- Events
 
-    def eventFilter(self, object, event):
+    def eventFilter(self, obj, event):
         if event.type() == QtCore.QEvent.MouseButtonDblClick:
             self.hkholder = self.hkinput.text()
             self.hkinput.setText("")
             self.hkinput.setPlaceholderText("Input key sequence")
             self.canedit = True
-
+        if event.type() == QtCore.QEvent.Close:
+            if self.canedit is False and self.hkholder is not "":
+                self.savecheck()
         if event.type() == QtCore.QEvent.KeyPress:
-            self.keyindex += 1
-            self.keystring = hou.qt.qtKeyToString(
-                event.key(),
-                int(event.modifiers()),
-                event.text()
-            )
-
-            if self.canedit:
-                if self.keystring not in ["Esc", "Backspace"]:
-                    if self.hkinput.hasFocus():
-                        self.KeySequence = QtGui.QKeySequence(
-                            self.keystring).toString()
-                        self.hkinput.setText(self.KeySequence)
-                if self.keystring in ["Esc", "Backspace"]:
-                    self.hkinput.setText(self.hkholder)
+            if event.key() == QtCore.Qt.Key_Escape:
+                if self.canedit is False:
+                    self.close()
+            else:
+                self.keyindex += 1
+                self.keystring = hou.qt.qtKeyToString(
+                    event.key(),
+                    int(event.modifiers()),
+                    event.text()
+                )
+                if self.canedit:
+                    if self.keystring not in ["Esc", "Backspace"]:
+                        if self.hkinput.hasFocus():
+                            self.KeySequence = QtGui.QKeySequence(
+                                self.keystring).toString()
+                            self.hkinput.setText(self.KeySequence)
+                    if self.keystring in ["Esc", "Backspace"]:
+                        self.hkinput.setText(self.hkholder)
 
         if event.type() == QtCore.QEvent.KeyRelease:
-            self.keyindex -= 1
-            if self.keyindex == 0:
-                if self.hkinput.text() == "":
-                    self.hkinput.setText(self.hkholder)
-                if self.hkinput.text() != "":
-                    self.canedit = False
+            if event.key() == QtCore.Qt.Key_Escape:
+                return QtCore.QObject.eventFilter(self, obj, event)
+            else:
+                self.keyindex -= 1
+                if self.keyindex == 0:
+                    if self.hkinput.text() == "":
+                        self.hkinput.setText(self.hkholder)
+                    if self.hkinput.text() != "":
+                        self.canedit = False
         return False
 
 
@@ -223,3 +234,4 @@ def fromKeyDisplayString(keystr):
     outkeystr = outkeystr.replace(u"\u21e7", "Shift+", 1)
     outkeystr = outkeystr.replace(u"\u2303", "Ctrl+", 1)
     return outkeystr
+

@@ -6,9 +6,7 @@ import time
 
 scriptpath = os.path.dirname(os.path.realpath(__file__))
 db = SqliteExtDatabase(scriptpath + "/db/searcher.db")
-db.connect()
 cur = db.cursor()
-
 
 class settings(Model):
     id = IntegerField()
@@ -17,6 +15,7 @@ class settings(Model):
     searchdescription = IntegerField()
     searchprefix = IntegerField()
     searchcurrentcontext = IntegerField()
+    lastused = TextField()
 
     class Meta:
         table_name = 'settings'
@@ -25,7 +24,7 @@ class settings(Model):
 
 class hcontext(Model):
     id = AutoField()
-    context = CharField()
+    context = CharField(unique=True)
     title = TextField()
     description = TextField()
 
@@ -35,7 +34,7 @@ class hcontext(Model):
 
 
 class hotkeys(Model):
-    hotkey_symbol = TextField()
+    hotkey_symbol = CharField(unique=True)
     label = TextField()
     description = TextField()
     assignments = TextField()
@@ -89,42 +88,46 @@ class Databases(object):
     def __init__(self):
         self.a = 1
 
-    # --------------------------------------------------- Retrieve
+    # region --------------------------------------------------- Retrieve
     def getchangeindex(self):
         try:
             cur.execute("SELECT indexvalue FROM settings")
             result = cur.fetchall()
             return result
-        finally:
-            db.close()
+        except(AttributeError, TypeError) as e:
+            hou.ui.setStatusMessage(
+                ("Could not get Searcher changeindex:", e), severity=hou.severityType.Error)
 
     def getdefhotkey(self):
         try:
             cur.execute("SELECT defaulthotkey FROM settings")
             result = cur.fetchall()
             return result
-        finally:
-            db.close()
+        except(AttributeError, TypeError) as e:
+            hou.ui.setStatusMessage(
+                ("Could not get Searcher default hotkey:", e), severity=hou.severityType.Error)
 
     def gethcontexts(self):
         try:
             cur.execute("SELECT * FROM hcontext")
             result = cur.fetchall()
             return result
-        finally:
-            db.close()
+        except(AttributeError, TypeError) as e:
+            hou.ui.setStatusMessage(
+                ("Could not get Searcher hcontext:", e), severity=hou.severityType.Error)
 
     def gethcontextod(self, inputlist):
         try:
             result = []
             query = (hcontext
                      .select()
-                     .where(hcontext.context.in_(inputlist)))
+                     .where(hcontext.context.in_(inputlist))).execute()
             for hctx in query:
                 result.append((hctx.title, hctx.description, hctx.context))
             return result
-        finally:
-            db.close()
+        except(AttributeError, TypeError) as e:
+            hou.ui.setStatusMessage(
+                ("Could not update Searcher context database:", e), severity=hou.severityType.Error)
 
     def ctxfilterresults(self, inputTerm):
         try:
@@ -135,10 +138,10 @@ class Databases(object):
             for hctx in query:
                 result.append((hctx.label, hctx.description,
                                hctx.assignments, hctx.hotkey_symbol, hctx.context))
-            query.close()
             return result
-        finally:
-            db.close()
+        except(AttributeError, TypeError) as e:
+            hou.ui.setStatusMessage(
+                ("Could not get Searcher context results:", e), severity=hou.severityType.Error)
 
     def searchresults(self, inputTerm):
         try:
@@ -151,10 +154,13 @@ class Databases(object):
             )
             result = cur.fetchall()
             return result
-        finally:
-            db.close()
+        except(AttributeError, TypeError) as e:
+            hou.ui.setStatusMessage(
+                ("Could not get Searcher results:", e), severity=hou.severityType.Error)
+    # endregion
 
-    # --------------------------------------------------- Updates
+    # region --------------------------------------------------- Updates
+
     def updatechangeindex(self, indexval, new=False):
         try:
             if new is True:
@@ -164,9 +170,11 @@ class Databases(object):
             else:
                 settings.update(indexvalue=indexval).where(
                     settings.id == 1).execute()
-            return
-        finally:
-            db.close()
+        except(AttributeError, TypeError) as e:
+            hou.ui.setStatusMessage(
+                ("Could not update Searcher context database:", e),
+                severity=hou.severityType.Error
+            )
 
     def updatetmphk(self, tmpkey):
         try:
@@ -175,20 +183,13 @@ class Databases(object):
                 defaulthotkey=tmpkey).where(id == 1).execute()
             print result
             return
-        finally:
-            db.close()
+        except(AttributeError, TypeError) as e:
+            hou.ui.setStatusMessage(
+                ("Could not update Searcher temp hotkey:", e), severity=hou.severityType.Error)
 
     def updatecontext(self):
         try:
             ctxdata, hkeydata = getdata()
-
-            # with db.atomic():
-            #     for idx in range(0, len(ctxdata), 100):
-            #         hcontext.replace_many(ctxdata[idx:idx+100]).execute()
-            # with db.atomic():
-            #     for idx in range(0, len(hkeydata), 100):
-            #         hotkeys.replace_many(hkeydata[idx:idx+100]).execute()
-
             time1 = time.time()
             with db.atomic():
                 for data_dict in ctxdata:
@@ -198,5 +199,31 @@ class Databases(object):
                     hotkeys.replace_many(idx).execute()
             time2 = time.time()
             print('DB update took %0.3f ms' % ((time2 - time1) * 1000.0))
-        finally:
-            db.close()
+        except(AttributeError, TypeError) as e:
+            hou.ui.setStatusMessage(
+                ("Could not update Searcher context database:", e), severity=hou.severityType.Error)
+
+        # with db.atomic():
+        #     for idx in range(0, len(ctxdata), 100):
+        #         hcontext.replace_many(ctxdata[idx:idx+100]).execute()
+        # with db.atomic():
+        #     for idx in range(0, len(hkeydata), 100):
+        #         hotkeys.replace_many(hkeydata[idx:idx+100]).execute()
+    # endregion
+
+    def cleardatabase(self):
+        try:
+            delhk = "DELETE FROM hotkeys"
+            # delhknum = "DELETE FROM sqlite_sequence WHERE name='hotkeys'"
+            delctx = "DELETE FROM hcontext"
+            # delctxnum = "DELETE FROM sqlite_sequence WHERE name='hcontext'"
+            cur.execute(delhk)
+            # cur.execute(delhknum)
+            cur.execute(delctx)
+            # cur.execute(delctxnum)
+            result = cur.fetchall()
+
+            return result
+        except(AttributeError, TypeError) as e:
+            hou.ui.setStatusMessage(
+                ("Could not update Searcher temp hotkey:", e), severity=hou.severityType.Error)

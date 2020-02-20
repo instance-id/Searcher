@@ -10,9 +10,9 @@ class DataHandler(object):
 
     def __init__(self):
         self.scriptpath = os.path.dirname(os.path.realpath(__file__))
+    # ----------------------------------------------------------------------------------- Function calls
+    # ----------------------------------------------------- Retrieve
 
-    # ------------------------------------------------------------------------------------------------------------------ Function calls
-    # --------------------------------------------------- Retrieve
     def getchangeindex(self):
         index = db.getchangeindex()
         return index
@@ -21,7 +21,7 @@ class DataHandler(object):
         index = db.getdefhotkey()
         return index
 
-    # --------------------------------------------------- Updates
+    # ----------------------------------------------------- Updates
     def updatechangeindex(self, indexval, new=False):
         db.updatechangeindex(indexval, new)
         return
@@ -49,4 +49,8 @@ class DataHandler(object):
 
     def searchtext(self, txt):
         results = db.searchresults(txt)
+        return results
+
+    def cleardb(self):
+        results = db.cleardatabase()
         return results

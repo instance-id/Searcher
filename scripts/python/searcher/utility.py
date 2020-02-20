@@ -290,3 +290,12 @@ PANETYPES = {
     hou.paneTabType.Textport: ["h.pane.textport"],
     hou.paneTabType.TreeView: ["tree"],
 }
+
+MENUSTYLE = """QMenu {background-color: rgb(64,64,64); menu-scrollable: 1; margin: 0px;}
+                   QMenu:item {background-color: rgb(46,46,46);  padding: 5px 25px; margin: 1px; height:16px;}
+                   QMenu:item:selected {background-color: rgb(64,64,64);}
+                   QMenu:separator {background-color: rgb(0,0,0); height: 1px; margin: 5px;}
+                   QMenu:icon {padding: 5px;}
+                   QMenu:icon:checked {flat: true;}"""
+
+CTXSHOTCUTS = [":v", ":c", ":g"]
