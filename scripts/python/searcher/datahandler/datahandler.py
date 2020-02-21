@@ -1,14 +1,24 @@
 import os
+import threading
+import hdefereval as hd
 
 from .. import database
 
 db = database.Databases()
 
 
+def worker():
+    hd.executeInMainThreadWithResult(DataHandler().updatedata)
+
+
+
+
+
 class DataHandler(object):
     """Loads data from Houdini config files"""
 
-    def __init__(self):
+    def __init__(self, debug=None):
+        self.isdebug = debug
         self.scriptpath = os.path.dirname(os.path.realpath(__file__))
     # ----------------------------------------------------------------------------------- Function calls
     # ----------------------------------------------------- Retrieve
@@ -26,8 +36,13 @@ class DataHandler(object):
         db.updatechangeindex(indexval, new)
         return
 
+    def updatedataasync(self):
+        thread = threading.Thread(target=worker)
+        thread.daemon = True
+        thread.start()
+
     def updatedata(self):
-        db.updatecontext()
+        db.updatecontext(self.isdebug)
         return
 
     def updatetmphotkey(self, tmpkey):

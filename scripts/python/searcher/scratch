@@ -1,0 +1,14 @@
+        # panetab = None
+        # for pane in hou.ui.floatingPaneTabs():
+        #     if pane.type() == hou.paneTabType.PythonPanel:
+        #         print(pane.activeInterface().name())
+        #         if pane.activeInterface().name() == 'SceneGraphDetailsPanel':
+        #             panetab = pane
+        #             break
+
+        # ret = []
+        # for t in tabs:
+        #     if t.type() == hou.paneTabType.PythonPanel:
+        #         if t.activeInterface() == pytype:
+        #             t.pane().setIsSplitMaximized(False)
+        #             ret.append(t)
