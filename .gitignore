@@ -49,6 +49,7 @@ share/python-wheels/
 MANIFEST
 scripts/python/searcher/db
 scripts/python/searcher/.history
+**.history*
 scripts/python/searcher/go/houdini
 
 

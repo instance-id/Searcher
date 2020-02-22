@@ -11,11 +11,8 @@ def worker():
     hd.executeInMainThreadWithResult(DataHandler().updatedata)
 
 
-
-
-
 class DataHandler(object):
-    """Loads data from Houdini config files"""
+    """Searcher data and communication handler"""
 
     def __init__(self, debug=None):
         self.isdebug = debug

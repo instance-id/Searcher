@@ -63,6 +63,8 @@ script_path = os.path.dirname(os.path.realpath(__file__))
 name = "Searcher"
 
 parent_widget = hou.qt.mainWindow()
+searcher_window = QtWidgets.QMainWindow()
+
 ICON_SIZE = hou.ui.scaledSize(32)
 EDIT_ICON_SIZE = hou.ui.scaledSize(28)
 SETTINGS_ICON = hou.ui.createQtIcon(
@@ -89,7 +91,6 @@ class Searcher(QtWidgets.QWidget):
         self.isdebug = debug
         self.menuopened = False
 
-        self.window = QtWidgets.QMainWindow()
         self.handler, self.tmpkey = self.initialsetup()
         self.ui = searcher_settings.SearcherSettings(self.handler, self.tmpkey)
         try:
@@ -214,7 +215,7 @@ class Searcher(QtWidgets.QWidget):
             self.handler.updatechangeindex(chindex, True)
             self.handler.updatedataasync()
             hou.ui.setStatusMessage(
-                "Searcher database updated", severity=hou.severityType.Message)
+                "Searcher database created", severity=hou.severityType.Message)
         else:
             chindex = int(chindex[0][0])
 
@@ -469,7 +470,7 @@ class Searcher(QtWidgets.QWidget):
                     self.searchbox.clearFocus()
                     self.openmenu()
                     return True
-                # ---------------------------------------------------- Window
+        # ---------------------------------------------------- Window
         if event.type() == QtCore.QEvent.WindowActivate:
             self.searchbox.grabKeyboard()
         elif event.type() == QtCore.QEvent.WindowDeactivate:
@@ -492,8 +493,9 @@ class Searcher(QtWidgets.QWidget):
             if self.menuopened:
                 self.searchmenu.setVisible(False)
             if self.tmpsymbol is not None:
-                hd.execute_deferred_after_waiting(
-                    self.removetemphotkey, 5, self.tmpsymbol, self.tmpkey)
+                hd.executeDeferred(self.removetemphotkey,
+                                   self.tmpsymbol, self.tmpkey)
+                # hd.execute_deferred_after_waiting(self.removetemphotkey, 1, self.tmpsymbol, self.tmpkey)
             self.searchbox.releaseKeyboard()
             try:
                 self.parent().setFocus()
@@ -506,7 +508,7 @@ class Searcher(QtWidgets.QWidget):
 
         # endregion
 
-        # region ----------------------------------------------------------------- Setup Functions
+# region ----------------------------------------------------------------- Setup Functions
 
 
 def center():
@@ -530,10 +532,12 @@ def CreateSearcherPanel(kwargs, debug=None, searcher_window=None):
     searcher_window.setWindowFlags(
         QtCore.Qt.Window |
         QtCore.Qt.FramelessWindowHint |
-        QtCore.Qt.WindowStaysOnTopHint
+        QtCore.Qt.WindowStaysOnTopHint |
+        QtCore.Qt.WindowSystemMenuHint
     )
+
     searcher_window.resize(1000, 600)
-    searcher_window.setParent(parent_widget, QtCore.Qt.Window)
+    searcher_window.setParent(hou.qt.mainWindow(), QtCore.Qt.Window)
 
     pos = center()
     searcher_window.setGeometry(
