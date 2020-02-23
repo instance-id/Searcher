@@ -1,14 +1,15 @@
 from __future__ import print_function
+from searcher import searcher_data
+from peewee import *
+from playhouse.sqlite_ext import SqliteExtDatabase, SearchField, FTSModel
+# from playhouse.apsw_ext import APSWDatabase
+import inspect
+import threading
+import time
 import hou
 import hdefereval as hd
 import os
 import sys
-import time
-import threading
-import inspect
-from peewee import *
-from playhouse.sqlite_ext import SqliteExtDatabase, SearchField, FTSModel
-# from playhouse.apsw_ext import APSWDatabase
 
 # info
 __author__ = "instance.id"
@@ -26,12 +27,13 @@ dbpath = os.path.join(scriptpath, "python/searcher/db/searcher.db")
 # db = SqliteExtDatabase(':memory:')
 db = SqliteExtDatabase(dbpath)
 dbc = None
+settingdata = {}
 isloading = True
 tempkey = ""
 
 
 class settings(Model):
-    id = IntegerField()
+    id = IntegerField(unique=True)
     indexvalue = IntegerField()
     defaulthotkey = TextField()
     searchdescription = IntegerField()
@@ -136,6 +138,20 @@ def initialsetup(cur):
         chindex = int(chindex[0][0])
 
     if int(currentidx) != chindex:
+        getlastusedhk(cur)
+        updatedataasync()
+        updatechangeindex(int(currentidx))
+        if hou.isUIAvailable():
+            hou.ui.setStatusMessage(
+                "Searcher database created and populated", severity=hou.severityType.Message)
+
+
+def dbupdate(cur):
+    currentidx = hou.hotkeys.changeIndex()
+    chindex = getchangeindex(cur)
+
+    if int(currentidx) != chindex:
+        getlastusedhk(cur)
         updatedataasync()
         updatechangeindex(int(currentidx))
         if hou.isUIAvailable():
@@ -148,7 +164,7 @@ def updatedataasync():
     thread.daemon = True
     thread.start()
 
-# endregion
+# endregionc
 
 # region --------------------------------------------------- Retrieve
 
@@ -161,9 +177,56 @@ def getchangeindex(cur):
     except(AttributeError, TypeError) as e:
         if hou.isUIAvailable():
             hou.ui.setStatusMessage(
-                ("Could not get Searcher changeindex:", e), severity=hou.severityType.Error)
+                ("Could not get Searcher changeindex: " + str(e)), severity=hou.severityType.Warning)
         else:
-            print("Could not get Searcher changeindex:", e)
+            print("Could not get Searcher changeindex: " + str(e))
+
+
+def getlastusedhk(cur):
+    try:
+        cur.execute("SELECT lastused FROM settings")
+        result = cur.fetchall()
+        if str(result[0][0]) != "":
+            lasthk = str(result[0][0]).split(' ')
+            rmresult = hou.hotkeys.removeAssignment(
+                str(lasthk[0]).strip(), str(lasthk[1]).strip())
+            if rmresult:
+                hkcheck = hou.hotkeys.assignments(str(lasthk[0]))
+                hou.hotkeys.saveOverrides()
+                if len(hkcheck) is 0:
+                    settings.update(lastused="").where(
+                        settings.id == 1).execute()
+                    currentidx = hou.hotkeys.changeIndex()
+                    updatechangeindex(int(currentidx))
+                else:
+                    hou.hotkeys.clearAssignments(str(lasthk[0]))
+                    hou.hotkeys.saveOverrides()
+                    hkcheck = hou.hotkeys.assignments(str(lasthk[0]))
+                    if len(hkcheck) is 0:
+                        settings.update(lastused="").where(
+                            settings.id == 1).execute()
+                        currentidx = hou.hotkeys.changeIndex()
+                        updatechangeindex(int(currentidx))
+                    else:
+                        if hou.isUIAvailable():
+                            hou.ui.setStatusMessage(
+                                ("Could not clear last assigned temp hotkey on last attempt:"), severity=hou.severityType.Warning)
+                        else:
+                            print(
+                                "Could not clear last assigned temp hotkey on last attempt:")
+            else:
+                if hou.isUIAvailable():
+                    hou.ui.setStatusMessage(
+                        ("Could not clear last assigned temp hotkey:"), severity=hou.severityType.Warning)
+                else:
+                    print("Could not clear last assigned temp hotkey:")
+
+    except(AttributeError, TypeError) as e:
+        if hou.isUIAvailable():
+            hou.ui.setStatusMessage(
+                ("Could not query last assigned temp hotkey:" + str(e)), severity=hou.severityType.Warning)
+        else:
+            print("Could not query last assigned temp hotkey: " + str(e))
 
 # region --------------------------------------------------- Updates
 
@@ -180,14 +243,14 @@ def updatechangeindex(indexval, new=False):
     except(AttributeError, TypeError) as e:
         if hou.isUIAvailable():
             hou.ui.setStatusMessage(
-                ("Could not update Searcher context database:", e),
-                severity=hou.severityType.Error
+                ("Could not update Searcher context database: " + str(e)),
+                severity=hou.severityType.Warning
             )
         else:
-            print("Could not update Searcher context database:", e)
+            print("Could not update Searcher context database: " + str(e))
 
 
-def updatecontext(debug=True):
+def updatecontext(debug=False):
     try:
         time1 = time.time()
         cleardatabase()
@@ -209,7 +272,7 @@ def updatecontext(debug=True):
                       ((time2 - time1) * 1000.0))  # TODO Remove this timer
     except(AttributeError, TypeError) as e:
         hou.ui.setStatusMessage(
-            ("Could not update Searcher context database:", e), severity=hou.severityType.Error)
+            ("Could not update Searcher context database: " + str(e)), severity=hou.severityType.Warning)
 # endregion
 
 
@@ -217,43 +280,42 @@ def cleardatabase():
     try:
         delhk = "DELETE FROM hotkeys"
         delctx = "DELETE FROM hcontext"
-        cur.execute(delhk)
-        cur.execute(delctx)
-        result = cur.fetchall()
+        db.cursor().execute(delhk)
+        db.cursor().execute(delctx)
+        result = db.cursor().fetchall()
 
         return result
     except(AttributeError, TypeError) as e:
         if hou.isUIAvailable():
             hou.ui.setStatusMessage(
-                ("Could not update Searcher temp hotkey:", e), severity=hou.severityType.Error)
+                ("Could not clear db for refresh: " + str(e)), severity=hou.severityType.Warning)
         else:
-            print("Could not update Searcher temp hotkey:", e)
+            print("Could not clear db for refresh: " + str(e))
 
 
-def deferaction(action):
-    hd.execute_in_main_thread_with_result(action)
+def deferaction(action, val):
+    hd.executeDeferred(action, val)
     # hd.execute_deferred_after_waiting(action, 25)
 
 
-def onCreateInterface():
-    isloading = False
-    print("UI Loaded!")
-    hou.ui.setStatusMessage(
-        ('UI Loaded!'), severity=hou.severityType.Message)
+def checklasthk(cur):
+    getlastusedhk(cur)
 
 
 def main():
+    if os.path.isfile(searcher_data.searcher_settings):
+        settingdata = searcher_data.loadsettings()
+    else:
+        searcher_data.createdefaults()
+        settingdata = searcher_data.loadsettings()
 
-    # try:
-    #     scriptpath = os.path.dirname(os.path.realpath(__file__))
-    #     print("PATH: ", scriptpath)
-    # except:
-    #     scriptpath = os.path.dirname(os.path.dirname(sys.argv[0]))
-    #     print("PATH: ", scriptpath)
-
-    create_tables()
-    cur = db.cursor()
-    initialsetup(cur)
+    if not os.path.isfile(dbpath):
+        create_tables()
+        cur = db.cursor()
+        deferaction(initialsetup, cur)
+    else:
+        cur = db.cursor()
+        deferaction(dbupdate, cur)
 
 
 if __name__ == '__main__':

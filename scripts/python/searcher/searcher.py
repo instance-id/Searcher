@@ -1,16 +1,16 @@
 # region Imports
 from __future__ import print_function
+from __future__ import absolute_import
+
 import weakref
 
-from . import searcher_settings
-from . import gofunctions
-from . import database
-from . import util
-from . import cwidgets
-from datahandler import datahandler
+from searcher import util
+from searcher import database
+from searcher import searcher_data
+from searcher import searcher_settings
+from searcher import datahandler
 
 from pyautogui import press, typewrite, hotkey
-# noinspection PyUnresolvedReferences
 import hou
 from husdui.common import error_print, debug_print
 import toolutils
@@ -22,7 +22,6 @@ import sys
 import hdefereval as hd
 import stateutils
 if os.environ["HFS"] != "":
-    # noinspection PyUnresolvedReferences
     from hutil.Qt import QtGui
     from hutil.Qt import QtCore
     from hutil.Qt import QtWidgets
@@ -30,27 +29,26 @@ if os.environ["HFS"] != "":
 else:
     os.environ['QT_API'] = 'pyside2'
     from PySide import QtUiTools
-    # noinspection PyUnresolvedReferences
     from qtpy import QtGui
-    # noinspection PyUnresolvedReferences
     from qtpy import QtCore
-    # noinspection PyUnresolvedReferences
     from qtpy import QtWidgets
 
+reload(searcher_settings)
+reload(searcher_data)
 reload(datahandler)
 reload(database)
-reload(gofunctions)
-reload(searcher_settings)
 reload(util)
-reload(cwidgets)
 # endregion
 
 # info
+__package__ = "Searcher"
+__version__ = "0.1b"
 __author__ = "instance.id"
 __copyright__ = "2020 All rights reserved. See LICENSE for more details."
 __status__ = "Prototype"
 
 kwargs = {}
+settings = {}
 isdebug = False
 mousePos = None
 cur_screen = QtWidgets.QDesktopWidget().screenNumber(
@@ -76,8 +74,8 @@ SETTINGS_ICON = hou.ui.createQtIcon(
 
 def keyconversion(key):
     for i in range(len(key)):
-        if key[i] in util.keyconversions:
-            key[i] = util.keyconversions[key[i]]
+        if key[i] in util.KEYCONVERSIONS:
+            key[i] = util.KEYCONVERSIONS[key[i]]
     return key
 
 
@@ -285,7 +283,7 @@ class Searcher(QtWidgets.QWidget):
             if result is True:
                 self.chindex = hou.hotkeys.changeIndex()
                 hk = hou.hotkeys.assignments(self.tmpsymbol)
-                self.processkey(hk)
+                self.processkey(hk, True)
         else:
             hk = hou.hotkeys.assignments(self.tmpsymbol)
             self.processkey(hk)
@@ -380,13 +378,13 @@ class Searcher(QtWidgets.QWidget):
 
     # region ------------------------------------------------------------- Hotkey Processing
 
-    def processkey(self, key):
+    def processkey(self, key, tmphk=False):
         hk = key
-        if self.tmpsymbol is None:
-            key = key.split(' ')
-            key = key[0].split('+')
-        else:
-            key = key[0].split('+')
+        if tmphk:
+            lastkey = (str(self.tmpsymbol) + " " + str(hk[0]))
+            self.handler.updatelasthk(lastkey)
+
+        key = key[0].split('+')
 
         mods = []
         skey = None
@@ -404,8 +402,15 @@ class Searcher(QtWidgets.QWidget):
         keypress = QtGui.QKeyEvent(
             QtGui.QKeyEvent.KeyPress, ikey, mod_flag, skey)
 
-        QtGui.QGuiApplication.sendEvent(self.parent(), keypress)
-        self.close()
+        hou.ui.mainQtWindow().setFocus()
+        try:
+            hd.executeDeferred(QtGui.QGuiApplication.sendEvent,
+                               hou.ui.mainQtWindow(), keypress)
+            # QtGui.QGuiApplication.sendEvent(self.parent(), keypress)
+            self.close()
+        except(AttributeError, TypeError) as e:
+            hou.ui.setStatusMessage(
+                ("Could not trigger hotkey event: " + str(e)), severity=hou.severityType.Error)
 
     def setKeysChanged(self, changed):
         if self.keys_changed and not changed:
@@ -528,6 +533,8 @@ def CreateSearcherPanel(kwargs, debug=None, searcher_window=None):
     except:
         pass
 
+    settings = searcher_data.loadsettings()
+
     searcher_window = Searcher(kwargs, debug)
     searcher_window.setWindowFlags(
         QtCore.Qt.Window |
@@ -536,7 +543,11 @@ def CreateSearcherPanel(kwargs, debug=None, searcher_window=None):
         QtCore.Qt.WindowSystemMenuHint
     )
 
-    searcher_window.resize(1000, 600)
+    searcher_window.resize(
+        int(settings['windowsize'][0]),
+        int(settings['windowsize'][1])
+    )
+
     searcher_window.setParent(hou.qt.mainWindow(), QtCore.Qt.Window)
 
     pos = center()

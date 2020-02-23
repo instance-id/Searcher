@@ -1,6 +1,8 @@
 from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
+import weakref
+
 from builtins import range
 from past.utils import old_div
 import platform
@@ -19,10 +21,12 @@ import hou
 import hdefereval
 from inspect import currentframe
 from .widgets import *
+from searcher import util
+from searcher import searcher_data
+
 
 import hou
 import os
-from .cwidgets import InputLineEdit
 
 the_scaled_icon_size = hou.ui.scaledSize(16)
 the_icon_size = 16
@@ -36,26 +40,18 @@ __status__ = "Prototype"
 scriptpath = os.path.dirname(os.path.realpath(__file__))
 
 
+def str2bool(v):
+    return str(v.lower()) in ("yes", "true", "t", "1")
+
+
 class SearcherSettings(QtWidgets.QFrame):
-    closeParent = QtCore.Signal(int)
-    cancel = QtCore.Signal()
-
-    @QtCore.Slot(str)
-    def setText(self, text):
-        self.capturekey.setText(text)
-
-    def text(self):
-        return self.capturekey.text()
+    """ Searcher Settings and Debug Menu"""
 
     def __init__(self, handler, tmphotkey, parent=None):
         super(SearcherSettings, self).__init__(parent=parent)
 
-        self._keysToIgnore = [
-            QtCore.Qt.Key.Key_Enter,
-            QtCore.Qt.Key.Key_Return,
-            QtCore.Qt.Key.Key_Escape,
-            QtCore.Qt.Key.Key_Tab
-        ]
+        # ------------------------------------------------- Component variables
+        self.settings = {}
         self.context_dict = {}
         self.command_dict = {}
         self.contexts = None
@@ -79,24 +75,31 @@ class SearcherSettings(QtWidgets.QFrame):
         self.setAutoFillBackground(True)
         self.setBackgroundRole(QtGui.QPalette.Window)
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
-
+        self.settings = searcher_data.loadsettings()
         # Load UI File
         loader = QtUiTools.QUiLoader()
-        loader.registerCustomWidget(InputLineEdit.InputLineEdit)
         self.ui = loader.load(scriptpath + '/searchersettings.ui')
 
         # Get UI Elements
+        self.inmemory = self.ui.findChild(
+            QtWidgets.QCheckBox,
+            "inmemory_chk"
+        ).setChecked(str2bool(self.settings['in_memory_db']))
+        self.windowsize = self.ui.findChild(
+            QtWidgets.QCheckBox,
+            "windowsize_chk"
+        ).setChecked(str2bool(self.settings['savewindowsize']))
         self.hkinput = self.ui.findChild(
             QtWidgets.QLineEdit,
             "hkinput_txt"
         )
-        self.addhkeys = self.ui.findChild(
-            QtWidgets.QPushButton,
-            "addhotkeys_btn"
+        self.dbpath = self.ui.findChild(
+            QtWidgets.QLineEdit,
+            "databasepath_txt"
         )
-        self.updatehkeys = self.ui.findChild(
+        self.test1 = self.ui.findChild(
             QtWidgets.QPushButton,
-            "updatehotkeys_btn"
+            "test1_btn"
         )
         self.testcontext = self.ui.findChild(
             QtWidgets.QPushButton,
@@ -115,16 +118,16 @@ class SearcherSettings(QtWidgets.QFrame):
             "discard_btn"
         )
 
-        # Create Connections
+        # ------------------------------------------------- Create Connections
         self.hkinput.setText(self.tmphotkey)
-        self.addhkeys.clicked.connect(self.addhotkeys_cb)
-        self.updatehkeys.clicked.connect(self.updatehotkeys_cb)
+        self.dbpath.setText(str(self.settings['database_path']))
+        self.test1.clicked.connect(self.test1_cb)
         self.testcontext.clicked.connect(self.testcontext_cb)
         self.cleardata.clicked.connect(self.cleardata_cb)
         self.savedata.clicked.connect(self.save_cb)
         self.discarddata.clicked.connect(self.discard_cb)
 
-        # Layout
+        # ------------------------------------------------- Layout
         mainlayout = QtWidgets.QVBoxLayout()
         mainlayout.addWidget(self.ui)
         self.setLayout(mainlayout)
@@ -135,12 +138,12 @@ class SearcherSettings(QtWidgets.QFrame):
     def defaulthk_cb(self):
         return
 
-    def addhotkeys_cb(self):
-        return
-
-    def updatehotkeys_cb(self):
-        self.datahandler.updatedata()
-        return
+    def test1_cb(self):
+        hkeys = []
+        for i in range(len(util.HOTKEYLIST)):
+            result = hou.hotkeys.findConflicts("h", util.HOTKEYLIST[i])
+            hkeys.append(result)
+        print (hkeys)
 
     def cleardata_cb(self):
         self.datahandler.cleardb()
@@ -234,4 +237,3 @@ def fromKeyDisplayString(keystr):
     outkeystr = outkeystr.replace(u"\u21e7", "Shift+", 1)
     outkeystr = outkeystr.replace(u"\u2303", "Ctrl+", 1)
     return outkeystr
-

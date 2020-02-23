@@ -2,7 +2,7 @@ import os
 import threading
 import hdefereval as hd
 
-from .. import database
+from . import database
 
 db = database.Databases()
 
@@ -44,6 +44,10 @@ class DataHandler(object):
 
     def updatetmphotkey(self, tmpkey):
         db.updatetmphk(tmpkey)
+        return
+
+    def updatelasthk(self, lastkey):
+        db.updatelastkey(lastkey)
         return
 
     @staticmethod

@@ -1,4 +1,6 @@
 # region Imports
+from __future__ import print_function
+
 from sys import platform
 from typing import Tuple
 import os
@@ -18,18 +20,31 @@ else:
 
 SequenceT = Tuple[str, ...]
 
-keyconversions = {
+# Directional conversion
+KEYCONVERSIONS = {
     "DownArrow":  "down",
     "UpArrow":    "up",
     "LeftArrow":  "left",
     "RightArrow": "right"
 }
 
+
+# List of possible hotkeys to use a temp keys when running commands
+HOTKEYLIST = [(u"Ctrl+Alt+Shift+F7"),
+              (u"Ctrl+Alt+Shift+F6"),
+              (u"Ctrl+Alt+Shift+F8"),
+              (u"Ctrl+Alt+Shift+F9"),
+              (u"Ctrl+Alt+Shift+F10")]
+
+
 # Used to detect if a keypress was just a modifier
 MODIFIER_KEYS = {
     QtCore.Qt.Key_Shift:    "s",
+    QtCore.Qt.Key_Shift:    "Shift",
     QtCore.Qt.Key_Control:  "C",
+    QtCore.Qt.Key_Control:  "Ctrl",
     QtCore.Qt.Key_Alt:      "M",
+    QtCore.Qt.Key_Alt:      "Alt",
     QtCore.Qt.Key_AltGr:    "M",
     QtCore.Qt.Key_Meta:     "Meta",
     QtCore.Qt.Key_Super_L:  "S",
@@ -41,7 +56,7 @@ MODIFIERS = {}
 # Used for constructing a bitmasked modifier
 REVERSE_MODIFIERS = {}
 
-# Special keys for Next
+# Special keys
 SPECIAL_KEYS = {
     QtCore.Qt.Key_Backspace:    "BACKSPACE",
     QtCore.Qt.Key_Delete:       "DELETE",
@@ -61,15 +76,22 @@ SPECIAL_KEYS = {
     QtCore.Qt.Key_Home:         "Page_Home",
 }
 
+# Platform conversions
 if platform == "linux" or platform == "linux2":
     tmp = {QtCore.Qt.ShiftModifier:     "s",
+           QtCore.Qt.ShiftModifier:     "Shift",
            QtCore.Qt.ControlModifier:   "C",
+           QtCore.Qt.ControlModifier:   "Ctrl",
            QtCore.Qt.AltModifier:       "M",
+           QtCore.Qt.AltModifier:       "Alt",
            QtCore.Qt.MetaModifier:      "M"}
     MODIFIERS.update(tmp)
-    tmp = {"s": QtCore.Qt.ShiftModifier,
-           "C": QtCore.Qt.ControlModifier,
-           "M": QtCore.Qt.MetaModifier}
+    tmp = {"s":     QtCore.Qt.ShiftModifier,
+           "Shift": QtCore.Qt.ShiftModifier,
+           "C":     QtCore.Qt.ControlModifier,
+           "Ctrl":  QtCore.Qt.ControlModifier,
+           "M":     QtCore.Qt.MetaModifier,
+           "Alt":   QtCore.Qt.AltModifier}
     REVERSE_MODIFIERS.update(tmp)
 elif platform == "darwin":
     tmp = {QtCore.Qt.ShiftModifier:     "s",
@@ -99,13 +121,13 @@ elif platform == "win32" or platform == "win64":
            "Alt":   QtCore.Qt.AltModifier}
     REVERSE_MODIFIERS.update(tmp)
 
-MODIFIERS = {
-    "Shift":        QtCore.Qt.ShiftModifier,
-    "Control":      QtCore.Qt.ControlModifier,
-    "Ctrl":         QtCore.Qt.ControlModifier,
-    "Meta":         QtCore.Qt.MetaModifier,
-    "Alt":          QtCore.Qt.AltModifier,
-}
+# MODIFIERS = {
+#     "Shift":        QtCore.Qt.ShiftModifier,
+#     "Control":      QtCore.Qt.ControlModifier,
+#     "Ctrl":         QtCore.Qt.ControlModifier,
+#     "Meta":         QtCore.Qt.MetaModifier,
+#     "Alt":          QtCore.Qt.AltModifier,
+# }
 
 KEY_DICT = {
     # Grey keys

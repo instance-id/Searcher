@@ -10,7 +10,7 @@ cur = db.cursor()
 
 
 class settings(Model):
-    id = IntegerField()
+    id = IntegerField(unique=True)
     indexvalue = IntegerField()
     defaulthotkey = TextField()
     searchdescription = IntegerField()
@@ -101,7 +101,7 @@ class Databases(object):
             return result
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(
-                ("Could not get Searcher changeindex:", e), severity=hou.severityType.Error)
+                ("Could not get Searcher changeindex: " + str(e)), severity=hou.severityType.Error)
 
     def getdefhotkey(self):
         try:
@@ -110,7 +110,7 @@ class Databases(object):
             return result
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(
-                ("Could not get Searcher default hotkey:", e), severity=hou.severityType.Error)
+                ("Could not get Searcher default hotkey: " + str(e)), severity=hou.severityType.Error)
 
     def gethcontexts(self):
         try:
@@ -119,7 +119,7 @@ class Databases(object):
             return result
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(
-                ("Could not get Searcher hcontext:", e), severity=hou.severityType.Error)
+                ("Could not get Searcher hcontext: " + str(e)), severity=hou.severityType.Error)
 
     def gethcontextod(self, inputlist):
         try:
@@ -133,7 +133,7 @@ class Databases(object):
             return uniqueresult
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(
-                ("Could not update Searcher context database:", e), severity=hou.severityType.Error)
+                ("Could not update Searcher context database: " + str(e)), severity=hou.severityType.Error)
 
     def ctxfilterresults(self, inputTerm):
         try:
@@ -148,7 +148,7 @@ class Databases(object):
             return uniqueresult
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(
-                ("Could not get Searcher context results:", e), severity=hou.severityType.Error)
+                ("Could not get Searcher context results: " + str(e)), severity=hou.severityType.Error)
 
     def searchresults(self, inputTerm):
         try:
@@ -164,7 +164,7 @@ class Databases(object):
             return uniqueresult
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(
-                ("Could not get Searcher results:", e), severity=hou.severityType.Error)
+                ("Could not get Searcher results: " + str(e)), severity=hou.severityType.Error)
     # endregion
 
     # region --------------------------------------------------- Updates
@@ -180,7 +180,7 @@ class Databases(object):
                     settings.id == 1).execute()
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(
-                ("Could not update Searcher context database:", e),
+                ("Could not update Searcher context database: " + str(e)),
                 severity=hou.severityType.Error
             )
 
@@ -193,7 +193,18 @@ class Databases(object):
             return
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(
-                ("Could not update Searcher temp hotkey:", e), severity=hou.severityType.Error)
+                ("Could not update Searcher temp hotkey: " + str(e)), severity=hou.severityType.Error)
+
+    def updatelastkey(self, lastkey):
+        try:
+            print ("Last Key:", lastkey)
+            result = settings.update(
+                lastused=lastkey).where(id == 1).execute()
+            print result
+            return
+        except(AttributeError, TypeError) as e:
+            hou.ui.setStatusMessage(
+                ("Could not update Searcher temp hotkey: " + str(e)), severity=hou.severityType.Error)
 
     def updatecontext(self, debug=None):
         try:
@@ -215,7 +226,7 @@ class Databases(object):
                       ((time2 - time1) * 1000.0))  # TODO Remove this timer
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(
-                ("Could not update Searcher context database:", e), severity=hou.severityType.Error)
+                ("Could not update Searcher context database: " + str(e)), severity=hou.severityType.Error)
 
         # with db.atomic():
         #     for idx in range(0, len(ctxdata), 100):
@@ -240,4 +251,4 @@ class Databases(object):
             return result
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(
-                ("Could not update Searcher temp hotkey:", e), severity=hou.severityType.Error)
+                ("Could not update Searcher temp hotkey: " + str(e)), severity=hou.severityType.Error)
