@@ -1,15 +1,27 @@
 # region Imports
 from __future__ import print_function
+from __future__ import absolute_import
+import weakref
+from searcher import util
 
 import json
 import os
 import hou
 
+hver = 0
 if os.environ["HFS"] != "":
-    from hutil.Qt import QtGui
-    from hutil.Qt import QtCore
-    from hutil.Qt import QtWidgets
-    from hutil.Qt import QtUiTools
+    ver = os.environ["HFS"]
+    hver = int(ver[ver.rindex('.')+1:])
+    if int(hver) >= 391:
+        from hutil.Qt import _QtUiTools
+        from hutil.Qt import QtGui
+        from hutil.Qt import QtCore
+        from hutil.Qt import QtWidgets
+    elif int(hver) < 391:
+        from hutil.Qt import QtUiTools
+        from hutil.Qt import QtGui
+        from hutil.Qt import QtCore
+        from hutil.Qt import QtWidgets
 else:
     os.environ['QT_API'] = 'pyside2'
     from PySide import QtUiTools
@@ -26,52 +38,51 @@ searcher_settings = os.path.join(
 settingsdata = QtCore.QSettings(searcher_settings, QtCore.QSettings.IniFormat)
 
 DEFAULT_SETTINGS = {
-    "in_memory_db": "False",
-    "database_path": defaultdbpath,
-    "savewindowsize": "False",
-    "windowsize": [1000, 600],
-    "debug": "False",
+    util.SETTINGS_KEYS[0]: "False",         # in_memory_db
+    util.SETTINGS_KEYS[1]: defaultdbpath,   # database_path
+    util.SETTINGS_KEYS[2]: "False",         # savewindowsize
+    util.SETTINGS_KEYS[3]: [1000, 600],     # windowsize
+    util.SETTINGS_KEYS[4]: "False",         # debugflag
 }
-
-SETTINGS_KEYS = [
-    'in_memory_db',
-    'database_path',
-    'savewindowsize',
-    'windowsize',
-    'debug'
-]
 
 
 def createdefaults():
     settingsdata.beginGroup('Searcher')
-    for i in range(len(SETTINGS_KEYS)):
+    for i in range(len(util.SETTINGS_KEYS)):
         settingsdata.setValue(
-            SETTINGS_KEYS[i], DEFAULT_SETTINGS[SETTINGS_KEYS[i]])
+            util.SETTINGS_KEYS[i], DEFAULT_SETTINGS[util.SETTINGS_KEYS[i]])
     settingsdata.endGroup()
 
 
 def savesettings(settingdict):
-    settingsdata.beginGroup('Searcher')
-    keys = settingdict.keys()
-    for i in range(len(keys)):
-        settingsdata.setValue(keys[i], settingdict[keys[i]])
+    try:
+        settingsdata.beginGroup('Searcher')
+        keys = settingdict.keys()
+        for i in range(len(keys)):
+            settingsdata.setValue(keys[i], settingdict[keys[i]])
 
-    settingsdata.endGroup()
+        settingsdata.endGroup()
+    except (AttributeError, TypeError) as e:
+        if hou.isUIAvailable():
+            hou.ui.setStatusMessage(
+                ("Could not save settings: " + str(e)), severity=hou.severityType.Warning)
+        else:
+            print("Could not save settings: " + str(e))
 
 
 def loadsettings():
     results = {}
-    settingsdata.beginGroup('Searcher')
-    for i in range(len(SETTINGS_KEYS)):
-        results.update(
-            {SETTINGS_KEYS[i]: settingsdata.value(SETTINGS_KEYS[i])})
+    try:
+        settingsdata.beginGroup('Searcher')
+        for i in range(len(util.SETTINGS_KEYS)):
+            results.update(
+                {util.SETTINGS_KEYS[i]: settingsdata.value(util.SETTINGS_KEYS[i])})
 
-    settingsdata.endGroup()
-    return results
-
-
-def databasepath():
-    settings = settingsdata
-    settings.beginGroup('Searcher')
-    database_path = settings.value('database_path')
-    return database_path
+        settingsdata.endGroup()
+        return results
+    except (AttributeError, TypeError) as e:
+        if hou.isUIAvailable():
+            hou.ui.setStatusMessage(
+                ("Could not load settings: " + str(e)), severity=hou.severityType.Warning)
+        else:
+            print("Could not load settings: " + str(e))

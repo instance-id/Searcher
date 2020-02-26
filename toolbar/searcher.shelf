@@ -9,7 +9,6 @@
     <script scriptType="python"><![CDATA[from searcher import searcher
 reload(searcher)
 
-isdebug = True
-searcher.CreateSearcherPanel(kwargs, isdebug)]]></script>
+searcher.CreateSearcherPanel(kwargs)]]></script>
   </tool>
 </shelfDocument>

@@ -1,15 +1,26 @@
 # region Imports
 from __future__ import print_function
+from __future__ import absolute_import
+import weakref
 
 from sys import platform
 from typing import Tuple
 import os
 import hou
+hver = 0
 if os.environ["HFS"] != "":
-    from hutil.Qt import QtGui
-    from hutil.Qt import QtCore
-    from hutil.Qt import QtWidgets
-    from hutil.Qt import QtUiTools
+    ver = os.environ["HFS"]
+    hver = int(ver[ver.rindex('.')+1:])
+    if int(hver) >= 391:
+        from hutil.Qt import _QtUiTools
+        from hutil.Qt import QtGui
+        from hutil.Qt import QtCore
+        from hutil.Qt import QtWidgets
+    elif int(hver) < 391:
+        from hutil.Qt import QtUiTools
+        from hutil.Qt import QtGui
+        from hutil.Qt import QtCore
+        from hutil.Qt import QtWidgets
 else:
     os.environ['QT_API'] = 'pyside2'
     from PySide import QtUiTools
@@ -20,12 +31,36 @@ else:
 
 SequenceT = Tuple[str, ...]
 
+
+def bc(v):
+    return str(v).lower() in ("yes", "true", "t", "1")
+
+
+SETTINGS_KEYS = [
+    'in_memory_db',
+    'database_path',
+    'savewindowsize',
+    'windowsize',
+    'debugflag'
+]
+
+SETTINGS_TYPES = {
+    SETTINGS_KEYS[0]: 'bool',  # in_memory_db
+    SETTINGS_KEYS[1]: 'text',  # database_path
+    SETTINGS_KEYS[2]: 'bool',  # savewindowsize
+    SETTINGS_KEYS[3]: 'int',   # windowsize
+    SETTINGS_KEYS[4]: 'bool',  # debugflag
+}
+
+
 # Directional conversion
 KEYCONVERSIONS = {
     "DownArrow":  "down",
     "UpArrow":    "up",
     "LeftArrow":  "left",
-    "RightArrow": "right"
+    "RightArrow": "right",
+    "/":          "Slash",
+    # "\\":         "Backslash"
 }
 
 
@@ -215,6 +250,7 @@ KEY_DICT = {
     "Minus":        QtCore.Qt.Key_Minus,
     "Period":       QtCore.Qt.Key_Period,
     "Slash":        QtCore.Qt.Key_Slash,
+    "/":            QtCore.Qt.Key_Slash,
     "0":            QtCore.Qt.Key_0,
     "1":            QtCore.Qt.Key_1,
     "2":            QtCore.Qt.Key_2,
@@ -259,6 +295,7 @@ KEY_DICT = {
     "Y":            QtCore.Qt.Key_Y,
     "Z":            QtCore.Qt.Key_Z,
     "BracketLeft":  QtCore.Qt.Key_BracketLeft,
+    # "\\":           QtCore.Qt.Key_Backslash,
     "Backslash":    QtCore.Qt.Key_Backslash,
     "BracketRight": QtCore.Qt.Key_BracketRight,
     "AsciiCircum":  QtCore.Qt.Key_AsciiCircum,
@@ -313,11 +350,44 @@ PANETYPES = {
     hou.paneTabType.TreeView: ["tree"],
 }
 
+ICON_SIZE = hou.ui.scaledSize(32)
+EDIT_ICON_SIZE = hou.ui.scaledSize(28)
+
+SETTINGS_ICON = hou.ui.createQtIcon(
+    'BUTTONS_gear',
+    EDIT_ICON_SIZE,
+    EDIT_ICON_SIZE
+)
+
+INFO_ICON = hou.ui.createQtIcon(
+    'BUTTONS_info',
+    EDIT_ICON_SIZE,
+    EDIT_ICON_SIZE
+)
+
+HELP_ICON = hou.ui.createQtIcon(
+    'BUTTONS_help',
+    EDIT_ICON_SIZE,
+    EDIT_ICON_SIZE
+)
+
+SEARCH_ICON = hou.ui.createQtIcon(
+    'BUTTONS_search',
+    EDIT_ICON_SIZE,
+    EDIT_ICON_SIZE
+)
+
+
 MENUSTYLE = """QMenu {background-color: rgb(64,64,64); menu-scrollable: 1; margin: 0px;}
                    QMenu:item {background-color: rgb(46,46,46);  padding: 5px 25px; margin: 1px; height:16px;}
                    QMenu:item:selected {background-color: rgb(64,64,64);}
                    QMenu:separator {background-color: rgb(0,0,0); height: 1px; margin: 5px;}
                    QMenu:icon {padding: 5px;}
                    QMenu:icon:checked {flat: true;}"""
+
+TOOLTIP = """QToolTip {background-color: rgb(64,64,64); menu-scrollable: 1; margin: 0px;}
+                   QToolTip:item {background-color: rgb(46,46,46);  padding: 5px 25px; margin: 1px; height:16px;}
+                   QToolTip:icon {padding: 5px;}
+                   QToolTip:icon:checked {flat: true;}"""
 
 CTXSHOTCUTS = [":v", ":c", ":g"]

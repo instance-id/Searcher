@@ -9,24 +9,34 @@ import platform
 import os
 
 import sys
-
-from hutil import py23
-import hutil.Qt
-from hutil.Qt import QtWidgets
-from hutil.Qt import QtCore
-from hutil.Qt import QtGui
-from hutil.Qt import QtUiTools
-
 import hou
 import hdefereval
+from hutil import py23
+hver = 0
+if os.environ["HFS"] != "":
+    ver = os.environ["HFS"]
+    hver = int(ver[ver.rindex('.')+1:])
+    if int(hver) >= 391:
+        from hutil.Qt import _QtUiTools
+        from hutil.Qt import QtGui
+        from hutil.Qt import QtCore
+        from hutil.Qt import QtWidgets
+    elif int(hver) < 391:
+        from hutil.Qt import QtUiTools
+        from hutil.Qt import QtGui
+        from hutil.Qt import QtCore
+        from hutil.Qt import QtWidgets
+else:
+    os.environ['QT_API'] = 'pyside2'
+    from PySide import QtUiTools
+    from qtpy import QtGui
+    from qtpy import QtCore
+    from qtpy import QtWidgets
+
 from inspect import currentframe
 from .widgets import *
 from searcher import util
 from searcher import searcher_data
-
-
-import hou
-import os
 
 the_scaled_icon_size = hou.ui.scaledSize(16)
 the_icon_size = 16
@@ -40,11 +50,11 @@ __status__ = "Prototype"
 scriptpath = os.path.dirname(os.path.realpath(__file__))
 
 
-def str2bool(v):
-    return str(v.lower()) in ("yes", "true", "t", "1")
+def bc(v):
+    return str(v).lower() in ("yes", "true", "t", "1")
 
 
-class SearcherSettings(QtWidgets.QFrame):
+class SearcherSettings(QtWidgets.QWidget):
     """ Searcher Settings and Debug Menu"""
 
     def __init__(self, handler, tmphotkey, parent=None):
@@ -66,7 +76,6 @@ class SearcherSettings(QtWidgets.QFrame):
         self.KeySequence = None
         self.hkholder = ""
         self.hkinput = tmphotkey
-
         self.datahandler = handler
         self.tmphotkey = tmphotkey
 
@@ -76,24 +85,44 @@ class SearcherSettings(QtWidgets.QFrame):
         self.setBackgroundRole(QtGui.QPalette.Window)
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
         self.settings = searcher_data.loadsettings()
+        self.isdebug = bc(self.settings[util.SETTINGS_KEYS[4]])
+        
         # Load UI File
-        loader = QtUiTools.QUiLoader()
+        loader = None
+        if int(hver) >= 391:
+            loader = _QtUiTools.QUiLoader()
+        else:
+            loader = QtUiTools.QUiLoader()
         self.ui = loader.load(scriptpath + '/searchersettings.ui')
 
         # Get UI Elements
-        self.inmemory = self.ui.findChild(
+
+        tooltip = hou.qt.ToolTip()
+        tooltip.setTitle("Tooltip Example - SOP Torus Help")
+        tooltip.setText("This tooltip links to the SOP Torus help page.")
+        tooltip.setHelpUrl("/nodes/sop/torus")
+
+        self.hotkey_icon = self.ui.findChild(
+            QtWidgets.QToolButton,
+            "hotkey_icon"
+        )
+        self.debugflag = self.ui.findChild(
+            QtWidgets.QCheckBox,
+            "debugflag_chk"
+        )
+        self.in_memory_db = self.ui.findChild(
             QtWidgets.QCheckBox,
             "inmemory_chk"
-        ).setChecked(str2bool(self.settings['in_memory_db']))
-        self.windowsize = self.ui.findChild(
+        )
+        self.savewindowsize = self.ui.findChild(
             QtWidgets.QCheckBox,
             "windowsize_chk"
-        ).setChecked(str2bool(self.settings['savewindowsize']))
+        )
         self.hkinput = self.ui.findChild(
             QtWidgets.QLineEdit,
             "hkinput_txt"
         )
-        self.dbpath = self.ui.findChild(
+        self.database_path = self.ui.findChild(
             QtWidgets.QLineEdit,
             "databasepath_txt"
         )
@@ -118,23 +147,60 @@ class SearcherSettings(QtWidgets.QFrame):
             "discard_btn"
         )
 
+        mainlayout = QtWidgets.QVBoxLayout()
+        mainlayout.addWidget(self.ui)
+        mainlayout.addWidget(hou.qt.createHelpButton("/ref/panes/lightmixer"))
+
         # ------------------------------------------------- Create Connections
+        # self.in_memory_db.stateChanged.connect(self.toggledebug)
+        self.hotkey_icon.clicked.connect(self.hotkeyicon_cb)
+        self.hotkey_icon.setIcon(util.INFO_ICON)
+        info_button_size = hou.ui.scaledSize(16)
+        self.hotkey_icon.setProperty("flat", True)
+        self.hotkey_icon.setIcon(util.INFO_ICON)
+        self.hotkey_icon.setIconSize(QtCore.QSize(
+            info_button_size,
+            info_button_size
+        ))
+
+        tooltip.setTargetWidget(self.hotkey_icon)
+
         self.hkinput.setText(self.tmphotkey)
-        self.dbpath.setText(str(self.settings['database_path']))
+        self.hkinput.setStatusTip("Status Tip?")
+        self.hkinput.setWhatsThis("Whats this?")
+        # self.hkinput.setToolTip(
+        #     "If left to the default value of (Ctrl+Alt+Shift+F7), in the event that Searcher detects a conflict it will automatically attempt to try different key combinations.")
+        self.hkinput.setStyleSheet(util.TOOLTIP)
+        self.database_path.setText(str(self.settings['database_path']))
         self.test1.clicked.connect(self.test1_cb)
         self.testcontext.clicked.connect(self.testcontext_cb)
         self.cleardata.clicked.connect(self.cleardata_cb)
         self.savedata.clicked.connect(self.save_cb)
         self.discarddata.clicked.connect(self.discard_cb)
 
-        # ------------------------------------------------- Layout
-        mainlayout = QtWidgets.QVBoxLayout()
-        mainlayout.addWidget(self.ui)
+        # ------------------------------------------------- Apply Layout
         self.setLayout(mainlayout)
         self.installEventFilter(self)
-        self.hkinput.installEventFilter(self)
 
+        self.debugflag.setChecked(bc(self.settings[util.SETTINGS_KEYS[4]]))
+        self.debugflag.setVisible(bc(self.settings[util.SETTINGS_KEYS[4]]))
+        self.in_memory_db.setChecked(bc(self.settings[util.SETTINGS_KEYS[0]]))
+        self.savewindowsize.setChecked(
+            bc(self.settings[util.SETTINGS_KEYS[2]]))
+
+        # ------------------------------------------------- Add EventFilters
+        self.hkinput.installEventFilter(self)
+        self.debugflag.installEventFilter(self)
     # ----------------------------------------------------------------------------------- Callbacks
+
+    def hotkeyicon_cb(self):
+        self.settings['in_memory_db'] = self.in_memory_db.isChecked()
+        print(self.settings['in_memory_db'])
+
+    def toggledebug(self):
+        self.settings['in_memory_db'] = self.in_memory_db.isChecked()
+        print(self.settings['in_memory_db'])
+
     def defaulthk_cb(self):
         return
 
@@ -155,8 +221,22 @@ class SearcherSettings(QtWidgets.QFrame):
             self.hkinput.setFocus()
             self.canedit = True
         else:
-            self.tmphotkey = self.hkinput.text()
-            self.datahandler.updatetmphotkey(self.tmphotkey)
+            if self.hkinput.text() != self.tmphotkey:
+                self.tmphotkey = self.hkinput.text()
+                self.datahandler.updatetmphotkey(self.tmphotkey)
+
+            for i in range(len(util.SETTINGS_KEYS)):
+                if util.SETTINGS_TYPES[util.SETTINGS_KEYS[i]] == "bool":
+                    self.settings[util.SETTINGS_KEYS[i]] = getattr(
+                        self, util.SETTINGS_KEYS[i]).isChecked()
+                elif util.SETTINGS_TYPES[util.SETTINGS_KEYS[i]] == "text":
+                    self.settings[util.SETTINGS_KEYS[i]] = getattr(
+                        self, util.SETTINGS_KEYS[i]).text()
+
+            if self.isdebug:
+                print(self.settings)
+
+            searcher_data.savesettings(self.settings)
             self.close()
 
     def discard_cb(self):
@@ -165,8 +245,7 @@ class SearcherSettings(QtWidgets.QFrame):
         self.close()
 
     def testcontext_cb(self):
-
-        print("Hotkey Value after revert: ", hk)
+        return
 
     # ----------------------------------------------------------------------------------- Actions
     def savecheck(self):
@@ -179,8 +258,8 @@ class SearcherSettings(QtWidgets.QFrame):
         elif buttonindex == 1:
             self.hkinput.setText(self.hkholder)
             self.hkholder = ""
-    # ----------------------------------------------------------------------------------- Events
 
+    # ----------------------------------------------------------------------------------- Events
     def eventFilter(self, obj, event):
         if event.type() == QtCore.QEvent.MouseButtonDblClick:
             self.hkholder = self.hkinput.text()
@@ -191,6 +270,10 @@ class SearcherSettings(QtWidgets.QFrame):
             if self.canedit is False and self.hkholder is not "":
                 self.savecheck()
         if event.type() == QtCore.QEvent.KeyPress:
+            if event.key() == QtCore.Qt.Key_D:
+                if not self.debugflag.isVisible():
+                    self.debugflag.setVisible(True)
+
             if event.key() == QtCore.Qt.Key_Escape:
                 if self.canedit is False:
                     self.close()
@@ -221,19 +304,3 @@ class SearcherSettings(QtWidgets.QFrame):
                     if self.hkinput.text() != "":
                         self.canedit = False
         return False
-
-
-# for debugging:
-def get_linenumber():
-    cf = currentframe()
-    return "{}-{}".format(cf.f_back.f_code.co_name, cf.f_back.f_lineno)
-
-
-def fromKeyDisplayString(keystr):
-    if platform.system() != "Darwin":
-        return keystr
-    outkeystr = py23.unicodeType(keystr).replace(u"\u2318", "Cmd+", 1)
-    outkeystr = outkeystr.replace(u"\u2325", "Alt+", 1)
-    outkeystr = outkeystr.replace(u"\u21e7", "Shift+", 1)
-    outkeystr = outkeystr.replace(u"\u2303", "Ctrl+", 1)
-    return outkeystr
