@@ -21,12 +21,13 @@ if os.environ["HFS"] != "":
         from hutil.Qt import QtGui
         from hutil.Qt import QtCore
         from hutil.Qt import QtWidgets
-else:
-    os.environ['QT_API'] = 'pyside2'
-    from PySide import QtUiTools
-    from qtpy import QtGui
-    from qtpy import QtCore
-    from qtpy import QtWidgets
+# else:
+#     os.environ['QT_API'] = 'pyside2'
+#     from PySide import QtUiTools
+#     from qtpy import QtGui
+#     from qtpy import QtCore
+#     from qtpy import QtWidgets
+
 # endregion
 
 SequenceT = Tuple[str, ...]
@@ -59,31 +60,25 @@ KEYCONVERSIONS = {
     "UpArrow":    "up",
     "LeftArrow":  "left",
     "RightArrow": "right",
-    "/":          "Slash",
-    # "\\":         "Backslash"
 }
 
 
 # List of possible hotkeys to use a temp keys when running commands
-HOTKEYLIST = [(u"Ctrl+Alt+Shift+F7"),
-              (u"Ctrl+Alt+Shift+F6"),
-              (u"Ctrl+Alt+Shift+F8"),
-              (u"Ctrl+Alt+Shift+F9"),
-              (u"Ctrl+Alt+Shift+F10")]
+HOTKEYLIST = [
+    (u"Ctrl+Alt+Shift+F7"),
+    (u"Ctrl+Alt+Shift+F6"),
+    (u"Ctrl+Alt+Shift+F8"),
+    (u"Ctrl+Alt+Shift+F9"),
+    (u"Ctrl+Alt+Shift+F10")
+]
 
 
 # Used to detect if a keypress was just a modifier
 MODIFIER_KEYS = {
-    QtCore.Qt.Key_Shift:    "s",
     QtCore.Qt.Key_Shift:    "Shift",
-    QtCore.Qt.Key_Control:  "C",
     QtCore.Qt.Key_Control:  "Ctrl",
-    QtCore.Qt.Key_Alt:      "M",
     QtCore.Qt.Key_Alt:      "Alt",
-    QtCore.Qt.Key_AltGr:    "M",
     QtCore.Qt.Key_Meta:     "Meta",
-    QtCore.Qt.Key_Super_L:  "S",
-    QtCore.Qt.Key_Super_R:  "S"
 }
 
 # Used for bitmasking to determine modifiers
@@ -111,61 +106,63 @@ SPECIAL_KEYS = {
     QtCore.Qt.Key_Home:         "Page_Home",
 }
 
-# Platform conversions
-if platform == "linux" or platform == "linux2":
-    tmp = {QtCore.Qt.ShiftModifier:     "s",
-           QtCore.Qt.ShiftModifier:     "Shift",
-           QtCore.Qt.ControlModifier:   "C",
-           QtCore.Qt.ControlModifier:   "Ctrl",
-           QtCore.Qt.AltModifier:       "M",
-           QtCore.Qt.AltModifier:       "Alt",
-           QtCore.Qt.MetaModifier:      "M"}
-    MODIFIERS.update(tmp)
-    tmp = {"s":     QtCore.Qt.ShiftModifier,
-           "Shift": QtCore.Qt.ShiftModifier,
-           "C":     QtCore.Qt.ControlModifier,
-           "Ctrl":  QtCore.Qt.ControlModifier,
-           "M":     QtCore.Qt.MetaModifier,
-           "Alt":   QtCore.Qt.AltModifier}
-    REVERSE_MODIFIERS.update(tmp)
-elif platform == "darwin":
-    tmp = {QtCore.Qt.ShiftModifier:     "s",
-           QtCore.Qt.ControlModifier:   "S",
-           QtCore.Qt.AltModifier:       "M",
-           QtCore.Qt.MetaModifier:      "C"}
-    MODIFIERS.update(tmp)
-    tmp = {"s": QtCore.Qt.ShiftModifier,
-           "S": QtCore.Qt.ControlModifier,
-           "M": QtCore.Qt.AltModifier,
-           "C": QtCore.Qt.MetaModifier}
-    REVERSE_MODIFIERS.update(tmp)
-elif platform == "win32" or platform == "win64":
-    tmp = {QtCore.Qt.ShiftModifier:     "s",
-           QtCore.Qt.ShiftModifier:     "Shift",
-           QtCore.Qt.ControlModifier:   "C",
-           QtCore.Qt.ControlModifier:   "Ctrl",
-           QtCore.Qt.AltModifier:       "M",
-           QtCore.Qt.AltModifier:       "Alt",
-           QtCore.Qt.MetaModifier:      "M"}
-    MODIFIERS.update(tmp)
-    tmp = {"s":     QtCore.Qt.ShiftModifier,
-           "Shift": QtCore.Qt.ShiftModifier,
-           "C":     QtCore.Qt.ControlModifier,
-           "Ctrl":  QtCore.Qt.ControlModifier,
-           "M":     QtCore.Qt.MetaModifier,
-           "Alt":   QtCore.Qt.AltModifier}
-    REVERSE_MODIFIERS.update(tmp)
+# region -------------------------------------------- Platform conversions
+# # Platform conversions
+# if platform == "linux" or platform == "linux2":
+#     tmp = {
+#         QtCore.Qt.ShiftModifier:     "Shift",
+#         QtCore.Qt.ControlModifier:   "Ctrl",
+#         QtCore.Qt.AltModifier:       "Alt",
+#         QtCore.Qt.MetaModifier:      "M"
+#     }
+#     MODIFIERS.update(tmp)
+#     tmp = {
+#         "Shift": QtCore.Qt.ShiftModifier,
+#         "Ctrl":  QtCore.Qt.ControlModifier,
+#         "Alt":   QtCore.Qt.AltModifier
+#     }
+#     REVERSE_MODIFIERS.update(tmp)
+# elif platform == "darwin":
+#     tmp = {
+#         QtCore.Qt.ShiftModifier:     "s",
+#         QtCore.Qt.ControlModifier:   "S",
+#         QtCore.Qt.AltModifier:       "M",
+#         QtCore.Qt.MetaModifier:      "C"
+#     }
+#     MODIFIERS.update(tmp)
+#     tmp = {
+#         "s": QtCore.Qt.ShiftModifier,
+#         "S": QtCore.Qt.ControlModifier,
+#         "M": QtCore.Qt.AltModifier,
+#         "C": QtCore.Qt.MetaModifier
+#     }
+#     REVERSE_MODIFIERS.update(tmp)
+# elif platform == "win32" or platform == "win64":
+#     tmp = {
+#         QtCore.Qt.ShiftModifier:     "Shift",
+#         QtCore.Qt.ControlModifier:   "Ctrl",
+#         QtCore.Qt.AltModifier:       "Alt",
+#         QtCore.Qt.MetaModifier:      "M"
+#     }
+#     MODIFIERS.update(tmp)
+#     tmp = {
+#         "Shift": QtCore.Qt.ShiftModifier,
+#         "Ctrl":  QtCore.Qt.ControlModifier,
+#         "Alt":   QtCore.Qt.AltModifier
+#     }
+#     REVERSE_MODIFIERS.update(tmp)
+# endregion
 
-# MODIFIERS = {
-#     "Shift":        QtCore.Qt.ShiftModifier,
-#     "Control":      QtCore.Qt.ControlModifier,
-#     "Ctrl":         QtCore.Qt.ControlModifier,
-#     "Meta":         QtCore.Qt.MetaModifier,
-#     "Alt":          QtCore.Qt.AltModifier,
-# }
+MODIFIERS = {
+    "Shift":        QtCore.Qt.ShiftModifier,
+    "Control":      QtCore.Qt.ControlModifier,
+    "Ctrl":         QtCore.Qt.ControlModifier,
+    "Meta":         QtCore.Qt.MetaModifier,
+    "Alt":          QtCore.Qt.AltModifier,
+}
 
 KEY_DICT = {
-    # Grey keys
+    # ------------------------------------- Grey keys
     "Escape":       QtCore.Qt.Key_Escape,
     "Tab":          QtCore.Qt.Key_Tab,
     "Backtab":      QtCore.Qt.Key_Backtab,
@@ -233,22 +230,36 @@ KEY_DICT = {
     "Menu":         QtCore.Qt.Key_Menu,
     "Hyper_L":      QtCore.Qt.Key_Hyper_L,
     "Hyper_R":      QtCore.Qt.Key_Hyper_R,
-    # Regular keys
+    # ------------------------------------- Regular keys
     "Space":        QtCore.Qt.Key_Space,
     "Exclam":       QtCore.Qt.Key_Exclam,
+    "!":            QtCore.Qt.Key_Exclam,
     "QuoteDbl":     QtCore.Qt.Key_QuoteDbl,
+    "\"":           QtCore.Qt.Key_QuoteDbl,
     "NumberSign":   QtCore.Qt.Key_NumberSign,
+    "#":            QtCore.Qt.Key_NumberSign,
     "Dollar":       QtCore.Qt.Key_Dollar,
+    "$":            QtCore.Qt.Key_Dollar,
     "Percent":      QtCore.Qt.Key_Percent,
+    "%":            QtCore.Qt.Key_Percent,
     "Ampersand":    QtCore.Qt.Key_Ampersand,
+    "&":            QtCore.Qt.Key_Ampersand,
     "Apostrophe":   QtCore.Qt.Key_Apostrophe,
+    "\'":           QtCore.Qt.Key_Apostrophe,
     "ParenLeft":    QtCore.Qt.Key_ParenLeft,
+    "(":            QtCore.Qt.Key_ParenLeft,
     "ParenRight":   QtCore.Qt.Key_ParenRight,
+    ")":            QtCore.Qt.Key_ParenRight,
     "Asterisk":     QtCore.Qt.Key_Asterisk,
+    "*":            QtCore.Qt.Key_Asterisk,
     "Plus":         QtCore.Qt.Key_Plus,
+    "+":            QtCore.Qt.Key_Plus,
     "Comma":        QtCore.Qt.Key_Comma,
+    ",":            QtCore.Qt.Key_Comma,
     "Minus":        QtCore.Qt.Key_Minus,
+    "-":            QtCore.Qt.Key_Minus,
     "Period":       QtCore.Qt.Key_Period,
+    ".":            QtCore.Qt.Key_Period,
     "Slash":        QtCore.Qt.Key_Slash,
     "/":            QtCore.Qt.Key_Slash,
     "0":            QtCore.Qt.Key_0,
@@ -262,11 +273,17 @@ KEY_DICT = {
     "8":            QtCore.Qt.Key_8,
     "9":            QtCore.Qt.Key_9,
     "Colon":        QtCore.Qt.Key_Colon,
+    ":":            QtCore.Qt.Key_Colon,
     "Semicolon":    QtCore.Qt.Key_Semicolon,
+    ";":            QtCore.Qt.Key_Semicolon,
     "Less":         QtCore.Qt.Key_Less,
+    "<":            QtCore.Qt.Key_Less,
     "Equal":        QtCore.Qt.Key_Equal,
+    "=":            QtCore.Qt.Key_Equal,
     "Greater":      QtCore.Qt.Key_Greater,
+    ">":            QtCore.Qt.Key_Greater,
     "Question":     QtCore.Qt.Key_Question,
+    "?":            QtCore.Qt.Key_Question,
     "At":           QtCore.Qt.Key_At,
     "A":            QtCore.Qt.Key_A,
     "B":            QtCore.Qt.Key_B,
@@ -295,17 +312,24 @@ KEY_DICT = {
     "Y":            QtCore.Qt.Key_Y,
     "Z":            QtCore.Qt.Key_Z,
     "BracketLeft":  QtCore.Qt.Key_BracketLeft,
-    # "\\":           QtCore.Qt.Key_Backslash,
-    "Backslash":    QtCore.Qt.Key_Backslash,
+    "[":            QtCore.Qt.Key_BracketLeft,
     "BracketRight": QtCore.Qt.Key_BracketRight,
-    "AsciiCircum":  QtCore.Qt.Key_AsciiCircum,
-    "_":            QtCore.Qt.Key_Underscore,
+    "]":            QtCore.Qt.Key_BracketRight,
+    "Backslash":    QtCore.Qt.Key_Backslash,
+    "\\":           QtCore.Qt.Key_Backslash,
     "Underscore":   QtCore.Qt.Key_Underscore,
+    "_":            QtCore.Qt.Key_Underscore,
     "QuoteLeft":    QtCore.Qt.Key_QuoteLeft,
     "BraceLeft":    QtCore.Qt.Key_BraceLeft,
-    "Bar":          QtCore.Qt.Key_Bar,
+    "{":            QtCore.Qt.Key_BraceLeft,
     "BraceRight":   QtCore.Qt.Key_BraceRight,
+    "}":            QtCore.Qt.Key_BraceRight,
+    "Bar":          QtCore.Qt.Key_Bar,
+    "|":            QtCore.Qt.Key_Bar,
+    "AsciiCircum":  QtCore.Qt.Key_AsciiCircum,
+    "^":            QtCore.Qt.Key_AsciiCircum,
     "AsciiTilde":   QtCore.Qt.Key_AsciiTilde,
+    "~":            QtCore.Qt.Key_AsciiTilde,
 }
 
 CONTEXTTYPE = {

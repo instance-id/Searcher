@@ -16,25 +16,22 @@ hver = 0
 if os.environ["HFS"] != "":
     ver = os.environ["HFS"]
     hver = int(ver[ver.rindex('.')+1:])
+    from hutil.Qt import QtGui
+    from hutil.Qt import QtCore
+    from hutil.Qt import QtWidgets
     if int(hver) >= 391:
         from hutil.Qt import _QtUiTools
-        from hutil.Qt import QtGui
-        from hutil.Qt import QtCore
-        from hutil.Qt import QtWidgets
+
     elif int(hver) < 391:
         from hutil.Qt import QtUiTools
-        from hutil.Qt import QtGui
-        from hutil.Qt import QtCore
-        from hutil.Qt import QtWidgets
-else:
-    os.environ['QT_API'] = 'pyside2'
-    from PySide import QtUiTools
-    from qtpy import QtGui
-    from qtpy import QtCore
-    from qtpy import QtWidgets
+# else:
+#     os.environ['QT_API'] = 'pyside2'
+#     from PySide import QtUiTools
+#     from qtpy import QtGui
+#     from qtpy import QtCore
+#     from qtpy import QtWidgets
 
 from inspect import currentframe
-from .widgets import *
 from searcher import util
 from searcher import searcher_data
 

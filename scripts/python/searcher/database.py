@@ -186,10 +186,8 @@ class Databases(object):
 
     def updatetmphk(self, tmpkey):
         try:
-            print tmpkey
             result = settings.update(
                 defaulthotkey=tmpkey).where(id == 1).execute()
-            print result
             return
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(
@@ -197,10 +195,8 @@ class Databases(object):
 
     def updatelastkey(self, lastkey):
         try:
-            print ("Last Key:", lastkey)
             result = settings.update(
                 lastused=lastkey).where(id == 1).execute()
-            print result
             return
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(
@@ -234,21 +230,20 @@ class Databases(object):
         # with db.atomic():
         #     for idx in range(0, len(hkeydata), 100):
         #         hotkeys.replace_many(hkeydata[idx:idx+100]).execute()
+
     # endregion
 
     def cleardatabase(self):
         try:
             delhk = "DELETE FROM hotkeys"
-            # delhknum = "DELETE FROM sqlite_sequence WHERE name='hotkeys'"
             delctx = "DELETE FROM hcontext"
-            # delctxnum = "DELETE FROM sqlite_sequence WHERE name='hcontext'"
             cur.execute(delhk)
-            # cur.execute(delhknum)
             cur.execute(delctx)
-            # cur.execute(delctxnum)
             result = cur.fetchall()
 
             return result
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(
-                ("Could not update Searcher temp hotkey: " + str(e)), severity=hou.severityType.Error)
+                ("Could not update Searcher temp hotkey: " + str(e)), 
+                severity=hou.severityType.Error
+            )
