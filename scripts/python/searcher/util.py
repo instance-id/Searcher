@@ -1,4 +1,4 @@
-# region Imports
+# region ----------------------------------------------------------------- Imports
 from __future__ import print_function
 from __future__ import absolute_import
 import weakref
@@ -33,27 +33,34 @@ if os.environ["HFS"] != "":
 SequenceT = Tuple[str, ...]
 
 
+# region ----------------------------------------------------------------- Helper Functions
 def bc(v):
     return str(v).lower() in ("yes", "true", "t", "1")
+# endregion
 
 
+# region ----------------------------------------------------------------- Application Settings
 SETTINGS_KEYS = [
     'in_memory_db',
     'database_path',
     'savewindowsize',
     'windowsize',
-    'debugflag'
+    'debugflag',
+    'pinwindow',
 ]
 
+# Include parameter type if it is to be processed by settings menu, else mark NA
 SETTINGS_TYPES = {
     SETTINGS_KEYS[0]: 'bool',  # in_memory_db
     SETTINGS_KEYS[1]: 'text',  # database_path
     SETTINGS_KEYS[2]: 'bool',  # savewindowsize
     SETTINGS_KEYS[3]: 'int',   # windowsize
     SETTINGS_KEYS[4]: 'bool',  # debugflag
+    SETTINGS_KEYS[5]: 'NA',    # pinwindow
 }
+# endregion
 
-
+# region ----------------------------------------------------------------- Key Translations
 # Directional conversion
 KEYCONVERSIONS = {
     "DownArrow":  "down",
@@ -75,10 +82,10 @@ HOTKEYLIST = [
 
 # Used to detect if a keypress was just a modifier
 MODIFIER_KEYS = {
-    QtCore.Qt.Key_Shift:    "Shift",
-    QtCore.Qt.Key_Control:  "Ctrl",
     QtCore.Qt.Key_Alt:      "Alt",
     QtCore.Qt.Key_Meta:     "Meta",
+    QtCore.Qt.Key_Shift:    "Shift",
+    QtCore.Qt.Key_Control:  "Ctrl",
 }
 
 # Used for bitmasking to determine modifiers
@@ -373,7 +380,9 @@ PANETYPES = {
     hou.paneTabType.Textport: ["h.pane.textport"],
     hou.paneTabType.TreeView: ["tree"],
 }
+# endregion
 
+# region ----------------------------------------------------------------- UI Constants
 ICON_SIZE = hou.ui.scaledSize(32)
 EDIT_ICON_SIZE = hou.ui.scaledSize(28)
 
@@ -391,6 +400,18 @@ INFO_ICON = hou.ui.createQtIcon(
 
 HELP_ICON = hou.ui.createQtIcon(
     'BUTTONS_help',
+    EDIT_ICON_SIZE,
+    EDIT_ICON_SIZE
+)
+
+PIN_IN_ICON = hou.ui.createQtIcon(
+    'BUTTONS_pin_in_mono',
+    EDIT_ICON_SIZE,
+    EDIT_ICON_SIZE
+)
+
+PIN_OUT_ICON = hou.ui.createQtIcon(
+    'BUTTONS_pin_out_mono',
     EDIT_ICON_SIZE,
     EDIT_ICON_SIZE
 )
@@ -415,3 +436,4 @@ TOOLTIP = """QToolTip {background-color: rgb(64,64,64); menu-scrollable: 1; marg
                    QToolTip:icon:checked {flat: true;}"""
 
 CTXSHOTCUTS = [":v", ":c", ":g"]
+# endregion

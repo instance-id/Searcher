@@ -12,3 +12,12 @@
         #         if t.activeInterface() == pytype:
         #             t.pane().setIsSplitMaximized(False)
         #             ret.append(t)
+
+
+# else:
+#     os.environ['QT_API'] = 'pyside2'
+#     from PySide import QtUiTools
+#     from qtpy import QtGui
+#     from qtpy import QtCore
+#     from qtpy import QtWidgets
+# endregion

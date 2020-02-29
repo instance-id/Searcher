@@ -31,12 +31,6 @@ if os.environ["HFS"] != "":
         from hutil.Qt import _QtUiTools
     elif int(hver) < 391:
         from hutil.Qt import QtUiTools
-# else:
-#     os.environ['QT_API'] = 'pyside2'
-#     from PySide import QtUiTools
-#     from qtpy import QtGui
-#     from qtpy import QtCore
-#     from qtpy import QtWidgets
 
 reload(searcher_settings)
 reload(searcher_data)
@@ -54,7 +48,7 @@ __status__ = "Prototype"
 
 kwargs = {}
 settings = {}
-hasran= False
+hasran = False
 isdebug = False
 mousePos = None
 cur_screen = QtWidgets.QDesktopWidget().screenNumber(
@@ -70,19 +64,13 @@ name = "Searcher"
 parent_widget = hou.qt.mainWindow()
 searcher_window = QtWidgets.QMainWindow()
 
-ICON_SIZE = hou.ui.scaledSize(32)
-EDIT_ICON_SIZE = hou.ui.scaledSize(28)
-SETTINGS_ICON = hou.ui.createQtIcon(
-    'BUTTONS_gear',
-    EDIT_ICON_SIZE,
-    EDIT_ICON_SIZE
-)
 
 def keyconversion(key):
     for i in range(len(key)):
         if key[i] in util.KEYCONVERSIONS:
             key[i] = util.KEYCONVERSIONS[key[i]]
     return key
+
 
 class Searcher(QtWidgets.QWidget):
     """instance.id Searcher for Houdini"""
@@ -95,17 +83,15 @@ class Searcher(QtWidgets.QWidget):
         self.windowsettings = windowsettings
         self.isdebug = util.bc(self.settingdata[util.SETTINGS_KEYS[4]])
         self.menuopened = False
-        
+        self.windowispin = util.bc(self.settingdata[util.SETTINGS_KEYS[5]])
+
         # if hver >= 391:
         self.app = QtWidgets.QApplication.instance()
 
         self.handler, self.tmpkey = self.initialsetup()
         self.ui = searcher_settings.SearcherSettings(self.handler, self.tmpkey)
         self.originalsize = self.settingdata[util.SETTINGS_KEYS[3]]
-        try:
-            self.tucctx = hou.ui.paneTabUnderCursor().type()
-        except:
-            pass
+        self.tucctx = self.getpane()
         self.lastused = {}
         self.keys_changed = False
         self.tmpsymbol = None
@@ -174,6 +160,10 @@ class Searcher(QtWidgets.QWidget):
         self.completer = QtWidgets.QCompleter(names)
 
         # Get UI Elements
+        self.pinwindow = mainui.findChild(
+            QtWidgets.QToolButton,
+            "pinwindow_btn"
+        )
         self.opensettingstool = mainui.findChild(
             QtWidgets.QToolButton,
             "opensettings_btn"
@@ -194,11 +184,20 @@ class Searcher(QtWidgets.QWidget):
         self.searchbox.setClearButtonEnabled(True)
 
         # Create Connections
+        self.pinwindow.clicked.connect(self.pinwindow_cb)
+        self.setpinicon()
+        settings_button_size = hou.ui.scaledSize(16)
+        self.pinwindow.setProperty("flat", True)
+        self.pinwindow.setIconSize(QtCore.QSize(
+            settings_button_size,
+            settings_button_size
+        ))
+
         self.opensettingstool.clicked.connect(self.opensettings_cb)
-        self.opensettingstool.setIcon(SETTINGS_ICON)
+        self.opensettingstool.setIcon(util.SETTINGS_ICON)
         settings_button_size = hou.ui.scaledSize(16)
         self.opensettingstool.setProperty("flat", True)
-        self.opensettingstool.setIcon(SETTINGS_ICON)
+        self.opensettingstool.setIcon(util.SETTINGS_ICON)
         self.opensettingstool.setIconSize(QtCore.QSize(
             settings_button_size,
             settings_button_size
@@ -234,7 +233,7 @@ class Searcher(QtWidgets.QWidget):
             self.handler.updatedataasync()
             hou.ui.setStatusMessage(
                 "Searcher database created",
-                 severity=hou.severityType.Message
+                severity=hou.severityType.Message
             )
         else:
             chindex = int(chindex[0][0])
@@ -246,9 +245,31 @@ class Searcher(QtWidgets.QWidget):
         tmpkey = self.handler.getdefaulthotkey()
         self.tmpkey = tmpkey[0][0]
         return self.handler, self.tmpkey
+
+    def getpane(self):
+        try:
+            return hou.ui.paneTabUnderCursor().type()
+        except (AttributeError, TypeError) as e:
+            hou.ui.setStatusMessage(
+                ("No context options to display" + str(e)),
+                severity=hou.severityType.Message
+            )
+
     # endregion
 
     # region ------------------------------------------------------------- Callbacks
+    def pinwindow_cb(self):
+        self.windowispin = not self.windowispin
+        self.settingdata[util.SETTINGS_KEYS[5]] = self.windowispin
+        searcher_data.savesettings(self.settingdata)
+        self.setpinicon()
+
+    def setpinicon(self):
+        if self.windowispin:
+            self.pinwindow.setIcon(util.PIN_IN_ICON)
+        else:
+            self.pinwindow.setIcon(util.PIN_OUT_ICON)
+
     def opensettings_cb(self):
         self.open_settings()
 
@@ -268,8 +289,6 @@ class Searcher(QtWidgets.QWidget):
             self.ctxsearch = True
             print(self.tucctx)
             ctxresult = util.PANETYPES[self.tucctx]
-            # if ctxresult == hou.paneTabType.SceneViewer:
-            print(ctxresult)
             results = self.handler.searchctx(ctxresult)
 
         elif ctx == ":v":
@@ -355,14 +374,13 @@ class Searcher(QtWidgets.QWidget):
 
     # region ------------------------------------------------------------- Search Functionality
     def searchtablepopulate(self, data):
-        rows = len(data)
-        if rows > 0:
+        if len(data) > 0:
             self.searchresultstree.clear()
-            hcontext_tli = {}
             hotkeys = []
             context_list = []
+            hcontext_tli = {}
 
-            for i in range(rows):
+            for i in range(len(data)):
                 if data[i][4] not in context_list:
                     if self.ctxsearch:
                         context_list.append(data[i][4])
@@ -373,11 +391,15 @@ class Searcher(QtWidgets.QWidget):
 
             for hc in range(len(result)):
                 hcontext_tli[result[hc][2]] = (QtWidgets.QTreeWidgetItem(
-                    self.searchresultstree, [result[hc][0], result[hc][1]]))
+                    self.searchresultstree, [
+                        result[hc][0],
+                        result[hc][1]
+                    ]
+                ))
                 self.searchresultstree.expandItem(hcontext_tli[result[hc][2]])
 
             base_keys = hcontext_tli.keys()
-            for i in range(rows):
+            for i in range(len(data)):
                 for j in range(len(base_keys)):
                     if base_keys[j] in data[i][4]:
                         if self.isdebug:
@@ -422,37 +444,25 @@ class Searcher(QtWidgets.QWidget):
                 mod_flag = mod_flag | util.MODIFIERS[str(key[i])]
             else:
                 skey = key[i]
-                ikey = util.KEY_DICT[str(key[i])]   
+                ikey = util.KEY_DICT[str(key[i])]
 
         keypress = QtGui.QKeyEvent(
-            QtGui.QKeyEvent.KeyPress, 
-            ikey, 
-            mod_flag, 
-            skey
+            QtGui.QKeyEvent.KeyPress,  # Keypress event identifier
+            ikey,                     # Qt key identifier
+            mod_flag,                 # Qt key modifier
+            skey                      # String of Qt key identifier
         )
 
         hou.ui.mainQtWindow().setFocus()
         try:
             hd.executeDeferred(self.app.sendEvent,
-            hou.ui.mainQtWindow(), 
-            keypress)
-            # if hver >= 391:
-            #     hd.executeDeferred(self.app.sendEvent,
-            #     hou.ui.mainQtWindow(), 
-            #     keypress
-            # )
-            # elif hver < 391 and hver >= 348:
-            #     hd.executeDeferred(
-            #     QtGui.QGuiApplication.sendEvent, 
-            #     hou.ui.mainQtWindow(), 
-            #     keypress
-            # )
+                               hou.ui.mainQtWindow(), keypress)
             self.close()
 
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(
                 ("Could not trigger hotkey event: " + str(e)),
-                 severity=hou.severityType.Warning
+                severity=hou.severityType.Warning
             )
 
     def setKeysChanged(self, changed):
@@ -525,6 +535,8 @@ class Searcher(QtWidgets.QWidget):
         elif event.type() == QtCore.QEvent.WindowDeactivate:
             if self.ui.isVisible():
                 self.searchbox.releaseKeyboard()
+            if self.windowispin:
+                return QtCore.QObject.eventFilter(self, obj, event)
             elif obj == self:
                 # if self.searchmenu.isVisible():
                 pass
@@ -539,21 +551,21 @@ class Searcher(QtWidgets.QWidget):
 
         # ---------------------------------------------------- Close
         if event.type() == QtCore.QEvent.Close:
-            # try:
-            #     if util.bc(self.settingdata[util.SETTINGS_KEYS[2]]):
-            #         self.windowsettings.setValue(
-            #             "geometry", 
-            #             self.saveGeometry()
-            #         )
-            #         # self.windowsettings.setValue("windowState", self.saveState())
-            # except (AttributeError, TypeError) as e:
-            #     if hou.isUIAvailable():
-            #         hou.ui.setStatusMessage(
-            #             ("Could not save window dimensions: " + str(e)), 
-            #             severity=hou.severityType.Warning
-            #         )
-            #     else:
-            #         print("Could not save window dimensions: " + str(e))
+            try:
+                if util.bc(self.settingdata[util.SETTINGS_KEYS[2]]):
+                    self.windowsettings.setValue(
+                        "geometry",
+                        self.saveGeometry()
+                    )
+                    # self.windowsettings.setValue("windowState", self.saveState())
+            except (AttributeError, TypeError) as e:
+                if hou.isUIAvailable():
+                    hou.ui.setStatusMessage(
+                        ("Could not save window dimensions: " + str(e)),
+                        severity=hou.severityType.Warning
+                    )
+                else:
+                    print("Could not save window dimensions: " + str(e))
 
             if self.menuopened:
                 self.searchmenu.setVisible(False)
