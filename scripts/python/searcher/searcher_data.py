@@ -19,9 +19,7 @@ settingsfile = "searcher_settings.ini"
 scriptpath = os.path.dirname(os.path.realpath(__file__))
 defaultdbpath = os.path.join(scriptpath, 'db', 'searcher.db')
 searcher_settings = os.path.join(
-    hou.homeHoudiniDirectory(), 
-    'Searcher', 
-    settingsfile
+    hou.homeHoudiniDirectory(), 'Searcher', settingsfile
 )
 
 settingsdata = QtCore.QSettings(searcher_settings, QtCore.QSettings.IniFormat)

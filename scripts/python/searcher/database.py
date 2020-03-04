@@ -92,6 +92,9 @@ def getdata():
 class Databases(object):
     def __init__(self):
         self.a = 1
+        # self.settingdata = settings
+        # if self.settingdata[0]:
+        #     db = SqliteExtDatabase(':memory:')
 
     # region --------------------------------------------------- Retrieve
     def getchangeindex(self):
@@ -244,6 +247,6 @@ class Databases(object):
             return result
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(
-                ("Could not update Searcher temp hotkey: " + str(e)), 
+                ("Could not update Searcher temp hotkey: " + str(e)),
                 severity=hou.severityType.Error
             )
