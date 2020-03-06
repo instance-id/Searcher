@@ -1,0 +1,73 @@
+= Searcher =
+
+#bestbet: network parameter parameters
+#billboard: /images/billboards/blueprint.png
+#style: background-color: #303030; background-size: auto;
+
+"""How to use the network and parameter editors to work in Houdini."""
+
+*Nodes are the building blocks of the scene*. The Houdini scene is built from nodes organized in networks. Different network types control different parts of Houdini.
+
+*Using the [shelf tools|/shelf/] automatically creates nodes*. For example, when you click the [Box tool|Node:sop/box] on the __Create__ shelf tab, Houdini creates a new [Geometry container object|Node:obj/geo] with a [Box node|Node:sop/box] inside. You can also create nodes manually in the network editor. This is how advanced work is often done in Houdini. Pressing ((Tab)) in the network editor opens a menu of all nodes available in the current network type.
+
+*Some nodes can contain other nodes*. For example, a _Geometry Container object_ node lives at the scene level. It contains a network of _surface nodes_ that define the geometry of the object. See [node navigation|navigate] for information on how you move inside and out of container nodes.
+
+*Each node in a network performs a specific function*. In geometry, compositing, and CHOP networks, each node creates or modifies data passing through the node. At the scene level, nodes represent objects (such as props, bones, lights, and cameras) with transforms and parenting relationships. In the render network, nodes represent rendered outputs (images or animation), and links between the nodes define render dependencies.
+
+@subtopics
+
+:col:
+    == Networks ==
+
+    :: [nodes]
+    :: [navigate]
+    :: [wire]
+    :: [flags]
+    :: [badges]
+    :: [find]
+
+:col:
+    == Editing parameters ==
+
+    :: [parms]
+    :: [ramps]
+    :: [patterns]
+    :: [edit_interface]
+    :: [copying]
+
+~~
+
+:col:
+    == Next steps ==
+
+    :: [layout]
+    :: [organize]
+    :: [paths]
+    :: [dependencies]
+    :: [options]
+    :: [shortcuts]
+	:: [rename]
+
+:col:
+    == Expressions ==
+
+    :: [Parameter expressions|expressions]
+    :: [Expressions in filenames|/render/expressions]
+    :: [Spare parameters|spare]
+    :: [Expression cookbook|/ref/expression_cookbook]
+    :: [List of expression functions|/expressions/]
+
+~~
+
+:col:
+    == Guru level ==
+
+    :: [motioneffects]
+    :: [expression_functions]
+
+:col:
+    == Reference ==
+
+    :: [menus]
+    :: [/ref/panes/parms]
+

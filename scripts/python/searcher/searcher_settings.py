@@ -3,6 +3,10 @@ from __future__ import print_function
 from __future__ import absolute_import
 import weakref
 
+from searcher import searcher_data
+from searcher import util
+from inspect import currentframe
+
 from builtins import range
 from past.utils import old_div
 import platform
@@ -19,10 +23,11 @@ if os.environ["HFS"] != "":
     from hutil.Qt import QtGui
     from hutil.Qt import QtCore
     from hutil.Qt import QtWidgets
-    if int(hver) >= 391:
+    if hver >= 395:
+        from hutil.Qt import QtUiTools
+    elif hver <= 394 and hver >= 391:
         from hutil.Qt import _QtUiTools
-
-    elif int(hver) < 391:
+    elif hver < 391 and hver >= 348:
         from hutil.Qt import QtUiTools
 # else:
 #     os.environ['QT_API'] = 'pyside2'
@@ -31,9 +36,6 @@ if os.environ["HFS"] != "":
 #     from qtpy import QtCore
 #     from qtpy import QtWidgets
 
-from inspect import currentframe
-from searcher import util
-from searcher import searcher_data
 
 the_scaled_icon_size = hou.ui.scaledSize(16)
 the_icon_size = 16
@@ -41,7 +43,7 @@ the_icon_size = 16
 num = 0
 # info
 __author__ = "instance.id"
-__copyright__ = "2020 All rights reserved. See LICENSE for more details."
+__copyright__ = "2020 All rights reserved."
 __status__ = "Prototype"
 
 scriptpath = os.path.dirname(os.path.realpath(__file__))
@@ -83,22 +85,16 @@ class SearcherSettings(QtWidgets.QWidget):
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
         self.settings = searcher_data.loadsettings()
         self.isdebug = bc(self.settings[util.SETTINGS_KEYS[4]])
-        
+
         # Load UI File
         loader = None
-        if int(hver) >= 391:
+        if int(hver) >= 391 and int(hver) <= 394:
             loader = _QtUiTools.QUiLoader()
         else:
             loader = QtUiTools.QUiLoader()
         self.ui = loader.load(scriptpath + '/searchersettings.ui')
 
         # Get UI Elements
-
-        tooltip = hou.qt.ToolTip()
-        tooltip.setTitle("Tooltip Example - SOP Torus Help")
-        tooltip.setText("This tooltip links to the SOP Torus help page.")
-        tooltip.setHelpUrl("/nodes/sop/torus")
-
         self.hotkey_icon = self.ui.findChild(
             QtWidgets.QToolButton,
             "hotkey_icon"
@@ -146,7 +142,6 @@ class SearcherSettings(QtWidgets.QWidget):
 
         mainlayout = QtWidgets.QVBoxLayout()
         mainlayout.addWidget(self.ui)
-        mainlayout.addWidget(hou.qt.createHelpButton("/ref/panes/lightmixer"))
 
         # ------------------------------------------------- Create Connections
         # self.in_memory_db.stateChanged.connect(self.toggledebug)
@@ -159,8 +154,6 @@ class SearcherSettings(QtWidgets.QWidget):
             info_button_size,
             info_button_size
         ))
-
-        tooltip.setTargetWidget(self.hotkey_icon)
 
         self.hkinput.setText(self.tmphotkey)
         self.hkinput.setStatusTip("Status Tip?")
@@ -205,6 +198,10 @@ class SearcherSettings(QtWidgets.QWidget):
         hkeys = []
         for i in range(len(util.HOTKEYLIST)):
             result = hou.hotkeys.findConflicts("h", util.HOTKEYLIST[i])
+            if result:
+                print ("Confliction found: {}".format(result))
+            else:
+                print("No Confliction: {}".format(result))
             hkeys.append(result)
         print (hkeys)
 

@@ -6,15 +6,21 @@ import weakref
 from searcher import util
 from searcher import database
 from searcher import datahandler
+from searcher import searcher_ui
 from searcher import searcher_data
 from searcher import searcher_settings
-from searcher import HelpButton
 
+from pyautogui import press, typewrite, hotkey
 import hou
+from husdui.common import error_print, debug_print
+import toolutils
+import drivertoolutils
 import platform
+import objecttoolutils
 import os
 import sys
 import hdefereval as hd
+import stateutils
 hver = 0
 if os.environ["HFS"] != "":
     ver = os.environ["HFS"]
@@ -22,11 +28,15 @@ if os.environ["HFS"] != "":
     from hutil.Qt import QtGui
     from hutil.Qt import QtCore
     from hutil.Qt import QtWidgets
+    if int(hver) >= 391:
+        from hutil.Qt import _QtUiTools
+    elif int(hver) < 391:
+        from hutil.Qt import QtUiTools
 
 reload(searcher_settings)
 reload(searcher_data)
+reload(searcher_ui)
 reload(datahandler)
-reload(HelpButton)
 reload(database)
 reload(util)
 # endregion
@@ -74,10 +84,13 @@ def keyconversion(key):
 
 class Searcher(QtWidgets.QWidget):
     """instance.id Searcher for Houdini"""
-    # SECTION Class init
 
     def __init__(self, kwargs, settings, windowsettings):
         super(Searcher, self).__init__(hou.qt.mainWindow())
+        mainui = searcher_ui.Ui_Searcher()
+        mainui.setupUi(self)
+        mainui.retranslateUi(self)
+
         self._drag_active = False
 
         # Setting vars
@@ -110,17 +123,15 @@ class Searcher(QtWidgets.QWidget):
 
         # Functionals
         hou.hotkeys._createBackupTables()
-        self.uisetup()
+        self.uisetup(mainui)
 
         # Event System Initialization
         self.installEventFilter(self)
         self.searchbox.installEventFilter(self)
         self.pinwindow.installEventFilter(self)
-        self.helpButton.installEventFilter(self)
         self.searchfilter.installEventFilter(self)
         self.opensettingstool.installEventFilter(self)
         self.searchresultstree.installEventFilter(self)
-    # !SECTION
 
     # region ------------------------------------------------------------- Settings
     def open_settings(self):
@@ -129,7 +140,6 @@ class Searcher(QtWidgets.QWidget):
         self.ui.setFocus()
     # endregion
 
-    # SECTION uisetup
     # region ------------------------------------------------------------- UI
     def setupContext(self):
         cols = 4
@@ -158,166 +168,63 @@ class Searcher(QtWidgets.QWidget):
                 "Symbol"
             ])
 
-    def uisetup(self):
+    def uisetup(self, mainui):
         self.main_widget = QtWidgets.QWidget(self)
+
+        # Load UI File
+        loader = None
+        if int(hver) >= 391:
+            loader = _QtUiTools.QUiLoader()
+        else:
+            loader = QtUiTools.QUiLoader()
+
+        # mainui = loader.load(script_path + "/searcher_ui.py")
+        # mainui = loader.load(script_path + "/searcher_ui.py")
 
         names = ["open", "save", "hotkey", "perference"]
         self.completer = QtWidgets.QCompleter(names)
 
-        # Layout
-        self.gridLayout = QtWidgets.QGridLayout()
-        self.gridLayout.setSpacing(0)
-        self.gridLayout.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout = QtWidgets.QVBoxLayout()
-        self.verticalLayout.setSpacing(0)
+        # Get UI Elements
+        # self.searchfilter = mainui.findChild(
+        #     QtWidgets.QToolButton,
+        #     "searchfilter_btn"
+        # )
 
-        mainlayout = QtWidgets.QVBoxLayout()
+        # self.searchfilter = mainui(
+        #     QtWidgets.QToolButton,
+        #     "searchfilter_btn"
+        # )
 
-        self.titlerow = QtWidgets.QHBoxLayout()
-        self.titlerow.setSpacing(5)
+        # self.pinwindow = mainui.findChild(
+        #     QtWidgets.QToolButton,
+        #     "pinwindow_btn"
+        # )
+        # self.opensettingstool = mainui.findChild(
+        #     QtWidgets.QToolButton,
+        #     "opensettings_btn"
+        # )
+        # self.searchresultstree = mainui.findChild(
+        #     QtWidgets.QTreeWidget,
+        #     "searchresults_tree"
+        # )
+        # self.searchbox = mainui.findChild(
+        #     QtWidgets.QLineEdit,
+        #     "searchbox_txt"
+        # )
+        # self.infolbl = mainui.findChild(
+        #     QtWidgets.QLabel,
+        #     "info_lbl"
+        # )
+        #
 
-        self.titlespacer1 = QtWidgets.QSpacerItem(
-            8, 0,
-            QtWidgets.QSizePolicy.Fixed,
-            QtWidgets.QSizePolicy.Minimum
-        )
+        self.searchfilter = mainui.searchfilter_btn
+        self.pinwindow = mainui.pinwindow_btn
+        self.opensettingstool = mainui.opensettings_btn
+        self.searchresultstree = mainui.searchresults_tree
+        self.searchbox = mainui.searchbox_txt
+        self.infolbl = mainui.info_lbl
 
-        self.searcherlbl = QtWidgets.QLabel("Searcher")
-        font = QtGui.QFont()
-        font.setPointSize(15)
-        self.searcherlbl.setFont(font)
-        self.searcherlbl.setAlignment(QtCore.Qt.AlignCenter)
-
-        self.titlespacer2 = QtWidgets.QSpacerItem(
-            40, 0,
-            QtWidgets.QSizePolicy.Expanding,
-            QtWidgets.QSizePolicy.Minimum
-        )
-
-        self.helpButton = HelpButton.HelpButton("main")
-        self.pinwindow_btn = QtWidgets.QToolButton()
-        self.opensettings_btn = QtWidgets.QToolButton()
-
-        self.titlespacer3 = QtWidgets.QSpacerItem(
-            8, 0,
-            QtWidgets.QSizePolicy.Fixed,
-            QtWidgets.QSizePolicy.Minimum
-        )
-
-        # ------------------------------------------------------- Search Filter
-        # NOTE Search Filter --------------------------------------------------
-        self.searchrow = QtWidgets.QHBoxLayout()
-        self.searchrow.setSpacing(0)
-        self.frame = QtWidgets.QFrame()
-        searchframe_details = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Preferred,
-            QtWidgets.QSizePolicy.Preferred
-        )
-        searchframe_details.setHorizontalStretch(2)
-        searchframe_details.setVerticalStretch(0)
-        searchframe_details.setHeightForWidth(
-            self.frame.sizePolicy().hasHeightForWidth())
-        self.frame.setSizePolicy(searchframe_details)
-        self.frame.setMinimumSize(QtCore.QSize(0, 20))
-        self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.searchfilter_btn = QtWidgets.QToolButton(self.frame)
-        self.searchfilter_btn.setGeometry(QtCore.QRect(0, 0, 26, 20))
-        self.searchfilter_btn.setBaseSize(QtCore.QSize(16, 16))
-        self.searchfilter_btn.setStyleSheet(
-            u"background-color: rgb(19, 19, 19);")
-        self.searchfilter_btn.setArrowType(QtCore.Qt.NoArrow)
-
-        # ---------------------------------------------------------- Search Box
-        # NOTE Search Box -----------------------------------------------------
-        self.searchbox_txt = QtWidgets.QLineEdit()
-        searchbox_details = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Expanding,
-            QtWidgets.QSizePolicy.Minimum
-        )
-        searchbox_details.setHorizontalStretch(99)
-        searchbox_details.setVerticalStretch(0)
-        searchbox_details.setHeightForWidth(
-            self.searchbox_txt.sizePolicy().hasHeightForWidth())
-        self.searchbox_txt.setSizePolicy(searchbox_details)
-        self.searchbox_txt.setMinimumSize(QtCore.QSize(50, 0))
-        self.searchbox_txt.setMouseTracking(False)
-        self.searchbox_txt.setStyleSheet(u"background-color: rgb(19, 19, 19);")
-        self.searchbox_txt.setFrame(False)
-
-        # -------------------------------------------------------- Results Tree
-        # NOTE Results Tree ---------------------------------------------------
-        self.searchresults_tree = QtWidgets.QTreeWidget()
-        __qtreewidgetitem = QtWidgets.QTreeWidgetItem()
-        __qtreewidgetitem.setText(0, u"1")
-        self.searchresults_tree.setHeaderItem(__qtreewidgetitem)
-        resultstree_details = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Preferred,
-            QtWidgets.QSizePolicy.Expanding
-        )
-        resultstree_details.setHorizontalStretch(0)
-        resultstree_details.setVerticalStretch(0)
-        resultstree_details.setHeightForWidth(
-            self.searchresults_tree.sizePolicy().hasHeightForWidth())
-        self.searchresults_tree.setSizePolicy(resultstree_details)
-        resultstree_font = QtGui.QFont()
-        resultstree_font.setPointSize(9)
-        self.searchresults_tree.setFont(resultstree_font)
-        self.searchresults_tree.setMouseTracking(False)
-        self.searchresults_tree.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.searchresults_tree.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.searchresults_tree.setLineWidth(0)
-        self.searchresults_tree.setSizeAdjustPolicy(
-            QtWidgets.QAbstractScrollArea.AdjustToContents)
-        self.searchresults_tree.setAlternatingRowColors(True)
-        self.searchresults_tree.setSelectionMode(
-            QtWidgets.QAbstractItemView.SingleSelection)
-        self.searchresults_tree.setSelectionBehavior(
-            QtWidgets.QAbstractItemView.SelectRows)
-
-        # NOTE Info Panel --------------------------------------------------- Info Panel
-        self.info_lbl = QtWidgets.QLabel()
-        self.infolbl_font = QtGui.QFont()
-        self.infolbl_font.setPointSize(8)
-        self.infolbl_font.setBold(False)
-        self.infolbl_font.setWeight(50)
-        self.info_lbl.setFont(self.infolbl_font)
-        self.info_lbl.setStyleSheet(u"background-color: rgb(26, 26, 26);")
-        self.info_lbl.setMargin(2)
-        self.info_lbl.setIndent(5)
-        self.overlay = overlayLabel(self.info_lbl)
-        self.overlay.setFont(self.infolbl_font)
-        self.overlay.setStyleSheet(u"background-color: rgb(26, 26, 26);")
-        self.overlay.setMargin(2)
-        self.overlay.setIndent(5)
-
-        # NOTE Layout Implementation ------------------------------------------ Layout Implementation
-        self.titlerow.addItem(self.titlespacer1)
-        self.titlerow.addWidget(self.searcherlbl)
-        self.titlerow.addItem(self.titlespacer2)
-        self.titlerow.addWidget(self.helpButton)
-        self.titlerow.addWidget(self.pinwindow_btn)
-        self.titlerow.addWidget(self.opensettings_btn)
-        self.titlerow.addItem(self.titlespacer3)
-        self.verticalLayout.addLayout(self.titlerow)
-        self.searchrow.addWidget(self.frame)
-        self.searchrow.addWidget(self.searchbox_txt)
-        self.verticalLayout.addLayout(self.searchrow)
-        self.verticalLayout.addWidget(self.searchresults_tree)
-        self.gridLayout.addLayout(self.verticalLayout, 1, 0, 1, 1)
-        self.gridLayout.addWidget(self.overlay, 2, 0, 1, 1)
-        self.gridLayout.addWidget(self.info_lbl, 2, 0, 1, 1)
-
-        # NOTE Layout to functionality connection -----------------------------
-        self.searchfilter = self.searchfilter_btn
-        self.pinwindow = self.pinwindow_btn
-        self.opensettingstool = self.opensettings_btn
-        self.searchresultstree = self.searchresults_tree
-        self.searchbox = self.searchbox_txt
-        self.infolbl = self.info_lbl
-
-        # NOTE Settings and details -------------------------------------------
-        self.searchbox.setPlaceholderText(" Begin typing to search..")
+        self.searchbox.setPlaceholderText(" Search..")
         self.searchbox.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.searchbox.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.searchbox.setClearButtonEnabled(True)
@@ -353,11 +260,19 @@ class Searcher(QtWidgets.QWidget):
         self.searchbox.customContextMenuRequested.connect(self.openmenu)
         self.searchresultstree.itemActivated.connect(self.searchclick_cb)
 
+        # Layout
+        mainlayout = QtWidgets.QVBoxLayout()
         mainlayout.setAlignment(QtCore.Qt.AlignBottom)
         mainlayout.setContentsMargins(0, 0, 0, 0)
         mainlayout.setGeometry(QtCore.QRect(0, 0, 1400, 1200))
 
-        mainlayout.addLayout(self.gridLayout)
+        mainlayout.addWidget(HelpButton("main"))
+        mainlayout.addWidget(self.searchfilter)
+        mainlayout.addWidget(self.pinwindow)
+        mainlayout.addWidget(self.opensettingstool)
+        mainlayout.addWidget(self.searchresultstree)
+        mainlayout.addWidget(self.searchbox)
+        mainlayout.addWidget(self.infolbl)
         self.setLayout(mainlayout)
 
         self.searchbox.setToolTip(
@@ -374,7 +289,8 @@ class Searcher(QtWidgets.QWidget):
         self.setupContext()
         self.searchbox.setFocus()
         self.searchbox.grabKeyboard()
-        # !SECTION
+
+        # endregion
 
     # region ------------------------------------------------------------- Initial Setup
 
@@ -626,6 +542,7 @@ class Searcher(QtWidgets.QWidget):
 
         key = key[0].split('+')
 
+        mods = []
         skey = None
         ikey = None
         key = keyconversion(key)
@@ -680,40 +597,6 @@ class Searcher(QtWidgets.QWidget):
     # endregion
 
     # region ------------------------------------------------------------- Events
-    # SECTION Events
-    def fade_in(self, target, duration):
-        self.effect = QtWidgets.QGraphicsOpacityEffect()
-        self.tar = target
-        self.tar.setGraphicsEffect(self.effect)
-        self.an = QtCore.QPropertyAnimation(self.effect, b"opacity")
-        self.an.setDuration(duration)
-        self.an.setStartValue(0)
-        self.an.setEndValue(1)
-        self.an.start()
-
-    def fade_out(self, target, duration):
-        self.effect = QtWidgets.QGraphicsOpacityEffect()
-        self.tar = target
-        self.tar.setGraphicsEffect(self.effect)
-        self.an = QtCore.QPropertyAnimation(self.effect, b"opacity")
-        self.an.setDuration(duration)
-        self.an.setStartValue(1)
-        self.an.setEndValue(0)
-        self.an.start()
-
-    def info_fade(self, fadein):
-        self.animation = QtCore.QPropertyAnimation(
-            self.infolbl_font, b'opacity')
-        self.animation.setDuration(200)
-        if fadein:
-            self.animation.setStartValue(0.0)
-            self.animation.setEndValue(1.0)
-        if not fadein:
-            self.animation.setStartValue(1.0)
-            self.animation.setEndValue(0.0)
-        self.animation.setEasingCurve(QtGui.QEasingCurve.OutQuad)
-        self.animation.start()
-
     def checktooltip(self, obj):
         if obj == self.searchresultstree:
             if self.searching:
@@ -721,15 +604,13 @@ class Searcher(QtWidgets.QWidget):
             else:
                 self.infolbl.setText(self.searchbox.toolTip())
         else:
-            self.fade_in(self.infolbl, 200)
             self.infolbl.setText(obj.toolTip())
 
     def eventFilter(self, obj, event):
         # ---------------------------------------------------- Mouse
         if event.type() == QtCore.QEvent.Enter:
             self.checktooltip(obj)
-        if event.type() == QtCore.QEvent.Leave:
-            self.fade_out(self.infolbl, 200)
+        elif event.type() == QtCore.QEvent.Leave:
             self.infolbl.setText("")
         if event.type() == QtCore.QEvent.ToolTip:
             return True
@@ -847,15 +728,51 @@ class Searcher(QtWidgets.QWidget):
                 self.setParent(None)
                 self.deleteLater()
         return QtCore.QObject.eventFilter(self, obj, event)
-    # !SECTION
-    # endregion
+
+        # endregion
 # endregion
 
 
-class overlayLabel(QtWidgets.QLabel):
-    def __init__(self, parent=None):
-        super(overlayLabel, self).__init__(parent)
-        self.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+# region ----------------------------------------------------------------- Help
+class HelpButton(QtWidgets.QPushButton):
+    """Generic Help button."""
+
+    def __init__(self, name, parent=None):
+        super(HelpButton, self).__init__(
+            hou.qt.createIcon("BUTTONS_help"), "", parent=parent
+        )
+
+        self._name = name
+
+        self.setToolTip("Show Help.")
+        self.setIconSize(QtCore.QSize(14, 14))
+        self.setMaximumSize(QtCore.QSize(14, 14))
+        self.setFlat(True)
+
+        self.clicked.connect(self.display_help)
+
+    # -------------------------------------------------------------------------
+    # METHODS
+    # -------------------------------------------------------------------------
+
+    def display_help(self):
+        """Display help page."""
+        # Look for an existing, float help browser.
+        for pane_tab in hou.ui.paneTabs():
+            if isinstance(pane_tab, hou.HelpBrowser):
+                if pane_tab.isFloating():
+                    browser = pane_tab
+                    break
+
+        # Didn't find one, so create a new floating browser.
+        else:
+            desktop = hou.ui.curDesktop()
+            browser = desktop.createFloatingPaneTab(
+                hou.paneTabType.HelpBrowser)
+
+        browser.displayHelpPath("/searcher/{}".format(self._name))
+# endregion
+
 
 # region ----------------------------------------------------------------- Setup Functions
 

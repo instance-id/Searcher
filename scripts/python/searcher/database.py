@@ -1,5 +1,14 @@
+# region Imports
+from __future__ import print_function
+from __future__ import absolute_import
+import weakref
+
 import hou
 import os
+
+from searcher import util
+
+
 from peewee import *
 from playhouse.sqlite_ext import SqliteExtDatabase, SearchField, FTSModel
 import time
@@ -189,7 +198,7 @@ class Databases(object):
 
     def updatetmphk(self, tmpkey):
         try:
-            result = settings.update(
+            _ = settings.update(
                 defaulthotkey=tmpkey).where(id == 1).execute()
             return
         except(AttributeError, TypeError) as e:
@@ -198,7 +207,7 @@ class Databases(object):
 
     def updatelastkey(self, lastkey):
         try:
-            result = settings.update(
+            _ = settings.update(
                 lastused=lastkey).where(id == 1).execute()
             return
         except(AttributeError, TypeError) as e:

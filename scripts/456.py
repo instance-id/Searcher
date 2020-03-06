@@ -1,5 +1,7 @@
 from __future__ import print_function
 from searcher import searcher_data
+from searcher import util
+
 from peewee import *
 from playhouse.sqlite_ext import SqliteExtDatabase, SearchField, FTSModel
 # from playhouse.apsw_ext import APSWDatabase
@@ -234,7 +236,12 @@ def getlastusedhk(cur):
 def updatechangeindex(indexval, new=False):
     try:
         if new is True:
-            defaultkey = (u"Ctrl+Alt+Shift+F7")
+            defaultkey = ""
+            for i in range(len(util.HOTKEYLIST)):
+                result = hou.hotkeys.findConflicts("h", util.HOTKEYLIST[i])
+                if not result:
+                    defaultkey = util.HOTKEYLIST[i]
+
             settings.insert(indexvalue=indexval,
                             defaulthotkey=defaultkey, searchdescription=0, searchprefix=0, searchcurrentcontext=0, lastused="", id=1).execute()
         else:

@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>600</width>
-    <height>185</height>
+    <height>164</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -187,17 +187,6 @@
         <widget class="QPushButton" name="cleardata_btn">
          <property name="text">
           <string>Clear Data</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string/>
          </property>
         </widget>
        </item>
