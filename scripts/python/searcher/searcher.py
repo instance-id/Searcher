@@ -4,16 +4,21 @@ from __future__ import absolute_import
 import weakref
 
 from searcher import util
+from searcher import ptime
+from searcher import animator
 from searcher import database
+from searcher import HelpButton
 from searcher import datahandler
 from searcher import searcher_data
 from searcher import searcher_settings
-from searcher import HelpButton
+from searcher import language_en as la
 
 import hou
 import platform
 import os
 import sys
+import re
+from string import ascii_letters
 import hdefereval as hd
 hver = 0
 if os.environ["HFS"] != "":
@@ -27,11 +32,14 @@ reload(searcher_settings)
 reload(searcher_data)
 reload(datahandler)
 reload(HelpButton)
+reload(animator)
 reload(database)
+reload(ptime)
 reload(util)
+reload(la)
 # endregion
 
-# region -------------------------------------------------------------  App Info
+# --------------------------------------------------------------------  App Info
 __package__ = "Searcher"
 __version__ = "0.1b"
 __author__ = "instance.id"
@@ -39,11 +47,10 @@ __copyright__ = "2020 All rights reserved. See LICENSE for more details."
 __status__ = "Prototype"
 # endregion
 
-# region -------------------------------------------------------------  Variables / Constants
+# --------------------------------------------------------------------  Variables / Constants
 kwargs = {}
 settings = {}
 hasran = False
-isdebug = False
 mousePos = None
 cur_screen = QtWidgets.QDesktopWidget().screenNumber(
     QtWidgets.QDesktopWidget().cursor().pos()
@@ -59,7 +66,7 @@ parent_widget = hou.qt.mainWindow()
 searcher_window = QtWidgets.QMainWindow()
 # endregion
 
-# region -------------------------------------------------------------  Class Functions
+# --------------------------------------------------------------------  Class Functions
 
 
 def keyconversion(key):
@@ -69,7 +76,7 @@ def keyconversion(key):
     return key
 # endregion
 
-# region -------------------------------------------------------------  Searcher Class
+# --------------------------------------------------------------------  Searcher Class
 
 
 class Searcher(QtWidgets.QWidget):
@@ -79,25 +86,46 @@ class Searcher(QtWidgets.QWidget):
     def __init__(self, kwargs, settings, windowsettings):
         super(Searcher, self).__init__(hou.qt.mainWindow())
         self._drag_active = False
+        self.animationDuration = 200
+        self.uiwidth = int(520)
+        self.uiheight = int(300)
 
         # Setting vars
         kwargs = kwargs
         self.settingdata = settings
         self.windowsettings = windowsettings
-        self.isdebug = util.bc(self.settingdata[util.SETTINGS_KEYS[4]])
+        self.isdebug = util.Dbug(
+            util.bc(self.settingdata[util.SETTINGS_KEYS[4]]), 
+            str(self.settingdata[util.SETTINGS_KEYS[10]])
+        )
         self.menuopened = False
         self.windowispin = util.bc(self.settingdata[util.SETTINGS_KEYS[5]])
+        self.showctx = util.bc(self.settingdata[util.SETTINGS_KEYS[7]])
         self.originalsize = self.settingdata[util.SETTINGS_KEYS[3]]
-
-        # if hver >= 391:
+        self.animatedsettings = util.bc(
+            self.settingdata[util.SETTINGS_KEYS[8]])
+        self.mainlayout = QtWidgets.QVBoxLayout()
+        self.settingslayout = QtWidgets.QVBoxLayout()
         self.app = QtWidgets.QApplication.instance()
 
         # UI Vars
         self.handler, self.tmpkey = self.initialsetup()
-        self.ui = searcher_settings.SearcherSettings(self.handler, self.tmpkey)
+        self.ui = searcher_settings.SearcherSettings(
+            self.handler, 
+            self.tmpkey, 
+            self
+        )
+        if self.animatedsettings:
+            self.anim = animator.Animator(self.ui, self.anim_complete)
 
         # Functional Vars
+        self.endtime = 0
         self.lastused = {}
+        self.starttime = 0
+        self.treecatnum = 0
+        self.hotkeystime = 0
+        self.hcontexttime = 0
+        self.treeitemsnum = 0
         self.tmpsymbol = None
         self.searching = False
         self.ctxsearch = False
@@ -118,49 +146,100 @@ class Searcher(QtWidgets.QWidget):
         self.pinwindow.installEventFilter(self)
         self.helpButton.installEventFilter(self)
         self.searchfilter.installEventFilter(self)
+        self.contexttoggle.installEventFilter(self)
         self.opensettingstool.installEventFilter(self)
         self.searchresultstree.installEventFilter(self)
+
+        # ---------------------------------- Build Settings
+        # NOTE Build Settings -----------------------------
+        self.buildsettingsmenu()
+
     # !SECTION
 
-    # region ------------------------------------------------------------- Settings
-    def open_settings(self):
-        self.ui.setWindowTitle('Searcher - Settings')
-        self.ui.show()
-        self.ui.setFocus()
-    # endregion
+    # ------------------------------------------------------ Settings Menu
+    # SECTION Settings Menu ----------------------------------------------
+    # ----------------------------------- buildsettingsmenu
+    # NOTE buildsettingsmenu ------------------------------
+    def buildsettingsmenu(self):
+        self.ui.setWindowFlags(
+            QtCore.Qt.Tool |
+            QtCore.Qt.CustomizeWindowHint |
+            QtCore.Qt.FramelessWindowHint |
+            QtCore.Qt.WindowStaysOnTopHint
+        )
+        self.ui.setAttribute(QtCore.Qt.WA_StyledBackground, True)
+        self.ui.setAttribute(QtCore.Qt.WA_TranslucentBackground, True)
+        self.ui.setStyleSheet("QWidget { background: rgb(58, 58, 58); }"
+                              "QWidget#SearcherSettings { border: 2px solid rgb(35, 35, 35); } ")
 
-    # SECTION uisetup
-    # region ------------------------------------------------------------- UI
-    def setupContext(self):
+        self.settingslayout = self.ui.settingslayout
+        if self.animatedsettings:
+                self.anim.setContentLayout(self.settingslayout)
+                self.anim.resize(
+                    self.uiwidth,
+                    self.uiheight
+                )
+        self.ui.resize(
+                self.uiwidth,
+                self.uiheight
+            )
+
+
+    # !SECTION
+
+    # ----------------------------------------------------------------- UI
+    # SECTION UI ---------------------------------------------------------
+    # ------------------------------------- setupresulttree
+    # NOTE setupresulttree --------------------------------
+    def setupresulttree(self):
         cols = 4
         self.searchresultstree.setColumnCount(cols)
         self.searchresultstree.setColumnWidth(0, 250)
-        if self.isdebug:
+        if self.isdebug and self.isdebug.level in {"ALL"}:
             self.searchresultstree.setColumnWidth(1, 350)
         else:
             self.searchresultstree.setColumnWidth(1, 450)
         self.searchresultstree.setColumnWidth(2, 100)
         self.searchresultstree.setColumnWidth(3, 150)
-        if self.isdebug:
-            self.searchresultstree.setColumnWidth(4, 150)
-            self.searchresultstree.setHeaderLabels([
-                "Label",
-                "Description",
-                "Assignments",
-                "Symbol",
-                "Context"
-            ])
-        else:
-            self.searchresultstree.setHeaderLabels([
-                "Label",
-                "Description",
-                "Assignments",
-                "Symbol"
-            ])
+        self.searchresultstree.setColumnWidth(4, 150)
+        self.searchresultstree.setHeaderLabels([
+            "Label",
+            "Description",
+            "Assignments",
+            "Symbol",
+            "Context"
+        ])
+        self.searchresultstree.setColumnHidden(3, self.showctx)
+        if not self.isdebug.level in {"ALL"}:
+            self.searchresultstree.hideColumn(4)
 
+        self.searchresultstree.header().setMinimumSectionSize(85)
+        self.searchresultstree.header().setSectionResizeMode(
+            0, QtWidgets.QHeaderView.ResizeToContents)
+        self.searchresultstree.header().setSectionResizeMode(
+            1, QtWidgets.QHeaderView.ResizeToContents)
+        self.searchresultstree.header().setSectionResizeMode(
+            2, QtWidgets.QHeaderView.ResizeToContents)
+        self.searchresultstree.header().setSectionResizeMode(
+            3, QtWidgets.QHeaderView.Stretch)
+        self.searchresultstree.header().setSectionResizeMode(
+            4, QtWidgets.QHeaderView.ResizeToContents)
+        self.searchresultstree.setStyleSheet("""QHeaderView::section{
+                                             color: rgb(200, 200, 200);
+                                             resize:both;
+                                             overflow:auto;
+                                             padding: 4px;
+                                             height:20px;
+                                             border: 0px solid rgb(150, 150, 150);
+                                             border-bottom: 1px solid rgb(150, 150, 150);
+                                             border-left:0px solid rgb(50, 50, 50);
+                                             border-right:1px solid rgb(60, 60, 60);
+                                             background: rgb(36, 36, 36);
+                                             }""")
+
+    # -------------------------------------- Build Settings
+    # NOTE Build Settings ---------------------------------
     def uisetup(self):
-        self.main_widget = QtWidgets.QWidget(self)
-
         names = ["open", "save", "hotkey", "perference"]
         self.completer = QtWidgets.QCompleter(names)
 
@@ -170,8 +249,6 @@ class Searcher(QtWidgets.QWidget):
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setSpacing(0)
-
-        mainlayout = QtWidgets.QVBoxLayout()
 
         self.titlerow = QtWidgets.QHBoxLayout()
         self.titlerow.setSpacing(5)
@@ -194,7 +271,8 @@ class Searcher(QtWidgets.QWidget):
             QtWidgets.QSizePolicy.Minimum
         )
 
-        self.helpButton = HelpButton.HelpButton("main")
+        self.contexttoggle = QtWidgets.QPushButton()
+        self.helpButton = HelpButton.HelpButton("main", la.ln_helppanel, 16)
         self.pinwindow_btn = QtWidgets.QToolButton()
         self.opensettings_btn = QtWidgets.QToolButton()
 
@@ -204,8 +282,8 @@ class Searcher(QtWidgets.QWidget):
             QtWidgets.QSizePolicy.Minimum
         )
 
-        # ------------------------------------------------------- Search Filter
-        # NOTE Search Filter --------------------------------------------------
+        # ----------------------------------- Search Filter
+        # NOTE Search Filter ------------------------------
         self.searchrow = QtWidgets.QHBoxLayout()
         self.searchrow.setSpacing(0)
         self.frame = QtWidgets.QFrame()
@@ -228,8 +306,8 @@ class Searcher(QtWidgets.QWidget):
             u"background-color: rgb(19, 19, 19);")
         self.searchfilter_btn.setArrowType(QtCore.Qt.NoArrow)
 
-        # ---------------------------------------------------------- Search Box
-        # NOTE Search Box -----------------------------------------------------
+        # -------------------------------------- Search Box
+        # NOTE Search Box ---------------------------------
         self.searchbox_txt = QtWidgets.QLineEdit()
         searchbox_details = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Expanding,
@@ -245,11 +323,14 @@ class Searcher(QtWidgets.QWidget):
         self.searchbox_txt.setStyleSheet(u"background-color: rgb(19, 19, 19);")
         self.searchbox_txt.setFrame(False)
 
-        # -------------------------------------------------------- Results Tree
-        # NOTE Results Tree ---------------------------------------------------
+        # ------------------------------------ Results Tree
+        # NOTE Results Tree -------------------------------
         self.searchresults_tree = QtWidgets.QTreeWidget()
         __qtreewidgetitem = QtWidgets.QTreeWidgetItem()
         __qtreewidgetitem.setText(0, u"1")
+        resultstree_header = QtGui.QFont()
+        resultstree_header.setPointSize(9)
+        __qtreewidgetitem.setFont(0, resultstree_header)
         self.searchresults_tree.setHeaderItem(__qtreewidgetitem)
         resultstree_details = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Preferred,
@@ -257,8 +338,8 @@ class Searcher(QtWidgets.QWidget):
         )
         resultstree_details.setHorizontalStretch(0)
         resultstree_details.setVerticalStretch(0)
-        resultstree_details.setHeightForWidth(
-            self.searchresults_tree.sizePolicy().hasHeightForWidth())
+        # resultstree_details.setHeightForWidth(
+        #     self.searchresults_tree.sizePolicy().hasHeightForWidth())
         self.searchresults_tree.setSizePolicy(resultstree_details)
         resultstree_font = QtGui.QFont()
         resultstree_font.setPointSize(9)
@@ -275,7 +356,12 @@ class Searcher(QtWidgets.QWidget):
         self.searchresults_tree.setSelectionBehavior(
             QtWidgets.QAbstractItemView.SelectRows)
 
-        # NOTE Info Panel --------------------------------------------------- Info Panel
+        # -------------------------------------- Info Panel
+        # NOTE Info Panel ---------------------------------
+        self.infobar = QtWidgets.QHBoxLayout()
+        self.infobar.setObjectName("infobar")
+        self.infobargrid = QtWidgets.QGridLayout()
+        self.infobargrid.setObjectName("infobargrid")
         self.info_lbl = QtWidgets.QLabel()
         self.infolbl_font = QtGui.QFont()
         self.infolbl_font.setPointSize(8)
@@ -290,11 +376,24 @@ class Searcher(QtWidgets.QWidget):
         self.overlay.setStyleSheet(u"background-color: rgb(26, 26, 26);")
         self.overlay.setMargin(2)
         self.overlay.setIndent(5)
-
-        # NOTE Layout Implementation ------------------------------------------ Layout Implementation
+        self.treetotal_lbl = QtWidgets.QLabel()
+        treetotal_size = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Preferred)
+        treetotal_size.setHorizontalStretch(0)
+        treetotal_size.setVerticalStretch(0)
+        treetotal_size.setHeightForWidth(self.treetotal_lbl.sizePolicy().hasHeightForWidth())
+        self.treetotal_lbl.setSizePolicy(treetotal_size)
+        self.treetotal_lbl.setMinimumSize(QtCore.QSize(150, 0))
+        self.treetotal_lbl.setMaximumSize(QtCore.QSize(150, 16777215))
+        self.treetotal_lbl.setObjectName("treetotal_lbl")
+        self.treetotal_lbl.setStyleSheet(u"background-color: rgb(26, 26, 26);")
+        self.treetotal_lbl.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        
+        # --------------------------- Layout Implementation
+        # NOTE Layout Implementation ----------------------
         self.titlerow.addItem(self.titlespacer1)
         self.titlerow.addWidget(self.searcherlbl)
         self.titlerow.addItem(self.titlespacer2)
+        self.titlerow.addWidget(self.contexttoggle)
         self.titlerow.addWidget(self.helpButton)
         self.titlerow.addWidget(self.pinwindow_btn)
         self.titlerow.addWidget(self.opensettings_btn)
@@ -305,10 +404,15 @@ class Searcher(QtWidgets.QWidget):
         self.verticalLayout.addLayout(self.searchrow)
         self.verticalLayout.addWidget(self.searchresults_tree)
         self.gridLayout.addLayout(self.verticalLayout, 1, 0, 1, 1)
-        self.gridLayout.addWidget(self.overlay, 2, 0, 1, 1)
-        self.gridLayout.addWidget(self.info_lbl, 2, 0, 1, 1)
+        
+        self.infobargrid.addWidget(self.overlay, 1, 0, 1, 1)
+        self.infobargrid.addWidget(self.info_lbl, 1, 0, 1, 1)
+        self.infobargrid.addWidget(self.treetotal_lbl, 1, 1, 1, 1)
 
-        # NOTE Layout to functionality connection -----------------------------
+        self.infobar.addLayout(self.infobargrid)
+        self.gridLayout.addLayout(self.infobar, 3, 0, 1, 1)
+
+        # NOTE Layout to functionality connection ---------
         self.searchfilter = self.searchfilter_btn
         self.pinwindow = self.pinwindow_btn
         self.opensettingstool = self.opensettings_btn
@@ -316,7 +420,8 @@ class Searcher(QtWidgets.QWidget):
         self.searchbox = self.searchbox_txt
         self.infolbl = self.info_lbl
 
-        # NOTE Settings and details -------------------------------------------
+        # ---------------------------- Settings and details
+        # NOTE Settings and details -----------------------
         self.searchbox.setPlaceholderText(" Begin typing to search..")
         self.searchbox.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.searchbox.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -331,6 +436,21 @@ class Searcher(QtWidgets.QWidget):
             searchfilter_button_size
         ))
 
+        self.setctxicon()
+        self.contexttoggle.setCheckable(True)
+        self.contexttoggle.setChecked(self.showctx)
+        self.contexttoggle.setFixedWidth(20)
+        self.contexttoggle.setFixedHeight(20)
+        contexttoggle_button_size = hou.ui.scaledSize(16)
+        self.contexttoggle.setProperty("flat", True)
+        self.contexttoggle.setIconSize(QtCore.QSize(
+            contexttoggle_button_size,
+            contexttoggle_button_size
+        ))
+        self.contexttoggle.clicked[bool].connect(self.showctx_cb)
+        self.contexttoggle.setStyleSheet("QPushButton { width: 8px; border: none; }"
+                                         "QPushButton:checked { width: 8px; border: none;}")
+
         self.pinwindow.clicked.connect(self.pinwindow_cb)
         self.setpinicon()
         pinwindow_button_size = hou.ui.scaledSize(16)
@@ -340,6 +460,8 @@ class Searcher(QtWidgets.QWidget):
             pinwindow_button_size
         ))
 
+        self.opensettingstool.setCheckable(True)
+        self.opensettingstool.setChecked(False)
         self.opensettingstool.clicked.connect(self.opensettings_cb)
         opensettingstool_button_size = hou.ui.scaledSize(16)
         self.opensettingstool.setProperty("flat", True)
@@ -353,31 +475,38 @@ class Searcher(QtWidgets.QWidget):
         self.searchbox.customContextMenuRequested.connect(self.openmenu)
         self.searchresultstree.itemActivated.connect(self.searchclick_cb)
 
-        mainlayout.setAlignment(QtCore.Qt.AlignBottom)
-        mainlayout.setContentsMargins(0, 0, 0, 0)
-        mainlayout.setGeometry(QtCore.QRect(0, 0, 1400, 1200))
+        self.mainlayout.setAlignment(QtCore.Qt.AlignBottom)
+        self.mainlayout.setContentsMargins(0, 0, 0, 0)
+        self.mainlayout.setGeometry(QtCore.QRect(0, 0, 1400, 1200))
 
-        mainlayout.addLayout(self.gridLayout)
-        self.setLayout(mainlayout)
+        self.mainlayout.addLayout(self.gridLayout)
+        self.setLayout(self.mainlayout)
 
-        self.searchbox.setToolTip(
-            'Begin typing to search or click magnifying glass icon to display options')
-        self.pinwindow.setToolTip(
-            'Pin the search window to keep it from closing automatically when losing focus')
-        self.searchfilter.setToolTip(
-            'Select a predefined filter')
-        self.opensettingstool.setToolTip(
-            'General application settings')
-        self.searchresultstree.setToolTip(
-            'Double click an action to attempt to perform it. Some actions only work in specific contexts')
+        self.searchbox.setToolTip(la.ln_searchbox)
+        self.contexttoggle.setToolTip(la.ln_contexttoggle)
+        self.pinwindow.setToolTip(la.ln_pinwindow)
+        self.searchfilter.setToolTip(la.ln_searchfilter)
+        self.opensettingstool.setToolTip(la.ln_opensettingstool)
+        self.searchresultstree.setToolTip(la.ln_searchresultstree)
 
-        self.setupContext()
+        self.setupresulttree()
         self.searchbox.setFocus()
         self.searchbox.grabKeyboard()
+
         # !SECTION
 
-    # region ------------------------------------------------------------- Initial Setup
+    # ---------------------------------------------------------- Functions
+    # SECTION Functions --------------------------------------------------
+    # ----------------------------------- count_chars Setup
+    # NOTE count_chars ------------------------------------
+    def count_chars(self, txt):
+        result = 0
+        for char in txt:
+            result += 1     # same as result = result + 1
+        return result
 
+    # --------------------------------------- Initial Setup
+    # NOTE Initial Setup ----------------------------------
     def initialsetup(self):
         self.handler = datahandler.DataHandler(self.isdebug)
         currentidx = hou.hotkeys.changeIndex()
@@ -386,7 +515,7 @@ class Searcher(QtWidgets.QWidget):
         if len(chindex) == 0:
             chindex = int(currentidx)
             self.handler.updatechangeindex(chindex, True)
-            self.handler.updatedataasync()
+            self.handler.updatedataasync(self.isdebug)
             hou.ui.setStatusMessage(
                 "Searcher database created",
                 severity=hou.severityType.Message
@@ -395,13 +524,15 @@ class Searcher(QtWidgets.QWidget):
             chindex = int(chindex[0][0])
 
         if int(currentidx) != chindex:
-            self.handler.updatedataasync()
+            self.handler.updatedataasync(self.isdebug)
             self.handler.updatechangeindex(int(currentidx))
 
         tmpkey = self.handler.getdefaulthotkey()
         self.tmpkey = tmpkey[0][0]
         return self.handler, self.tmpkey
 
+    # ------------------------------------------- Panel/Node
+    # NOTE Panel/Node -------------------------------------
     def getnode(self):
         nodeSelect = hou.selectedNodes()
         for node in nodeSelect:
@@ -416,27 +547,93 @@ class Searcher(QtWidgets.QWidget):
                 ("No context options to display" + str(e)),
                 severity=hou.severityType.Message
             )
+    # !SECTION
 
-    # endregion
-    # region ------------------------------------------------------------- Callbacks
+    # ---------------------------------------------------------- Callbacks
+    # SECTION Callbacks --------------------------------------------------
+    # ------------------------------------- searchfilter_cb
+    # NOTE searchfilter_cb --------------------------------
     def searchfilter_cb(self):
         self.openmenu()
 
+    # ------------------------------------------ setctxicon
+    # NOTE setctxicon -------------------------------------
+    def setctxicon(self):
+        if self.showctx:
+            self.contexttoggle.setIcon(util.COLLAPSE_ICON)
+        else:
+            self.contexttoggle.setIcon(util.EXPAND_ICON)
+        self.searchresultstree.setColumnHidden(3, self.showctx)
+
+    # ------------------------------------------ showctx_cb
+    # NOTE showctx_cb -------------------------------------
+    def showctx_cb(self, pressed):
+        self.showctx = True if pressed else False
+        self.settingdata[util.SETTINGS_KEYS[7]] = self.showctx
+        searcher_data.savesettings(self.settingdata)
+        self.setctxicon()
+
+    # ---------------------------------------- pinwindow_cb
+    # NOTE pinwindow_cb -----------------------------------
     def pinwindow_cb(self):
         self.windowispin = not self.windowispin
         self.settingdata[util.SETTINGS_KEYS[5]] = self.windowispin
         searcher_data.savesettings(self.settingdata)
         self.setpinicon()
 
+    # ------------------------------------------ setpinicon
+    # NOTE setpinicon -------------------------------------
     def setpinicon(self):
         if self.windowispin:
             self.pinwindow.setIcon(util.PIN_IN_ICON)
         else:
             self.pinwindow.setIcon(util.PIN_OUT_ICON)
 
-    def opensettings_cb(self):
-        self.open_settings()
+    # ------------------------------------- opensettings_cb
+    # NOTE opensettings_cb --------------------------------
+    def opensettings_cb(self, doopen):
+        self.ui.isopened = self.ui.isVisible()
 
+        if self.animatedsettings:
+            self.open_settings(doopen)
+        elif self.ui.isopened:
+            self.open_settings(False)
+        else:
+            self.open_settings(True)
+
+    # --------------------------------------- open_settings
+    # NOTE open_settings ----------------------------------
+    def open_settings(self, doopen):
+        if doopen:
+            pos = self.opensettingstool.mapToGlobal(
+                QtCore.QPoint(-self.ui.width() + 31, 26))
+            self.ui.setGeometry(
+                pos.x(),
+                pos.y(),
+                self.ui.width(),
+                self.ui.height()
+            )
+            self.ui.show()
+            self.ui.activateWindow()
+            self.ui.setFocus()
+            if self.animatedsettings:
+                self.anim.start_animation(True)
+        else:
+            if self.animatedsettings:
+                _ = self.anim.start_animation(False)
+            else:
+                self.ui.isopened = True
+                self.ui.close()
+
+    def anim_complete(self):
+        if self.ui.isopened:
+            self.ui.close()
+            self.ui.isopened = False
+            self.opensettingstool.setChecked(False)
+
+
+    # ------------------------------------- globalkeysearch
+    # NOTE globalkeysearch --------------------------------
     def globalkeysearch(self):
         self.ctxsearch = True
         ctx = []
@@ -445,6 +642,8 @@ class Searcher(QtWidgets.QWidget):
         self.searchtablepopulate(results)
         self.ctxsearch = False
 
+    # ----------------------------------------- ctxsearcher
+    # NOTE ctxsearcher ------------------------------------
     def ctxsearcher(self, ctx=None):
         results = None
         ctxresult = []
@@ -481,21 +680,36 @@ class Searcher(QtWidgets.QWidget):
             self.searchresultstree.topLevelItem(0).child(0)
         )
 
+    # --------------------------------------- textchange_cb
+    # NOTE textchange_cb ----------------------------------
     def textchange_cb(self, text):
+        self.starttime = ptime.time()
         if len(text) > 0:
             self.infolbl.setText(self.searchresultstree.toolTip())
         if text in util.CTXSHOTCUTS:
             self.ctxsearcher(text)
         elif len(text) > 1 and text not in util.CTXSHOTCUTS:
             self.searching = True
-            txt = self.handler.searchtext(text)
+            allowed = re.compile(r'[^a-zA-Z ]+')
+            text = re.sub(allowed, '', text)
+            str = text.split()
+            searchstring = ['%s*' % (x,) for x in str]
+            txt, timer = self.handler.searchtext(
+                ' '.join(searchstring), 
+                self.isdebug, 
+                self.settingdata[util.SETTINGS_KEYS[9]]
+            )
+            self.hotkeystime = timer
             self.searchtablepopulate(txt)
         else:
             self.searching = False
+            self.treetotal_lbl.setText("")
             self.searchresultstree.clear()
             self.infolbl.setText(
                 "Begin typing to search or click magnifying glass icon to display options")
-
+    
+    # -------------------------------------- searchclick_cb
+    # NOTE searchclick_cb ---------------------------------
     def searchclick_cb(self, item, column):
         hk = item.text(2)
         self.tmpsymbol = item.text(3)
@@ -512,9 +726,12 @@ class Searcher(QtWidgets.QWidget):
             self.processkey(hk)
             self.tmpsymbol = None
         return
-    # endregion
+    # !SECTION
 
-    # region ------------------------------------------------------------- Searchbar Menu
+    # ------------------------------------------------------------- Search
+    # SECTION Search -----------------------------------------------------
+    # -------------------------------------------- openmenu
+    # NOTE openmenu ---------------------------------------
     def openmenu(self):
         self.menuopened = True
         self.searchmenu = QtWidgets.QMenu()
@@ -565,9 +782,13 @@ class Searcher(QtWidgets.QWidget):
 
     # endregion
 
-    # region ------------------------------------------------------------- Search Functionality
+    # --------------------------------- searchtablepopulate
+    # NOTE searchtablepopulate ----------------------------
     def searchtablepopulate(self, data):
         if len(data) > 0:
+            goalnum = 15
+            self.treecatnum = 0
+            self.treeitemsnum = 0
             self.searchresultstree.clear()
             hotkeys = []
             context_list = []
@@ -580,8 +801,10 @@ class Searcher(QtWidgets.QWidget):
                     else:
                         context_list.append(data[i][4])
 
-            result = self.handler.gethcontextod(context_list)
+            result, hctimer = self.handler.gethcontextod(context_list)
+            self.hcontexttime = hctimer
 
+            treebuildtimer = ptime.time()
             for hc in range(len(result)):
                 hcontext_tli[result[hc][2]] = (QtWidgets.QTreeWidgetItem(
                     self.searchresultstree, [
@@ -590,12 +813,13 @@ class Searcher(QtWidgets.QWidget):
                     ]
                 ))
                 self.searchresultstree.expandItem(hcontext_tli[result[hc][2]])
+                self.treecatnum += 1
 
             base_keys = hcontext_tli.keys()
             for i in range(len(data)):
                 for j in range(len(base_keys)):
                     if base_keys[j] in data[i][4]:
-                        if self.isdebug:
+                        if self.isdebug and self.isdebug.level in {"ALL"}:
                             hotkeys.append(QtWidgets.QTreeWidgetItem(
                                 hcontext_tli[base_keys[j]], [
                                     data[i][0],
@@ -605,6 +829,7 @@ class Searcher(QtWidgets.QWidget):
                                     data[i][4]
                                 ]
                             ))
+                            self.treeitemsnum += 1
                         else:
                             hotkeys.append(QtWidgets.QTreeWidgetItem(
                                 hcontext_tli[base_keys[j]], [
@@ -614,10 +839,36 @@ class Searcher(QtWidgets.QWidget):
                                     data[i][3]
                                 ]
                             ))
-    # endregion
+                            self.treeitemsnum += 1
+            treebuildtimerend = ptime.time()
+            treebuildtotal = ((treebuildtimerend - treebuildtimer) * 1000.0)
+            
+            # Display the number of added results by iteration
+            catval = ("%d : Contexts | " % self.treecatnum)
+            itmval = ("%d : Results " % self.treeitemsnum)
+            catval = catval.rjust(goalnum - self.count_chars(str(self.treecatnum)), " ")
+            itmval = itmval.rjust((goalnum + 2) - self.count_chars(str(self.treeitemsnum)), " ")
+            self.treetotal_lbl.setText((catval + itmval))
 
-    # region ------------------------------------------------------------- Hotkey Processing
+            # Performance monitors to check how long different aspects take to run ----------
+            self.endtime = ptime.time()
+            totaltime = ((self.endtime - self.starttime) * 1000.0)
+            if self.isdebug and self.isdebug.level in {"TIMER", "ALL"}:
+                if hou.isUIAvailable():
+                    hou.ui.setStatusMessage(
+                        (('Context Search %0.4f ms | ' % self.hcontexttime) 
+                        + ('Hotkey Search %0.4f ms | ' % self.hotkeystime) 
+                        + ('Tree build %0.4f ms | ' % treebuildtotal) 
+                        + ('Total : %0.4f ms' % (totaltime))) , severity=hou.severityType.Message)
+                else:
+                    print('Search took %0.4f ms' % self.hotkeystime)
 
+    # !SECTION
+
+    # -------------------------------------------------- Hotkey Processing
+    # SECTION Hotkey Processing ------------------------------------------
+    # -------------------------------------- processkey
+    # NOTE processkey ---------------------------------
     def processkey(self, key, tmphk=False):
         hk = key
         if tmphk:
@@ -647,8 +898,7 @@ class Searcher(QtWidgets.QWidget):
 
         hou.ui.mainQtWindow().setFocus()
         try:
-            hd.executeDeferred(self.app.sendEvent,
-                               hou.ui.mainQtWindow(), keypress)
+            hd.executeDeferred(self.app.sendEvent, hou.ui.mainQtWindow(), keypress)
             self.close()
 
         except(AttributeError, TypeError) as e:
@@ -657,6 +907,8 @@ class Searcher(QtWidgets.QWidget):
                 severity=hou.severityType.Warning
             )
 
+    # ---------------------------------- setKeysChanged
+    # NOTE setKeysChanged -----------------------------
     def setKeysChanged(self, changed):
         if self.keys_changed and not changed:
             if not hou.hotkeys.saveOverrides():
@@ -665,6 +917,8 @@ class Searcher(QtWidgets.QWidget):
         self.chindex = hou.hotkeys.changeIndex()
         self.handler.updatechangeindex(self.chindex)
 
+    # -------------------------------- createtemphotkey
+    # NOTE createtemphotkey ---------------------------
     def createtemphotkey(self, symbol):
         hou.hotkeys._createBackupTables()
         result = hou.hotkeys.addAssignment(symbol, self.tmpkey)
@@ -672,15 +926,20 @@ class Searcher(QtWidgets.QWidget):
         self.setKeysChanged(False)
         return result
 
+    # -------------------------------- removetemphotkey
+    # NOTE removetemphotkey ---------------------------
     def removetemphotkey(self, symbol, tmpkey):
         hou.hotkeys._restoreBackupTables()
         hou.hotkeys.revertToDefaults(symbol, True)
         self.keys_changed = True
         self.setKeysChanged(False)
-    # endregion
 
-    # region ------------------------------------------------------------- Events
-    # SECTION Events
+    # !SECTION
+
+    # --------------------------------------------------------- Animations
+    # SECTION Animations -------------------------------------------------
+    # ----------------------------------------- fade_in
+    # NOTE fade_in ------------------------------------
     def fade_in(self, target, duration):
         self.effect = QtWidgets.QGraphicsOpacityEffect()
         self.tar = target
@@ -691,6 +950,8 @@ class Searcher(QtWidgets.QWidget):
         self.an.setEndValue(1)
         self.an.start()
 
+    # ---------------------------------------- fade_out
+    # NOTE fade_out -----------------------------------
     def fade_out(self, target, duration):
         self.effect = QtWidgets.QGraphicsOpacityEffect()
         self.tar = target
@@ -700,37 +961,38 @@ class Searcher(QtWidgets.QWidget):
         self.an.setStartValue(1)
         self.an.setEndValue(0)
         self.an.start()
+    # !SECTION
 
-    def info_fade(self, fadein):
-        self.animation = QtCore.QPropertyAnimation(
-            self.infolbl_font, b'opacity')
-        self.animation.setDuration(200)
-        if fadein:
-            self.animation.setStartValue(0.0)
-            self.animation.setEndValue(1.0)
-        if not fadein:
-            self.animation.setStartValue(1.0)
-            self.animation.setEndValue(0.0)
-        self.animation.setEasingCurve(QtGui.QEasingCurve.OutQuad)
-        self.animation.start()
-
-    def checktooltip(self, obj):
-        if obj == self.searchresultstree:
-            if self.searching:
-                self.infolbl.setText(obj.toolTip())
-            else:
+    # ------------------------------------------------------------- Events
+    # SECTION Events -----------------------------------------------------
+    def checktooltip(self, obj, hasleft=False):
+        if hasleft:
+            # self.fade_out(self.infolbl, 200)
+            if self.searching and self.infolbl.text() != self.searchresultstree.toolTip():
+                self.infolbl.setText(self.searchresultstree.toolTip())
+                self.fade_in(self.infolbl, 200)
+            elif not self.searching and self.infolbl.text() != self.searchbox.toolTip():
                 self.infolbl.setText(self.searchbox.toolTip())
+                self.fade_in(self.infolbl, 200)
         else:
-            self.fade_in(self.infolbl, 200)
-            self.infolbl.setText(obj.toolTip())
+            if obj == self.searchresultstree or obj == self.searchbox:
+                if self.searching and self.infolbl.text() != self.searchresultstree.toolTip():
+                    self.infolbl.setText(self.searchresultstree.toolTip())
+                    self.fade_in(self.infolbl, 200)
+                elif not self.searching and self.infolbl.text() != self.searchbox.toolTip():
+                    self.infolbl.setText(self.searchbox.toolTip())
+                    self.fade_in(self.infolbl, 200)
+            elif self.infolbl.text() != obj.toolTip():
+                self.infolbl.setText(obj.toolTip())
+                self.fade_in(self.infolbl, 200)
 
     def eventFilter(self, obj, event):
-        # ---------------------------------------------------- Mouse
+        # ------------------------------------------- Mouse
+        # NOTE Mouse --------------------------------------
         if event.type() == QtCore.QEvent.Enter:
             self.checktooltip(obj)
         if event.type() == QtCore.QEvent.Leave:
-            self.fade_out(self.infolbl, 200)
-            self.infolbl.setText("")
+            self.checktooltip(obj, True)
         if event.type() == QtCore.QEvent.ToolTip:
             return True
 
@@ -744,7 +1006,10 @@ class Searcher(QtWidgets.QWidget):
         if event.type() == QtCore.QEvent.MouseMove:
             if obj == self:
                 delta = event.globalPos() - self.previous_pos
-                self.move(self.x() + delta.x(), self.y()+delta.y())
+                self.move(self.x() + delta.x(), self.y() + delta.y())
+                if self.ui.isVisible():
+                    self.ui.move(self.ui.x() + delta.x(),
+                                 self.ui.y() + delta.y())
                 self.previous_pos = event.globalPos()
                 self._drag_active = True
             else:
@@ -754,7 +1019,8 @@ class Searcher(QtWidgets.QWidget):
             if self._drag_active:
                 self._drag_active = False
 
-        # ------------------------------------------------- Keypress
+        # ---------------------------------------- Keypress
+        # NOTE Keypress -----------------------------------
         if event.type() == QtCore.QEvent.KeyPress:
             if event.key() == QtCore.Qt.Key_Tab:
                 if self.searching:
@@ -795,7 +1061,8 @@ class Searcher(QtWidgets.QWidget):
                     self.openmenu()
                     return True
 
-        # ------------------------------------------------- Window
+        # ------------------------------------------ Window
+        # NOTE Window -------------------------------------
         if event.type() == QtCore.QEvent.WindowActivate:
             self.searchbox.grabKeyboard()
         elif event.type() == QtCore.QEvent.WindowDeactivate:
@@ -812,20 +1079,16 @@ class Searcher(QtWidgets.QWidget):
         elif event.type() == QtCore.QEvent.FocusOut:
             pass
 
-        # ------------------------------------------------- Close
+        # ------------------------------------------- Close
+        # NOTE Close --------------------------------------
         if event.type() == QtCore.QEvent.Close:
             try:
                 if util.bc(self.settingdata[util.SETTINGS_KEYS[2]]):
-                    self.windowsettings.setValue(
-                        "geometry",
-                        self.saveGeometry()
-                    )
+                    self.windowsettings.setValue("geometry", self.saveGeometry())
             except (AttributeError, TypeError) as e:
                 if hou.isUIAvailable():
                     hou.ui.setStatusMessage(
-                        ("Could not save window dimensions: " + str(e)),
-                        severity=hou.severityType.Warning
-                    )
+                        ("Could not save window dimensions: " + str(e)), severity=hou.severityType.Warning)
                 else:
                     print("Could not save window dimensions: " + str(e))
 
@@ -857,7 +1120,7 @@ class overlayLabel(QtWidgets.QLabel):
         super(overlayLabel, self).__init__(parent)
         self.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
 
-# region ----------------------------------------------------------------- Setup Functions
+# ------------------------------------------------------------------------ Setup Functions
 
 
 def center():
@@ -882,12 +1145,8 @@ def CreateSearcherPanel(kwargs, searcher_window=None):
 
     searcher_window = Searcher(kwargs, settings, windowsettings)
     searcher_window.setWindowFlags(
-        # searcher_window.windowFlags() |
         QtCore.Qt.Tool |
-        # QtCore.Qt.WindowSystemMenuHint |
-        # QtCore.Qt.WindowTitleHint |
         QtCore.Qt.CustomizeWindowHint |
-        # QtCore.Qt.FramelessWindowHint
         QtCore.Qt.WindowStaysOnTopHint
     )
 

@@ -1,3 +1,5 @@
+# C:\Users\mosthated\AppData\Roaming\Python\Python37\Scripts\pyuic5.exe .\SearcherSettings.ui -o .\SearcherSettings.py
+
         # panetab = None
         # for pane in hou.ui.floatingPaneTabs():
         #     if pane.type() == hou.paneTabType.PythonPanel:
@@ -21,3 +23,46 @@
 #     from qtpy import QtCore
 #     from qtpy import QtWidgets
 # endregion
+
+
+
+    # ------------------------------------- checkforchanges
+    def checkforchanges(self):
+        for i in range(len(util.SETTINGS_KEYS)):
+            if util.SETTINGS_TYPES[util.SETTINGS_KEYS[i]] == "bool":
+                if self.isdebug and self.isdebug.level in {"ALL"}:
+                    print("Get attribute: ", getattr(self, util.SETTINGS_KEYS[i]))
+                    print("Get settings: ", bc(self.currentsettings[util.SETTINGS_KEYS[i]]))
+                if getattr(self, util.SETTINGS_KEYS[i]).isChecked() != bc(self.currentsettings[util.SETTINGS_KEYS[i]]):
+                    if self.isdebug and self.isdebug.level in {"ALL"}:
+                        print("{} value {}".format(util.SETTINGS_KEYS[i], getattr(self, util.SETTINGS_KEYS[i]).isChecked()))
+                        print("{} value {}".format(util.SETTINGS_KEYS[i], bc(self.currentsettings[util.SETTINGS_KEYS[i]])))
+                    return True
+            elif util.SETTINGS_TYPES[util.SETTINGS_KEYS[i]] == "text":
+                if self.isdebug and self.isdebug.level in {"ALL"}:
+                    print("Get attribute: ", getattr(self, util.SETTINGS_KEYS[i]))
+                    print("Get settings: ", self.currentsettings[util.SETTINGS_KEYS[i]])
+                if getattr(self, util.SETTINGS_KEYS[i]).text() != self.currentsettings[util.SETTINGS_KEYS[i]]:
+                    if self.isdebug and self.isdebug.level in {"ALL"}:
+                        print("{} value {}".format(util.SETTINGS_KEYS[i], getattr(self, util.SETTINGS_KEYS[i]).text()))
+                        print("{} value {}".format(util.SETTINGS_KEYS[i], self.currentsettings[util.SETTINGS_KEYS[i]]))
+                    return True
+            elif util.SETTINGS_TYPES[util.SETTINGS_KEYS[i]] == "intval":
+                if self.isdebug and self.isdebug.level in {"ALL"}:
+                    print("Get attribute: ", getattr(self, util.SETTINGS_KEYS[i]))
+                    print("Get settings: ", self.currentsettings[util.SETTINGS_KEYS[i]])
+                if getattr(self, util.SETTINGS_KEYS[i]).value() != self.currentsettings[util.SETTINGS_KEYS[i]]:
+                    if self.isdebug and self.isdebug.level in {"ALL"}:
+                        print("{} value {}".format(util.SETTINGS_KEYS[i], getattr(self, util.SETTINGS_KEYS[i]).value()))
+                        print("{} value {}".format(util.SETTINGS_KEYS[i], int(self.currentsettings[util.SETTINGS_KEYS[i]])))
+                    return True
+            elif util.SETTINGS_TYPES[util.SETTINGS_KEYS[i]] == "cbx":
+                if self.isdebug and self.isdebug.level in {"ALL"}:
+                    print("Get attribute: ", getattr(self, util.SETTINGS_KEYS[i]))
+                    print("Get settings: ", self.currentsettings[util.SETTINGS_KEYS[i]])
+                if getattr(self, util.SETTINGS_KEYS[i]).currentText() != self.currentsettings[util.SETTINGS_KEYS[i]]:
+                    if self.isdebug and self.isdebug.level in {"ALL"}:
+                        print("{} value {}".format(util.SETTINGS_KEYS[i], getattr(self, util.SETTINGS_KEYS[i]).currentText()))
+                        print("{} value {}".format(util.SETTINGS_KEYS[i], str(self.currentsettings[util.SETTINGS_KEYS[i]])))
+                    return True
+        return False

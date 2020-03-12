@@ -1,10 +1,19 @@
+from __future__ import print_function
+from __future__ import absolute_import
+
+import hou
+import os
+
+from searcher import util
+from searcher import searcher_data
+from searcher import ptime as ptime
+from searcher import database
+
 import os
 import threading
 import hdefereval as hd
 
-from . import database
-
-db = database.Databases()
+reload(database)
 
 
 def worker():
@@ -15,58 +24,64 @@ class DataHandler(object):
     """Searcher data and communication handler"""
 
     def __init__(self, debug=None):
+        self.db = database.Databases()
         self.isdebug = debug
         self.scriptpath = os.path.dirname(os.path.realpath(__file__))
-    # ----------------------------------------------------------------------------------- Function calls
-    # ----------------------------------------------------- Retrieve
+    # SECTION Function calls ------------------------------ Function calls
+    # -------------------------------------------- Retrieve
+    # NOTE Retrieve ---------------------------------------
 
     def getchangeindex(self):
-        index = db.getchangeindex()
+        index = self.db.getchangeindex()
         return index
 
     def getdefaulthotkey(self):
-        index = db.getdefhotkey()
+        index = self.db.getdefhotkey()
         return index
 
-    # ----------------------------------------------------- Updates
+    # --------------------------------------------- Updates
+    # NOTE Updates ----------------------------------------
     def updatechangeindex(self, indexval, new=False):
-        db.updatechangeindex(indexval, new)
+        self.db.updatechangeindex(indexval, new)
         return
 
-    def updatedataasync(self):
+    def updatedataasync(self, debug):
+        self.isdebug = debug
         thread = threading.Thread(target=worker)
         thread.daemon = True
         thread.start()
 
     def updatedata(self):
-        db.updatecontext(self.isdebug)
+        self.db.updatecontext(self.isdebug)
         return
 
     def updatetmphotkey(self, tmpkey):
-        db.updatetmphk(tmpkey)
+        self.db.updatetmphk(tmpkey)
         return
 
     def updatelasthk(self, lastkey):
-        db.updatelastkey(lastkey)
+        self.db.updatelastkey(lastkey)
         return
 
     @staticmethod
     def gethcontext():
-        results = db.gethcontexts()
+        results = self.db.gethcontexts()
         return results
 
     def gethcontextod(self, inputtext):
-        results = db.gethcontextod(inputtext)
-        return results
+        results, timer = self.db.gethcontextod(inputtext)
+        return results, timer
 
     def searchctx(self, txt):
-        results = db.ctxfilterresults(txt)
+        results = self.db.ctxfilterresults(txt)
         return results
 
-    def searchtext(self, txt):
-        results = db.searchresults(txt)
-        return results
+    def searchtext(self, txt, debug, limit=0):
+        self.isdebug = debug
+        results, timer = self.db.searchresults(txt, self.isdebug, limit)
+        return results, timer
 
     def cleardb(self):
-        results = db.cleardatabase()
+        results = self.db.cleardatabase()
         return results
+    # !SECTION

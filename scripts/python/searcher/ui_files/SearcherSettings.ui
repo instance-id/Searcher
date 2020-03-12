@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>164</height>
+    <width>450</width>
+    <height>211</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -21,7 +21,7 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>600</width>
+    <width>450</width>
     <height>0</height>
    </size>
   </property>
@@ -34,11 +34,20 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="0">
+   <property name="bottomMargin">
+    <number>6</number>
+   </property>
+   <property name="spacing">
+    <number>6</number>
+   </property>
+   <item row="0" column="0">
     <layout class="QVBoxLayout" name="verticalLayout_4">
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <layout class="QHBoxLayout" name="headerrow">
        <item>
         <widget class="QLabel" name="projectTitle">
          <property name="font">
@@ -47,10 +56,17 @@
           </font>
          </property>
          <property name="text">
-          <string>Searcher Settings</string>
+          <string>Settings</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="Line" name="line_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
          </property>
         </widget>
        </item>
@@ -68,15 +84,12 @@
         </spacer>
        </item>
        <item>
-        <widget class="QCheckBox" name="inmemory_chk">
+        <widget class="QCheckBox" name="checkBox">
          <property name="layoutDirection">
           <enum>Qt::RightToLeft</enum>
          </property>
          <property name="text">
-          <string>Use In-Memory Database</string>
-         </property>
-         <property name="tristate">
-          <bool>false</bool>
+          <string>Use Animated Menus:</string>
          </property>
         </widget>
        </item>
@@ -93,7 +106,26 @@
       </layout>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_5">
+      <widget class="Line" name="line">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="secondrow">
+       <item>
+        <widget class="QComboBox" name="lang_cbox">
+         <property name="currentText">
+          <string>English</string>
+         </property>
+         <item>
+          <property name="text">
+           <string>English</string>
+          </property>
+         </item>
+        </widget>
+       </item>
        <item>
         <spacer name="horizontalSpacer_2">
          <property name="orientation">
@@ -108,6 +140,40 @@
         </spacer>
        </item>
        <item>
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Maximum Search Results</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="maxresults_txt">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>9999</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="inmemory_chk">
+         <property name="layoutDirection">
+          <enum>Qt::RightToLeft</enum>
+         </property>
+         <property name="text">
+          <string>Use In-Memory Database</string>
+         </property>
+         <property name="tristate">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="thirdrow">
+       <item>
         <widget class="QLabel" name="label_2">
          <property name="text">
           <string>Hotkey to use for opening unassigned items: </string>
@@ -115,7 +181,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="hkinput_txt">
+        <widget class="QLineEdit" name="defaulthotkey_txt">
          <property name="toolTip">
           <string/>
          </property>
@@ -140,7 +206,7 @@
       </layout>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_7">
+      <layout class="QHBoxLayout" name="fourthrow">
        <item>
         <widget class="QLabel" name="label">
          <property name="text">
@@ -161,7 +227,7 @@
       </layout>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout">
+      <layout class="QHBoxLayout" name="fifthrow">
        <item>
         <widget class="QLabel" name="label_4">
          <property name="text">
@@ -177,13 +243,6 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="test_context_btn">
-         <property name="text">
-          <string>Test HContext</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QPushButton" name="cleardata_btn">
          <property name="text">
           <string>Clear Data</string>
@@ -193,7 +252,21 @@
       </layout>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <widget class="Line" name="line_3">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="sixthrow">
+       <item>
+        <widget class="QToolButton" name="about_btn">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
        <item>
         <spacer name="horizontalSpacer">
          <property name="orientation">
@@ -208,9 +281,28 @@
         </spacer>
        </item>
        <item>
+        <widget class="QComboBox" name="debuglevel_cbx">
+         <item>
+          <property name="text">
+           <string>NONE</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>TIMER</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>ALL</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
         <widget class="QCheckBox" name="debugflag_chk">
          <property name="layoutDirection">
-          <enum>Qt::RightToLeft</enum>
+          <enum>Qt::LeftToRight</enum>
          </property>
          <property name="text">
           <string>Debug Mode</string>

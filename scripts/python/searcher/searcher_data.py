@@ -24,21 +24,14 @@ searcher_settings = os.path.join(
 
 settingsdata = QtCore.QSettings(searcher_settings, QtCore.QSettings.IniFormat)
 
-DEFAULT_SETTINGS = {
-    util.SETTINGS_KEYS[0]: "False",         # in_memory_db
-    util.SETTINGS_KEYS[1]: defaultdbpath,   # database_path
-    util.SETTINGS_KEYS[2]: "False",         # savewindowsize
-    util.SETTINGS_KEYS[3]: [1000, 600],     # windowsize
-    util.SETTINGS_KEYS[4]: "False",         # debugflag
-    util.SETTINGS_KEYS[5]: "False",         # pinwindow
-}
-
 
 def createdefaults():
+    def_set = util.DEFAULT_SETTINGS
+    def_set[util.SETTINGS_KEYS[1]] = str(defaultdbpath)
     settingsdata.beginGroup('Searcher')
     for i in range(len(util.SETTINGS_KEYS)):
         settingsdata.setValue(
-            util.SETTINGS_KEYS[i], DEFAULT_SETTINGS[util.SETTINGS_KEYS[i]])
+            util.SETTINGS_KEYS[i], def_set[util.SETTINGS_KEYS[i]])
     settingsdata.endGroup()
 
 

@@ -1,7 +1,7 @@
-# region ----------------------------------------------------------------- Imports
+# ------------------------------------------------------------------------ Imports
 from __future__ import print_function
 from __future__ import absolute_import
-import weakref
+from searcher import enum
 
 from sys import platform
 from typing import Tuple
@@ -11,56 +11,69 @@ hver = 0
 if os.environ["HFS"] != "":
     ver = os.environ["HFS"]
     hver = int(ver[ver.rindex('.')+1:])
-    if int(hver) >= 391:
-        from hutil.Qt import _QtUiTools
-        from hutil.Qt import QtGui
-        from hutil.Qt import QtCore
-        from hutil.Qt import QtWidgets
-    elif int(hver) < 391:
-        from hutil.Qt import QtUiTools
-        from hutil.Qt import QtGui
-        from hutil.Qt import QtCore
-        from hutil.Qt import QtWidgets
-# else:
-#     os.environ['QT_API'] = 'pyside2'
-#     from PySide import QtUiTools
-#     from qtpy import QtGui
-#     from qtpy import QtCore
-#     from qtpy import QtWidgets
-
+    from hutil.Qt import QtCore
 # endregion
+
+DEBUG_LEVEL = enum.Enum('NONE', 'TIMER', 'ALL')
+class Dbug(object):
+    def __init__(self, enabled, level):
+        self.enabled = enabled
+        self.level = level
+    def __nonzero__(self): return bool(self.enabled)
+
 
 SequenceT = Tuple[str, ...]
 
-
-# region ----------------------------------------------------------------- Helper Functions
+# ------------------------------------------------------------------------ Helper Functions
 def bc(v):
     return str(v).lower() in ("yes", "true", "t", "1")
 # endregion
 
-
-# region ----------------------------------------------------------------- Application Settings
+# ------------------------------------------------------------------------ Application Settings
 SETTINGS_KEYS = [
-    'in_memory_db',
-    'database_path',
-    'savewindowsize',
-    'windowsize',
-    'debugflag',
-    'pinwindow',
+    'in_memory_db',     # 0
+    'database_path',    # 1
+    'savewindowsize',   # 2
+    'windowsize',       # 3
+    'debugflag',        # 4
+    'pinwindow',        # 5
+    'defaulthotkey',    # 6
+    'showctx',          # 7
+    'animatedsettings', # 8
+    'maxresults',       # 9
+    'debuglevel'        # 10
 ]
 
 # Include parameter type if it is to be processed by settings menu, else mark NA
 SETTINGS_TYPES = {
-    SETTINGS_KEYS[0]: 'bool',  # in_memory_db
-    SETTINGS_KEYS[1]: 'text',  # database_path
-    SETTINGS_KEYS[2]: 'bool',  # savewindowsize
-    SETTINGS_KEYS[3]: 'int',   # windowsize
-    SETTINGS_KEYS[4]: 'bool',  # debugflag
-    SETTINGS_KEYS[5]: 'NA',    # pinwindow
+    SETTINGS_KEYS[0]:  'bool',   # in_memory_db
+    SETTINGS_KEYS[1]:  'text',   # database_path
+    SETTINGS_KEYS[2]:  'bool',   # savewindowsize
+    SETTINGS_KEYS[3]:  'int',    # windowsize
+    SETTINGS_KEYS[4]:  'bool',   # debugflag
+    SETTINGS_KEYS[5]:  'NA',     # pinwindow
+    SETTINGS_KEYS[6]:  'text',   # defaulthotkey
+    SETTINGS_KEYS[7]:  'NA',     # showctx
+    SETTINGS_KEYS[8]:  'bool',   # animatedsettings
+    SETTINGS_KEYS[9]:  'intval', # maxresults
+    SETTINGS_KEYS[10]: 'cbx',   # debuglevel
 }
-# endregion
 
-# region ----------------------------------------------------------------- Key Translations
+DEFAULT_SETTINGS = {
+    SETTINGS_KEYS[0]: "False",               # in_memory_db
+    SETTINGS_KEYS[1]: "",                    # database_path
+    SETTINGS_KEYS[2]: "False",               # savewindowsize
+    SETTINGS_KEYS[3]: [1000, 600],           # windowsize
+    SETTINGS_KEYS[4]: "False",               # debugflag
+    SETTINGS_KEYS[5]: "False",               # pinwindow
+    SETTINGS_KEYS[6]: u"Ctrl+Alt+Shift+F7",  # defaulthotkey
+    SETTINGS_KEYS[7]: "True",                # showctx
+    SETTINGS_KEYS[8]: "True",                # animatedsettings
+    SETTINGS_KEYS[9]: 100,                   # maxresults
+    SETTINGS_KEYS[10]: "NONE",               # debuglevel
+}
+
+# ------------------------------------------------------------------------ Key Translations
 # Directional conversion
 KEYCONVERSIONS = {
     "DownArrow":  "down",
@@ -68,7 +81,6 @@ KEYCONVERSIONS = {
     "LeftArrow":  "left",
     "RightArrow": "right",
 }
-
 
 # List of possible hotkeys to use a temp keys when running commands
 HOTKEYLIST = [
@@ -78,7 +90,6 @@ HOTKEYLIST = [
     (u"Ctrl+Alt+Shift+F9"),
     (u"Ctrl+Alt+Shift+F10")
 ]
-
 
 # Used to detect if a keypress was just a modifier
 MODIFIER_KEYS = {
@@ -113,7 +124,7 @@ SPECIAL_KEYS = {
     QtCore.Qt.Key_Home:         "Page_Home",
 }
 
-# region -------------------------------------------- Platform conversions
+# --------------------------------------------------- Platform conversions
 # # Platform conversions
 # if platform == "linux" or platform == "linux2":
 #     tmp = {
@@ -383,12 +394,37 @@ PANETYPES = {
 }
 # endregion
 
-# region ----------------------------------------------------------------- UI Constants
+# ------------------------------------------------------------------------ UI Constants
 ICON_SIZE = hou.ui.scaledSize(32)
 EDIT_ICON_SIZE = hou.ui.scaledSize(28)
 
-SETTINGS_ICON = hou.ui.createQtIcon(
-    'BUTTONS_gear',
+# DOP_pyrosolver
+# MISC_database
+# MISC_python
+# MISC_rename
+# NETVIEW_64bit_badge # bug
+# NETVIEW_comment_badge
+# NETVIEW_debug
+# NETVIEW_info_button
+# NETVIEW_message_badge
+# NETVIEW_image_link
+# NETVIEW_image_link_located
+
+
+BUG_ICON = hou.ui.createQtIcon(
+    'NETVIEW_64bit_badge',
+    EDIT_ICON_SIZE,
+    EDIT_ICON_SIZE
+)
+
+COLLAPSE_ICON = hou.ui.createQtIcon(
+    'BUTTONS_collapse_left',
+    EDIT_ICON_SIZE,
+    EDIT_ICON_SIZE
+)
+
+EXPAND_ICON = hou.ui.createQtIcon(
+    'BUTTONS_expand_right',
     EDIT_ICON_SIZE,
     EDIT_ICON_SIZE
 )
@@ -401,6 +437,12 @@ INFO_ICON = hou.ui.createQtIcon(
 
 HELP_ICON = hou.ui.createQtIcon(
     'BUTTONS_help',
+    EDIT_ICON_SIZE,
+    EDIT_ICON_SIZE
+)
+
+ABOUT_ICON1 = hou.ui.createQtIcon(
+    'NETVIEW_info_button',
     EDIT_ICON_SIZE,
     EDIT_ICON_SIZE
 )
@@ -423,6 +465,11 @@ SEARCH_ICON = hou.ui.createQtIcon(
     EDIT_ICON_SIZE
 )
 
+SETTINGS_ICON = hou.ui.createQtIcon(
+    'BUTTONS_gear',
+    EDIT_ICON_SIZE,
+    EDIT_ICON_SIZE
+)
 
 MENUSTYLE = """QMenu {background-color: rgb(64,64,64); menu-scrollable: 1; margin: 0px;}
                    QMenu:item {background-color: rgb(46,46,46);  padding: 5px 25px; margin: 1px; height:16px;}
@@ -438,3 +485,4 @@ TOOLTIP = """QToolTip {background-color: rgb(64,64,64); menu-scrollable: 1; marg
 
 CTXSHOTCUTS = [":v", ":c", ":g"]
 # endregion
+

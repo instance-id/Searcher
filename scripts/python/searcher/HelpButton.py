@@ -21,22 +21,21 @@ if os.environ["HFS"] != "":
 class HelpButton(QtWidgets.QPushButton):
     """Generic Help button."""
 
-    def __init__(self, name, parent=None):
+    def __init__(self, name, tooltip, size, parent=None):
         super(HelpButton, self).__init__(
             hou.qt.createIcon("BUTTONS_help"), "", parent=parent
         )
 
         self._name = name
-
-        self.setToolTip("Open Help Page.")
-        self.setIconSize(QtCore.QSize(16, 16))
-        self.setMaximumSize(QtCore.QSize(16, 16))
+        self.setToolTip(tooltip)
+        self.setIconSize(QtCore.QSize(size, size))
+        self.setMaximumSize(QtCore.QSize(size, size))
         self.setFlat(True)
 
         self.clicked.connect(self.display_help)
 
     def display_help(self):
-        """Display help page."""
+        """Display help panel."""
         # Look for an existing, float help browser.
         for pane_tab in hou.ui.paneTabs():
             if isinstance(pane_tab, hou.HelpBrowser):
@@ -51,4 +50,3 @@ class HelpButton(QtWidgets.QPushButton):
                 hou.paneTabType.HelpBrowser)
 
         browser.displayHelpPath("/searcher/{}".format(self._name))
-# endregion
