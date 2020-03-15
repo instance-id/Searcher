@@ -15,6 +15,8 @@ import hdefereval as hd
 
 reload(database)
 
+def get_db():
+    return getattr(hou.session, "DATABASE", None)
 
 def worker():
     hd.executeInMainThreadWithResult(DataHandler().updatedata)
@@ -24,7 +26,11 @@ class DataHandler(object):
     """Searcher data and communication handler"""
 
     def __init__(self, debug=None):
-        self.db = database.Databases()
+        self.db = get_db()
+        if not self.db:
+            hou.session.DATABASE = database.Databases()
+            self.db = get_db()
+            
         self.isdebug = debug
         self.scriptpath = os.path.dirname(os.path.realpath(__file__))
     # SECTION Function calls ------------------------------ Function calls

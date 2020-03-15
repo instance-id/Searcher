@@ -1,4 +1,6 @@
 from __future__ import print_function
+from __future__ import absolute_import
+
 from searcher import searcher_data
 from searcher import util
 from searcher import platformselect
@@ -26,14 +28,18 @@ current_file_path = os.path.abspath(
     inspect.getsourcefile(lambda: 0)
 )
 
-def get_db():
-    return getattr(hou.session, "DATABASE", None)
+def get_settings():
+    return getattr(hou.session, "SETTINGS", None)
+
+def get_dbconnection():
+    return getattr(hou.session, "DBCONNECTION", None)
 
 scriptpath = os.path.dirname(current_file_path)
-dbpath = os.path.join(scriptpath, "python/searcher/db/searcher.db")
+dbpath = os.path.join(scriptpath, "../python2.7libs/searcher/db/searcher.db")
 
-hou.session.DATABASE = DatabaseProxy()
-db = get_db()
+hou.session.SETTINGS = {}
+hou.session.DBCONNECTION = DatabaseProxy()
+db = DatabaseProxy()
 settingdata = {}
 isloading = True
 tempkey = ""
@@ -62,16 +68,6 @@ class HContext(Model):
         table_name = 'hcontext'
         database = db
 
-class HContextIndex(FTS5Model):
-    # rowid = RowIDField()
-    context = SearchField()
-    title = SearchField()
-    description = SearchField()
-
-    class Meta:
-        database = db
-        options = {'prefix': [2, 3], 'tokenize': 'porter'}
-
 class Hotkeys(Model):
     hotkey_symbol = CharField(unique=True)
     label = CharField()
@@ -96,9 +92,8 @@ class HotkeysIndex(FTS5Model):
         database = db
         options = {'prefix': [2, 3], 'tokenize': 'porter'}
 
-def create_tables():
-    with db:
-        db.create_tables([Settings, HContext, HContextIndex, Hotkeys, HotkeysIndex])
+def create_tables(dbc):
+    dbc.create_tables([Settings, HContext, Hotkeys, HotkeysIndex])
 
 def worker():
     hd.executeInMainThreadWithResult(updatecontext)
@@ -144,9 +139,9 @@ def initialsetup(cur):
         updatedataasync()
         if hou.isUIAvailable():
             hou.ui.setStatusMessage(
-                "Searcher database created", severity=hou.severityType.Message)
+                la.MESSAGES['initialsetup1'], severity=hou.severityType.Message)
         else:
-            print("Searcher database created")
+            print(la.MESSAGES['initialsetup1'])
     else:
         chindex = int(chindex[0][0])
 
@@ -157,7 +152,7 @@ def initialsetup(cur):
 
         if hou.isUIAvailable():
             hou.ui.setStatusMessage(
-                "Searcher database created and populated", severity=hou.severityType.Message)
+                la.MESSAGES['initialsetup2'], severity=hou.severityType.Message)
 
 # --------------------------------------------------------------- Retrieve
 # SECTION Retrieve -------------------------------------------------------
@@ -171,26 +166,32 @@ def getchangeindex(cur):
     except(AttributeError, TypeError) as e:
         if hou.isUIAvailable():
             hou.ui.setStatusMessage(
-                ("Could not get Searcher changeindex: " + str(e)), severity=hou.severityType.Warning)
+                (la.ERRORMSG['getchangeindex'] + str(e)), severity=hou.severityType.Warning)
         else:
-            print("Could not get Searcher changeindex: " + str(e))
+            print(la.ERRORMSG['getchangeindex'] + str(e))
 
 # ------------------------------------------- getlastusedhk
 # NOTE getlastusedhk --------------------------------------
 def getlastusedhk(cur):
+    settingdata = get_settings()
+    lastkey = settingdata[util.SETTINGS_KEYS[11]]
     try:
-        cur.execute("SELECT lastused FROM settings")
-        result = cur.fetchall()
-        if str(result[0][0]) != "":
-            lasthk = str(result[0][0]).split(' ')
-            rmresult = hou.hotkeys.removeAssignment(
-                str(lasthk[0]).strip(), str(lasthk[1]).strip())
+        if str(lastkey) != "":
+            lasthk = str(lastkey).split(' ')
+            hkcheck = hou.hotkeys.assignments(str(lasthk[0]))
+
+            if len(hkcheck) is 0:
+                settingdata[util.SETTINGS_KEYS[11]] = ""
+                searcher_data.savesettings(settingdata)
+                return
+
+            rmresult = hou.hotkeys.removeAssignment(str(lasthk[0]).strip(), str(lasthk[1]).strip())
             if rmresult:
                 hkcheck = hou.hotkeys.assignments(str(lasthk[0]))
                 hou.hotkeys.saveOverrides()
                 if len(hkcheck) is 0:
-                    Settings.update(lastused="").where(
-                        Settings.id == 1).execute()
+                    settingdata[util.SETTINGS_KEYS[11]] = ""
+                    searcher_data.savesettings(settingdata)
                     currentidx = hou.hotkeys.changeIndex()
                     updatechangeindex(int(currentidx))
                 else:
@@ -198,30 +199,29 @@ def getlastusedhk(cur):
                     hou.hotkeys.saveOverrides()
                     hkcheck = hou.hotkeys.assignments(str(lasthk[0]))
                     if len(hkcheck) is 0:
-                        Settings.update(lastused="").where(
-                            Settings.id == 1).execute()
+                        settingdata[util.SETTINGS_KEYS[11]] = ""
+                        searcher_data.savesettings(settingdata)
                         currentidx = hou.hotkeys.changeIndex()
                         updatechangeindex(int(currentidx))
                     else:
                         if hou.isUIAvailable():
                             hou.ui.setStatusMessage(
-                                ("Could not clear last assigned temp hotkey on last attempt:"), severity=hou.severityType.Warning)
+                                (la.ERRORMSG['getlastusedhk3']), severity=hou.severityType.Warning)
                         else:
-                            print(
-                                "Could not clear last assigned temp hotkey on last attempt:")
+                            print(la.ERRORMSG['getlastusedhk3'])
             else:
                 if hou.isUIAvailable():
                     hou.ui.setStatusMessage(
-                        ("Could not clear last assigned temp hotkey:"), severity=hou.severityType.Warning)
+                        (la.ERRORMSG['getlastusedhk2']), severity=hou.severityType.Warning)
                 else:
-                    print("Could not clear last assigned temp hotkey:")
+                    print(la.ERRORMSG['getlastusedhk2'])
 
     except(AttributeError, TypeError) as e:
         if hou.isUIAvailable():
             hou.ui.setStatusMessage(
-                ("Could not query last assigned temp hotkey:" + str(e)), severity=hou.severityType.Warning)
+                (la.ERRORMSG['getlastusedhk1'] + str(e)), severity=hou.severityType.Warning)
         else:
-            print("Could not query last assigned temp hotkey: " + str(e))
+            print(la.ERRORMSG['getlastusedhk1'] + str(e))
 # !SECTION
 
 # ----------------------------------------------------------------- Update
@@ -268,37 +268,28 @@ def updatechangeindex(indexval, new=False):
                 Settings.id == 1).execute()
     except(AttributeError, TypeError) as e:
         if hou.isUIAvailable():
-            hou.ui.setStatusMessage(("Could not update Searcher context database: " + str(e)), severity=hou.severityType.Warning)
+            hou.ui.setStatusMessage(
+                (la.ERRORMSG['updatechangeindex'] + str(e)), severity=hou.severityType.Warning)
         else:
-            print("Could not update Searcher context database: " + str(e))
+            print(la.ERRORMSG['updatechangeindex'] + str(e))
 
 # ------------------------------------------- updatecontext
 # NOTE updatecontext --------------------------------------
 def updatecontext(debug=False):
     try:
-        time1 = time.time()
         cleardatabase()
         ctxdata, hkeydata = getdata()
         with db.atomic():
             for data_dict in ctxdata:
                 HContext.replace_many(data_dict).execute()
-                HContextIndex.replace_many(data_dict).execute()
         with db.atomic():
             for idx in hkeydata:
                 Hotkeys.replace_many(idx).execute()
                 HotkeysIndex.replace_many(idx).execute()
-        time2 = time.time()
-        if debug:
-            res = ((time2 - time1) * 1000.0)
-            if hou.isUIAvailable():
-                hou.ui.setStatusMessage(
-                    ('DB update took %0.4f ms' % res), severity=hou.severityType.Message)
-            else:
-                print('DB update took %0.4f ms' % res)
-            return res
+
     except(AttributeError, TypeError) as e:
         hou.ui.setStatusMessage(
-            ("Could not update Searcher context database: " + str(e)), severity=hou.severityType.Warning)
+            (la.ERRORMSG['updatecontext'] + str(e)), severity=hou.severityType.Warning)
 # endregion
 
 # ------------------------------------------- cleardatabase
@@ -307,17 +298,19 @@ def cleardatabase():
     try:
         delhk = "DELETE FROM hotkeys"
         delctx = "DELETE FROM hcontext"
+        delhkindex = "DELETE FROM hotkeysindex"
         db.cursor().execute(delhk)
         db.cursor().execute(delctx)
+        db.cursor().execute(delhkindex)
         result = db.cursor().fetchall()
 
         return result
     except(AttributeError, TypeError) as e:
         if hou.isUIAvailable():
             hou.ui.setStatusMessage(
-                ("Could not clear db for refresh: " + str(e)), severity=hou.severityType.Warning)
+                (la.ERRORMSG['cleardatabase'] + str(e)), severity=hou.severityType.Warning)
         else:
-            print("Could not clear db for refresh: " + str(e))
+            print(la.ERRORMSG['cleardatabase'] + str(e))
 # !SECTION
 
 def deferaction(action, val):
@@ -327,14 +320,17 @@ def checklasthk(cur):
     getlastusedhk(cur)
 
 def main():
-    if os.path.isfile(searcher_data.searcher_settings):
-        settingdata = searcher_data.loadsettings()
-    else:
+    if not os.path.isfile(searcher_data.searcher_settings):
         searcher_data.createdefaults()
-        settingdata = searcher_data.loadsettings()
+
+    hou.session.SETTINGS = searcher_data.loadsettings()
+    settingdata = get_settings()
+
     isdebug = util.Dbug(
-        util.bc(settingdata[util.SETTINGS_KEYS[4]]), 
-        str(settingdata[util.SETTINGS_KEYS[10]])
+        settingdata[util.SETTINGS_KEYS[4]], 
+        str(settingdata[util.SETTINGS_KEYS[10]]),
+        settingdata[util.SETTINGS_KEYS[12]],
+        settingdata[util.SETTINGS_KEYS[13]],
     )
 
     inmemory = util.bc(settingdata[util.SETTINGS_KEYS[0]])
@@ -348,27 +344,30 @@ def main():
             val,
             pragmas=(
                 ("cache_size", -1024 * 64), 
-                ("journal_mode", "wal"), 
+                ("journal_mode", "off"), 
+                ("temp_store", "memory"), 
                 ("synchronous", 0)
             )))
     
+    hou.session.DBCONNECTION = db
+    dbc = get_dbconnection()
     time1 = ptime.time()
     if inmemory:    
-        create_tables()
-        cur = db.cursor()
-        deferaction(initialsetup, cur)
+        create_tables(dbc)
+        cur = dbc.cursor()
+        initialsetup(cur)
     else:
         if not os.path.isfile(dbpath):
-            create_tables()
-            cur = db.cursor()
+            create_tables(dbc)
+            cur = dbc.cursor()
             deferaction(initialsetup, cur)
         else:
-            cur = db.cursor()
+            cur = dbc.cursor()
             deferaction(dbupdate, cur)
 
     time2 = ptime.time()
 
-    if isdebug and  isdebug.level in {"TIMER", "ALL"}:
+    if isdebug and isdebug.level in {"TIMER", "ALL"}:
         res = ((time2 - time1) * 1000.0)
         if hou.isUIAvailable():
             hou.ui.setStatusMessage(

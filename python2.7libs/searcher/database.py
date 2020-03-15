@@ -15,15 +15,21 @@ from peewee import *
 from playhouse.sqlite_ext import SqliteExtDatabase, RowIDField, FTS5Model, SearchField
 import time
 
-def get_db():
-    return getattr(hou.session, "DATABASE", None)
+# --------------------------------------------- hou.session
+# NOTE hou.session ----------------------------------------
+def get_settings():
+    return getattr(hou.session, "SETTINGS", None)
+
+def get_dbconnection():
+    return getattr(hou.session, "DBCONNECTION", None)
 
 scriptpath = os.path.dirname(os.path.realpath(__file__))
-hou.session.DATABASE = DatabaseProxy()
-db = get_db()
+db = get_dbconnection()
 
-# -------------------------------------- DatabaseModels
-# SECTION DatabaseModels ------------------------------
+# --------------------------------------------------------- DatabaseModels
+# SECTION DatabaseModels -------------------------------------------------
+# ------------------------------------------------ Settings
+# NOTE Settings -------------------------------------------
 class Settings(Model):
     id = IntegerField(unique=True)
     indexvalue = IntegerField()
@@ -37,7 +43,8 @@ class Settings(Model):
         table_name = 'settings'
         database = db
 
-
+# ------------------------------------------------ HContext
+# NOTE HContext -------------------------------------------
 class HContext(Model):
     id = AutoField()
     context = TextField(unique=True)
@@ -48,16 +55,20 @@ class HContext(Model):
         table_name = 'hcontext'
         database = db
 
-class HContextIndex(FTS5Model):
-    # rowid = RowIDField()
-    context = SearchField()
-    title = SearchField()
-    description = SearchField()
+# # ------------------------------------------- HContextIndex
+# # NOTE HContextIndex --------------------------------------
+# class HContextIndex(FTS5Model):
+#     # rowid = RowIDField()
+#     context = SearchField()
+#     title = SearchField()
+#     description = SearchField()
 
-    class Meta:
-        database = db
-        options = {'prefix': [2, 3], 'tokenize': 'porter'}
+#     class Meta:
+#         database = db
+#         options = {'prefix': [2, 3], 'tokenize': 'porter'}
 
+# ------------------------------------------------- Hotkeys
+# NOTE Hotkeys --------------------------------------------
 class Hotkeys(Model):
     hotkey_symbol = CharField(unique=True)
     label = CharField()
@@ -69,7 +80,8 @@ class Hotkeys(Model):
         table_name = 'hotkeys'
         database = db
 
-
+# -------------------------------------------- HotkeysIndex
+# NOTE HotkeysIndex ---------------------------------------
 class HotkeysIndex(FTS5Model):
     # rowid = RowIDField()
     hotkey_symbol = SearchField(unindexed=True)
@@ -85,10 +97,10 @@ class HotkeysIndex(FTS5Model):
         # table_name = 'hotkeysindex'
         database = db
         options = {'prefix': [2, 3], 'tokenize': 'porter'}
-#!SECTION
+# !SECTION
 
-# --------------------------------------------------------- DatabaseModels
-# SECTION DatabaseModels -------------------------------------------------
+# -------------------------------------------------------------- Functions
+# SECTION Functions ------------------------------------------------------
 # ----------------------------------------------- py_unique
 # NOTE py_unique ------------------------------------------
 def py_unique(data):
@@ -128,9 +140,12 @@ def getdata():
     return contextdata, hotkeydata
 # !SECTION
 
+# ----------------------------------------------------------- Database
+# SECTION Database ---------------------------------------------------
 class Databases(object):
     def __init__(self):
-        self.settings = searcher_data.loadsettings()
+
+        self.settings = get_settings()
         self.isdebug = util.bc(self.settings[util.SETTINGS_KEYS[4]])
         inmemory = util.bc(self.settings[util.SETTINGS_KEYS[0]])
         if inmemory:
@@ -138,27 +153,28 @@ class Databases(object):
         else:
             val = (scriptpath + "/db/searcher.db")
 
-        db.initialize(
-            SqliteExtDatabase(
-                val,
-                pragmas=(
-                    ("cache_size", -1024 * 64), 
-                    ("journal_mode", "wal"), 
-                    ("synchronous", 0)
-                )))
-
+        self.db = db
+        if not self.db:
+            hou.session.DBCONNECTION = DatabaseProxy()
+            self.db.initialize(
+                SqliteExtDatabase(
+                    val,
+                    pragmas=(
+                        ("cache_size", -1024 * 64), 
+                        ("journal_mode", "off"), 
+                        ("temp_store", "memory"), 
+                        ("synchronous", 0)
+                    )))
+            if inmemory or not os.path.isfile(self.settings[util.SETTINGS_KEYS[1]]):
+                db.create_tables([
+                    Settings, 
+                    HContext, 
+                    Hotkeys, 
+                    HotkeysIndex]
+                )
+                self.initialsetup(self.cur)
+         
         self.cur = db.cursor()
-        if inmemory:
-            db.create_tables([
-                Settings, 
-                HContext, 
-                HContextIndex, 
-                Hotkeys, 
-                HotkeysIndex]
-            )
-            self.initialsetup(self.cur)
-
-        self.a = 1
         self.isdebug = None
         self.contexttime = 0
         self.hotkeystime = 0
@@ -177,28 +193,34 @@ class Databases(object):
 
     # ------------------------------------------- getlastusedhk
     # NOTE getlastusedhk --------------------------------------
-    def getlastusedhk(self, cur):
+    def getlastusedhk(self):
         try:
-            cur.execute("SELECT lastused FROM settings")
-            result = cur.fetchall()
-            if str(result[0][0]) != "":
-                lasthk = str(result[0][0]).split(' ')
+            lastkey = self.settings[util.SETTINGS_KEYS[11]]
+            if str(lastkey) != "":
+                lasthk = str(lastkey).split(' ')
+                hkcheck = hou.hotkeys.assignments(str(lasthk[0]))
+
+                if len(hkcheck) is 0:
+                    self.settings[util.SETTINGS_KEYS[11]] = ""
+                    searcher_data.savesettings(settingdata)
+                    return
+
                 rmresult = hou.hotkeys.removeAssignment(
                     str(lasthk[0]).strip(), str(lasthk[1]).strip())
                 if rmresult:
                     hkcheck = hou.hotkeys.assignments(str(lasthk[0]))
                     hou.hotkeys.saveOverrides()
                     if len(hkcheck) is 0:
-                        Settings.update(lastused="").where(Settings.id == 1).execute()
-                        currentidx = hou.hotkeys.changeIndex()
+                        self.settings[util.SETTINGS_KEYS[11]] = ""
+                        searcher_data.savesettings(settingdata)
                         updatechangeindex(int(currentidx))
                     else:
                         hou.hotkeys.clearAssignments(str(lasthk[0]))
                         hou.hotkeys.saveOverrides()
                         hkcheck = hou.hotkeys.assignments(str(lasthk[0]))
                         if len(hkcheck) is 0:
-                            Settings.update(lastused="").where(Settings.id == 1).execute()
-                            currentidx = hou.hotkeys.changeIndex()
+                            self.settings[util.SETTINGS_KEYS[11]] = ""
+                            searcher_data.savesettings(settingdata)
                             updatechangeindex(int(currentidx))
                         else:
                             if hou.isUIAvailable():
@@ -217,6 +239,8 @@ class Databases(object):
             else:
                 print("Could not query last assigned temp hotkey: " + str(e))
 
+    # -------------------------------------------- getdefhotkey
+    # NOTE getdefhotkey ---------------------------------------
     def getdefhotkey(self):
         try:
             self.cur.execute("SELECT defaulthotkey FROM settings")
@@ -225,6 +249,8 @@ class Databases(object):
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(("Could not get Searcher default hotkey: " + str(e)), severity=hou.severityType.Error)
 
+    # -------------------------------------------- gethcontexts
+    # NOTE gethcontexts ---------------------------------------
     def gethcontexts(self):
         try:
             self.cur.execute("SELECT * FROM hcontext")
@@ -233,13 +259,12 @@ class Databases(object):
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(("Could not get Searcher hcontext: " + str(e)), severity=hou.severityType.Error)
 
+    # ------------------------------------------- gethcontextod
+    # NOTE gethcontextod --------------------------------------
     def gethcontextod(self, inputlist):
         try:
             time1 = ptime.time()
             result = []
-            # query = (HContextIndex
-            #          .select(HContextIndex)
-            #          .where(HContextIndex.match(inputlist)))
             query = (HContext
                      .select()
                      .where(HContext.context.in_(inputlist))).execute()
@@ -252,19 +277,8 @@ class Databases(object):
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(("Could not update Searcher context database: " + str(e)), severity=hou.severityType.Error)
 
-    # def gethcontextod(self, inputlist):
-    #     try:
-    #         result = []
-    #         query = (HContext
-    #                  .select()
-    #                  .where(HContext.context.in_(inputlist))).execute()
-    #         for hctx in query:
-    #             result.append((hctx.title, hctx.description, hctx.context))
-    #         uniqueresult = py_unique(result)
-    #         return uniqueresult
-    #     except(AttributeError, TypeError) as e:
-    #         hou.ui.setStatusMessage(("Could not update Searcher context database: " + str(e)), severity=hou.severityType.Error)
-
+    # ---------------------------------------- ctxfilterresults
+    # NOTE ctxfilterresults -----------------------------------
     def ctxfilterresults(self, inputTerm):
         try:
             result = []
@@ -278,7 +292,8 @@ class Databases(object):
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(("Could not get Searcher context results: " + str(e)), severity=hou.severityType.Error)
     
-    
+    # ------------------------------------------- searchresults
+    # NOTE searchresults --------------------------------------
     def searchresults(self, inputTerm, debug, limit=0):
         self.isdebug = debug
         try:
@@ -299,8 +314,12 @@ class Databases(object):
             return uniqueresult, self.hotkeystime
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(("Could not get Searcher results: " + str(e)), severity=hou.severityType.Error)
+    # !SECTION
 
-    # ---------------------------------------------------------- Updates
+    # ------------------------------------------------------------ Updates
+    # SECTION Updates ----------------------------------------------------
+    # --------------------------------------- updatechangeindex
+    # NOTE updatechangeindex ----------------------------------
     def updatechangeindex(self, indexval, new=False):
         try:
             if new is True:
@@ -324,6 +343,8 @@ class Databases(object):
             else:
                 print("Could not update Searcher context database: " + str(e))
 
+    # --------------------------------------------- updatetmphk
+    # NOTE updatetmphk ----------------------------------------
     def updatetmphk(self, tmpkey):
         try:
             _ = Settings.update(
@@ -331,14 +352,18 @@ class Databases(object):
             return
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(("Could not update Searcher temp hotkey: " + str(e)), severity=hou.severityType.Error)
-
+    
+    # ------------------------------------------- updatelastkey
+    # NOTE updatelastkey --------------------------------------
     def updatelastkey(self, lastkey):
         try:
             _ = Settings.update(lastused=lastkey).where(id == 1).execute()
             return
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(("Could not update Searcher temp hotkey: " + str(e)), severity=hou.severityType.Error)
-
+    
+    # ------------------------------------------- updatecontext
+    # NOTE updatecontext --------------------------------------
     def updatecontext(self, debug):
         self.isdebug = debug
         try:
@@ -359,27 +384,33 @@ class Databases(object):
                     hou.ui.setStatusMessage(
                         ('DB update took %0.4f ms' % res), severity=hou.severityType.Message)
                 else:
-                    print('DB update took %0.4f ms' % res)  # TODO Remove this timer
+                    print('DB update took %0.4f ms' % res)
                 return res
 
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(("Could not update Searcher context database: " + str(e)), severity=hou.severityType.Error)
+    # !SECTION
 
+    # ------------------------------------------- cleardatabase
+    # NOTE cleardatabase --------------------------------------
     def cleardatabase(self):
         try:
             delhk = "DELETE FROM hotkeys"
             delctx = "DELETE FROM hcontext"
             delhkindex = "DELETE FROM hotkeysindex"
-            delhcindex = "DELETE FROM hcontextindex"
+            # delhcindex = "DELETE FROM hcontextindex"
             self.cur.execute(delhk)
             self.cur.execute(delctx)
+            self.cur.execute(delhkindex)
             result = self.cur.fetchall()
 
             return result
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(("Could not update Searcher temp hotkey: " + str(e)),severity=hou.severityType.Error)
 
-    def initialsetup(self, cur):
+    # -------------------------------------------- initialsetup
+    # NOTE initialsetup ---------------------------------------
+    def initialsetup(self):
         currentidx = hou.hotkeys.changeIndex()
         chindex = self.getchangeindex()
 
@@ -396,12 +427,12 @@ class Databases(object):
             chindex = int(chindex[0][0])
 
         if int(currentidx) != chindex:
-            self.getlastusedhk(cur)
+            self.getlastusedhk()
             self.updatecontext()
             self.updatechangeindex(int(currentidx))
 
             if hou.isUIAvailable():
                 hou.ui.setStatusMessage(
                     "Searcher database created and populated", severity=hou.severityType.Message)
-
-   
+    # !SECTION 
+# !SECTION

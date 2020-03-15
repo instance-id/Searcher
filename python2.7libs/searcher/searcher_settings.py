@@ -2,14 +2,16 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
+from searcher import util
 from searcher import about
+from searcher import theme
+from searcher import about_ui
+from searcher import theme_ui
 from searcher import bugreport
 from searcher import bugreport_ui
-from searcher import about_ui
 from searcher import searcher_data
-from searcher import util
 from searcher import language_en as la
-from searcher import searchersettings_ui
+from searcher import searcher_settings_ui
 
 from builtins import range
 from past.utils import old_div
@@ -35,10 +37,12 @@ if os.environ["HFS"] != "":
         from hutil.Qt import QtUiTools
 
 reload(about)
+reload(theme)
 reload(about_ui)
+reload(theme_ui)
 reload(bugreport)
 reload(bugreport_ui)
-reload(searchersettings_ui)
+reload(searcher_settings_ui)
 
 # --------------------------------------------------------------------  App Info
 __package__ = "Searcher"
@@ -46,6 +50,11 @@ __version__ = "0.1b"
 __author__ = "instance.id"
 __copyright__ = "2020 All rights reserved. See LICENSE for more details."
 __status__ = "Prototype"
+
+# --------------------------------------------- hou.session
+# NOTE hou.session ----------------------------------------
+def get_settings():
+    return getattr(hou.session, "SETTINGS", None)
 
 the_scaled_icon_size = hou.ui.scaledSize(16)
 the_icon_size = 16
@@ -58,7 +67,7 @@ def bc(v):
 class SearcherSettings(QtWidgets.QWidget):
     """ Searcher Settings and Debug Menu"""
 
-    def __init__(self, handler, tmphotkey, parent=None):
+    def __init__(self, handler, width, height, parent=None):
         super(SearcherSettings, self).__init__(parent=parent)
         # -------------------------------------------- settings
         # NOTE settings ---------------------------------------
@@ -79,35 +88,52 @@ class SearcherSettings(QtWidgets.QWidget):
         self.canedit = False
         self.KeySequence = None
         self.hkholder = ""
-        self.defaulthotkey = tmphotkey
         self.datahandler = handler
-        self.tmphotkey = tmphotkey
         self.isopened = False
-
-        self.setObjectName('searcher-settings')
+        self.resetdb = False
+        self.waitforclose = False
+        self.modifylayout = False
+        self.uiwidth = width
+        self.uiheight = height
+        
         # --------------------------------------------- beginui
         # NOTE beginui ----------------------------------------
+        self.setObjectName('searcher-settings')
         self.setAutoFillBackground(True)
         self.setBackgroundRole(QtGui.QPalette.Window)
-        self.settings = searcher_data.loadsettings()
-        self.isdebug = util.Dbug(util.bc(self.settings[util.SETTINGS_KEYS[4]]), str(self.settings[util.SETTINGS_KEYS[10]]))
+        self.settings = get_settings()
+        self.isdebug = util.Dbug(
+            self.settings[util.SETTINGS_KEYS[4]], 
+            str(self.settings[util.SETTINGS_KEYS[10]]),
+            self.settings[util.SETTINGS_KEYS[12]],
+            self.settings[util.SETTINGS_KEYS[13]],
+        )
 
         self.la = la.TT_SETTINGS
         # Load UI File
-        self.ui = searchersettings_ui.Ui_SearcherSettings()
-        self.ui.setupUi(self, self.width, self.height, bc(self.settings[util.SETTINGS_KEYS[8]]))
+        self.ui = searcher_settings_ui.Ui_SearcherSettings()
+        self.ui.setupUi(self, self.uiwidth, self.uiheight, bc(self.settings[util.SETTINGS_KEYS[8]]))
         self.ui.retranslateUi(self)
 
-        self.bugreport = bugreport.BugReport(self.parentwindow)
+        self.bugreport = bugreport.BugReport(self)
         self.bugreport.setAttribute(QtCore.Qt.WA_StyledBackground, True)
         self.bugreport.setWindowFlags(
             QtCore.Qt.Tool |
-            QtCore.Qt.WindowStaysOnTopHint |
+            # QtCore.Qt.WindowStaysOnTopHint |
             QtCore.Qt.FramelessWindowHint |
             QtCore.Qt.NoDropShadowWindowHint
         )
-        self.bugreport.setParent(self.parentwindow)
-        self.bugreport.resize(520, 250)
+        self.bugreport.resize(width, height - 60)
+
+        self.theme = theme.Theme(self)
+        self.theme.setAttribute(QtCore.Qt.WA_StyledBackground, True)
+        self.theme.setWindowFlags(
+            QtCore.Qt.Tool |
+            # QtCore.Qt.WindowStaysOnTopHint |
+            QtCore.Qt.FramelessWindowHint |
+            QtCore.Qt.NoDropShadowWindowHint
+        )
+        self.theme.resize(width, height - 190)
 
         self.settingslayout = QtWidgets.QVBoxLayout()
 
@@ -121,22 +147,37 @@ class SearcherSettings(QtWidgets.QWidget):
         self.savewindowsize.setToolTip(la.TT_SETTINGS[self.savewindowsize.objectName()])
 
         # secondrow
+        self.ui.maxresults_lbl.setToolTip(la.TT_SETTINGS[self.ui.maxresults_lbl.objectName()])
         self.maxresults = self.ui.maxresults_txt
         self.maxresults.setToolTip(la.TT_SETTINGS[self.maxresults.objectName()])
         self.animatedsettings = self.ui.animatedsettings_chk
         self.animatedsettings.setToolTip(la.TT_SETTINGS[self.animatedsettings.objectName()])
+        
         # thirdrow
+        self.ui.defaulthotkey_lbl.setToolTip(la.TT_SETTINGS[self.ui.defaulthotkey_lbl.objectName()])
         self.defaulthotkey = self.ui.defaulthotkey_txt
         self.defaulthotkey.setToolTip(la.TT_SETTINGS[self.defaulthotkey.objectName()])
+        
+        # fourthrow
+        self.ui.dbpath_lbl.setToolTip(la.TT_SETTINGS[self.ui.dbpath_lbl.objectName()])
         self.database_path = self.ui.databasepath_txt
         self.database_path.setToolTip(la.TT_SETTINGS[self.database_path.objectName()])
+        self.dbpath_btn = self.ui.dbpath_icon 
+        dbpath_button_size = hou.ui.scaledSize(16)
+        self.dbpath_btn.setProperty("flat", True)
+        self.dbpath_btn.setIcon(util.FILE_ICON)
+        self.dbpath_btn.setIconSize(QtCore.QSize(
+            dbpath_button_size,
+            dbpath_button_size
+        ))
 
-        # fourthrow
-        self.test1 = self.ui.test1_btn
+        # fifthrow
+        self.metrics = self.ui.metrics_chk
+        self.metrics.setToolTip(la.TT_SETTINGS[self.metrics.objectName()])
         self.cleardata = self.ui.cleardata_btn
         self.cleardata.setToolTip(la.TT_SETTINGS[self.cleardata.objectName()])
 
-        # fifthrow
+        # sixthrow
         self.about = self.ui.about_btn
         self.about.setToolTip(la.TT_SETTINGS[self.about.objectName()])
         about_button_size = hou.ui.scaledSize(32)
@@ -148,6 +189,7 @@ class SearcherSettings(QtWidgets.QWidget):
         ))
 
         self.bugreportbtn = self.ui.bug_btn
+        self.bugreportbtn.setToolTip(la.TT_SETTINGS[self.bugreportbtn.objectName()])
         self.bugreportbtn.setCheckable(True)
         self.bugreportbtn.setChecked(False)
         bugreport_button_size = hou.ui.scaledSize(21)
@@ -156,6 +198,18 @@ class SearcherSettings(QtWidgets.QWidget):
         self.bugreportbtn.setIconSize(QtCore.QSize(
             bugreport_button_size,
             bugreport_button_size
+        ))
+
+        self.themebtn = self.ui.theme_btn
+        self.themebtn.setToolTip(la.TT_SETTINGS[self.themebtn.objectName()])
+        self.themebtn.setCheckable(True)
+        self.themebtn.setChecked(False)
+        theme_button_size = hou.ui.scaledSize(21)
+        self.themebtn.setProperty("flat", True)
+        self.themebtn.setIcon(util.BUG_ICON)
+        self.themebtn.setIconSize(QtCore.QSize(
+            theme_button_size,
+            theme_button_size
         ))
 
         self.debuglevel = self.ui.debuglevel_cbx
@@ -175,8 +229,6 @@ class SearcherSettings(QtWidgets.QWidget):
 
         # -------------------------------------------- sixthrow
         # NOTE sixthrow ---------------------------------------
-        # self.in_memory_db.stateChanged.connect(self.toggledebug)
-        self.hotkey_icon.clicked.connect(self.hotkeyicon_cb)
         info_button_size = hou.ui.scaledSize(16)
         self.hotkey_icon.setProperty("flat", True)
         self.hotkey_icon.setIcon(util.INFO_ICON)
@@ -185,15 +237,14 @@ class SearcherSettings(QtWidgets.QWidget):
             info_button_size
         ))
 
-        self.defaulthotkey.setToolTip(la.TT_SETTINGS[self.discarddata.objectName()])
-        self.defaulthotkey.setStyleSheet(util.TOOLTIP)
-        
         # --------------------------------------------- connect
         # NOTE connect ----------------------------------------
-        self.test1.clicked.connect(self.test1_cb)
+        self.hotkey_icon.clicked.connect(self.hotkeyicon_cb)
+        self.dbpath_btn.clicked.connect(self.dbpath_cb)
         self.cleardata.clicked.connect(self.cleardata_cb)
         self.about.clicked.connect(self.about_cb)
         self.bugreportbtn.clicked.connect(self.bug_cb)
+        self.themebtn.clicked.connect(self.theme_cb)
         self.savedata.clicked.connect(self.save_cb)
         self.discarddata.clicked.connect(self.discard_cb)
 
@@ -205,6 +256,10 @@ class SearcherSettings(QtWidgets.QWidget):
         # ---------------------------------------- eventfilters
         # NOTE eventfilters -----------------------------------
         self.installEventFilter(self)
+        self.ui.maxresults_lbl.installEventFilter(self)
+        self.ui.defaulthotkey_lbl.installEventFilter(self)
+        self.ui.dbpath_lbl.installEventFilter(self)
+        self.bugreportbtn.installEventFilter(self)
         self.about.installEventFilter(self)
         self.cleardata.installEventFilter(self)
         self.savedata.installEventFilter(self)
@@ -214,48 +269,81 @@ class SearcherSettings(QtWidgets.QWidget):
 
     # --------------------------------------------------------------- Callbacks
     # SECTION Callbacks -------------------------------------------------------
-
+    # ---------------------------------------------- bug_cb
+    # NOTE bug_cb -----------------------------------------
     def bug_cb(self, toggled):
-        pos = self.bugreportbtn.mapToGlobal(
-                QtCore.QPoint( -43, 35))
-        self.bugreport.setGeometry(
-                pos.x(),
-                pos.y(),
-                self.bugreport.width(),
-                self.bugreport.height()
-            )
-
-        if toggled == True:
+        if toggled == True and not self.bugreport.isVisible():
+            if self.animatedsettings.isChecked():
+                pos = self.bugreportbtn.mapToGlobal(
+                    QtCore.QPoint( -43, 34))
+            else:
+                pos = self.bugreportbtn.mapToGlobal(
+                    QtCore.QPoint( -45, 35))
+            self.bugreport.setGeometry(
+                    pos.x(),
+                    pos.y(),
+                    self.bugreport.width(),
+                    self.bugreport.height()
+                )
             self.bugreport.show()
         else:
             self.bugreport.close()
-            self.bugreport.setParent(None)
+
+    # -------------------------------------------- theme_cb
+    # NOTE theme_cb ---------------------------------------
+    def theme_cb(self, toggled):
+        if toggled == True and not self.theme.isVisible():
+            if self.animatedsettings.isChecked():
+                pos = self.themebtn.mapToGlobal(
+                    QtCore.QPoint( -77, 34))
+            else:
+                pos = self.themebtn.mapToGlobal(
+                    QtCore.QPoint( -79, 35))
+            self.theme.setGeometry(
+                    pos.x(),
+                    pos.y(),
+                    self.theme.width(),
+                    self.theme.height()
+                )
+            self.theme.show()
+        else:
+            self.theme.close()
+
     # -------------------------------------------- about_cb
     # NOTE about_cb ---------------------------------------
     def about_cb(self):
-        self.about = about.About(self.parentwindow)
-        self.about.setAttribute(QtCore.Qt.WA_StyledBackground, True)
-        self.about.setWindowFlags(
+        self.aboutui = about.About(self.parentwindow)
+        self.aboutui.setAttribute(QtCore.Qt.WA_StyledBackground, True)
+        self.aboutui.setWindowFlags(
             QtCore.Qt.Popup |
             QtCore.Qt.WindowStaysOnTopHint |
             QtCore.Qt.NoDropShadowWindowHint |
             QtCore.Qt.WindowStaysOnTopHint
-
         )
-        self.about.setParent(self.parentwindow)
-        self.about.move(self.pos().x() - 175, self.pos().y())
-        self.about.show()
+        self.aboutui.setParent(self.parentwindow)
+        self.aboutui.move(self.pos().x() - 175, self.pos().y())
+        self.aboutui.show()
         
+    # --------------------------------------- hotkeyicon_cb
     # NOTE hotkeyicon_cb ----------------------------------
     def hotkeyicon_cb(self):
         self.settings['in_memory_db'] = self.in_memory_db.isChecked()
         print(self.settings['in_memory_db'])
 
-    # ----------------------------------------- toggledebug
-    # NOTE toggledebug ------------------------------------
-    def toggledebug(self):
-        self.settings['in_memory_db'] = self.in_memory_db.isChecked()
-        print(self.settings['in_memory_db'])
+    # ------------------------------------------- dbpath_cb
+    # NOTE dbpath_cb --------------------------------------
+    def dbpath_cb(self):
+        path = os.path.normpath(self.database_path.text()).replace("\\", "/")
+        dbpath = hou.expandString(hou.ui.selectFile(
+            start_directory=os.path.dirname(path),
+            title="Save Database",
+            pattern="searcher.db",
+            file_type=hou.fileType.Clip,
+            default_value="searcher.db"))
+        if dbpath != "":
+            if not dbpath.endswith("searcher.db"):
+                dbpath = dbpath + "searcher.db"
+            self.database_path.setText((os.path.normpath(dbpath)))
 
     # ---------------------------------------- defaulthk_cb
     # NOTE defaulthk_cb -----------------------------------
@@ -289,10 +377,7 @@ class SearcherSettings(QtWidgets.QWidget):
             self.defaulthotkey.setFocus()
             self.canedit = True
         else:
-            if self.defaulthotkey.text() != self.tmphotkey:
-                self.tmphotkey = self.defaulthotkey.text()
-                self.datahandler.updatetmphotkey(self.tmphotkey)
-
+            self.checkforchanges()
             for i in range(len(util.SETTINGS_KEYS)):
                 if util.SETTINGS_TYPES[util.SETTINGS_KEYS[i]] == "bool":
                     self.settings[util.SETTINGS_KEYS[i]] = getattr(self, util.SETTINGS_KEYS[i]).isChecked()
@@ -307,16 +392,40 @@ class SearcherSettings(QtWidgets.QWidget):
                 print(self.settings)
 
             searcher_data.savesettings(self.settings)
+            if self.resetdb:
+                hou.session.DBCONNECTION = None
+                hou.session.DATABASE = None
+                self.resetdb = False
+            if self.modifylayout:
+                self.parentwindow.sui.metricpos.setVisible(
+                    self.settings[util.SETTINGS_KEYS[12]])
             self.performcheck = False
-            if self.animatedsettings:
+            if self.bugreport.isVisible():
+                self.bugreport.close()
+                self.bugreportbtn.setChecked(False)
+            if self.theme.isVisible():
+                self.theme.close()
+                self.themebtn.setChecked(False)
+            if self.animatedsettings.isChecked() and not self.waitforclose:
                 self.parentwindow.anim.start_animation(False)
                 self.isopened = True
+            elif self.waitforclose:
+                if self.bugreport.isVisible():
+                    self.bugreport.close()
+                self.close()
+                self.parentwindow.close()
             else:
                 self.close()
     # ------------------------------------------ discard_cb
     # NOTE discard_cb -------------------------------------
     def discard_cb(self):
-        if self.animatedsettings:
+        if self.bugreport.isVisible():
+            self.bugreport.close()
+            self.bugreportbtn.setChecked(False)
+        if self.theme.isVisible():
+            self.theme.close()
+            self.themebtn.setChecked(False)
+        if self.settings[util.SETTINGS_KEYS[8]]:
             self.parentwindow.anim.start_animation(False)
             self.isopened = True
             self.performcheck=True
@@ -364,18 +473,52 @@ class SearcherSettings(QtWidgets.QWidget):
     # ------------------------------------- checkforchanges
     # NOTE checkforchanges --------------------------------
     def checkforchanges(self):
+        if self.isdebug and self.isdebug.level in {"ALL"}:
+            print(len(util.SETTINGS_KEYS))
         for i in range(len(util.SETTINGS_KEYS)):
+            if self.isdebug and self.isdebug.level in {"ALL"}:
+                print(i)
             if util.SETTINGS_TYPES[util.SETTINGS_KEYS[i]] == "bool":
+                if self.isdebug and self.isdebug.level in {"ALL"}:
+                    print("Name: ", getattr(self, util.SETTINGS_KEYS[i]).objectName())
+                    print("Shown settings: ", getattr(self, util.SETTINGS_KEYS[i]).isChecked())
+                    print("Current settings: ", bc(self.currentsettings[util.SETTINGS_KEYS[i]]))
                 if getattr(self, util.SETTINGS_KEYS[i]).isChecked() != bc(self.currentsettings[util.SETTINGS_KEYS[i]]):
+                    if util.SETTINGS_KEYS[i] == util.SETTINGS_KEYS[0]: 
+                        self.resetdb = True
+                    elif util.SETTINGS_KEYS[i] == util.SETTINGS_KEYS[8]:
+                        self.waitforclose = True
+                    elif util.SETTINGS_KEYS[i] == util.SETTINGS_KEYS[12]:
+                        self.modifylayout = True
+                    if self.isdebug and self.isdebug.level in {"ALL"}:
+                        print("Offending item: ", i)
                     return True
             elif util.SETTINGS_TYPES[util.SETTINGS_KEYS[i]] == "text":
+                if self.isdebug and self.isdebug.level in {"ALL"}:
+                    print("Name: ", getattr(self, util.SETTINGS_KEYS[i]).objectName())
+                    print("Shown settings: ", getattr(self, util.SETTINGS_KEYS[i]).text())
+                    print("Current settings: ",self.currentsettings[util.SETTINGS_KEYS[i]])
                 if getattr(self, util.SETTINGS_KEYS[i]).text() != self.currentsettings[util.SETTINGS_KEYS[i]]:
+                    if self.isdebug and self.isdebug.level in {"ALL"}:
+                        print("Offending item: ", i)
                     return True
             elif util.SETTINGS_TYPES[util.SETTINGS_KEYS[i]] == "intval":
-               if getattr(self, util.SETTINGS_KEYS[i]).value() != self.currentsettings[util.SETTINGS_KEYS[i]]:
+                if self.isdebug and self.isdebug.level in {"ALL"}:
+                    print("Name: ", getattr(self, util.SETTINGS_KEYS[i]).objectName())
+                    print("Shown settings: ", getattr(self, util.SETTINGS_KEYS[i]).value())
+                    print("Current settings: ",self.currentsettings[util.SETTINGS_KEYS[i]])
+                if getattr(self, util.SETTINGS_KEYS[i]).value() != int(self.currentsettings[util.SETTINGS_KEYS[i]]):
+                    if self.isdebug and self.isdebug.level in {"ALL"}:
+                        print("Offending item: ", i)
                     return True
             elif util.SETTINGS_TYPES[util.SETTINGS_KEYS[i]] == "cbx":
-                if getattr(self, util.SETTINGS_KEYS[i]).currentText() != self.currentsettings[util.SETTINGS_KEYS[i]]:
+                if self.isdebug and self.isdebug.level in {"ALL"}:
+                    print("Name: ", getattr(self, util.SETTINGS_KEYS[i]).objectName())
+                    print("Shown settings: ", getattr(self, util.SETTINGS_KEYS[i]).currentText())
+                    print("Current settings: ", str(self.currentsettings[util.SETTINGS_KEYS[i]]))
+                if getattr(self, util.SETTINGS_KEYS[i]).currentText() != str(self.currentsettings[util.SETTINGS_KEYS[i]]):
+                    if self.isdebug and self.isdebug.level in {"ALL"}:
+                        print("Offending item: ", i)
                     return True
         return False
     # ------------------------------------------- savecheck
@@ -391,19 +534,18 @@ class SearcherSettings(QtWidgets.QWidget):
             self.save_cb()
             self.hkholder = ""
         elif buttonindex == 1:
-            self.defaulthotkey.setText(self.hkholder)
             self.hkholder = ""
     # !SECTION
 
-    # ------------------------------------------------------------------ Events
-    # SECTION Events ----------------------------------------------------------
+    # ------------------------------------------------------------- Events
+    # SECTION Events -----------------------------------------------------
     def eventFilter(self, obj, event):
         # ------------------------------------------ Window
         # NOTE Window -------------------------------------
         if event.type() == QtCore.QEvent.WindowActivate:
             self.ui.isopened = True
             self.performcheck = True
-            self.updatecurrentvalues()
+            # self.updatecurrentvalues()
             return True
 
         # ------------------------------------------- Mouse
@@ -430,15 +572,37 @@ class SearcherSettings(QtWidgets.QWidget):
                         self.debugflag.setVisible(True)
 
             if event.key() == QtCore.Qt.Key_Escape:
-                if self.performcheck:
-                    if self.checkforchanges():
-                        self.savecheck()
-                if self.animatedsettings:
-                    self.parentwindow.anim.start_animation(False)
-                    self.isopened = True
-                    self.performcheck=True
-                else:
-                    self.close()
+                if obj == self:
+                    if self.performcheck:
+                        if self.checkforchanges():
+                            self.savecheck()
+                    if self.animatedsettings.isChecked() and not self.waitforclose:
+                        if self.bugreport.isVisible():
+                            self.bugreport.close()
+                            self.bugreportbtn.setChecked(False)
+                        if self.theme.isVisible():
+                            self.theme.close()
+                            self.themebtn.setChecked(False)
+                        self.parentwindow.anim.start_animation(False)
+                        self.isopened = True
+                        return True
+                    elif self.waitforclose:
+                        if self.bugreport.isVisible():
+                            self.bugreport.close()
+                        if self.theme.isVisible():
+                            self.theme.close()
+                            self.themebtn.setChecked(False)
+                        self.close()
+                        self.parentwindow.close()
+                        return True
+                    else:
+                        if self.bugreport.isVisible():
+                            self.bugreport.close()
+                        if self.theme.isVisible():
+                            self.theme.close()
+                            self.themebtn.setChecked(False)
+                        self.close()
+                        return True
             else:
                 self.keyindex += 1
                 self.keystring = hou.qt.qtKeyToString(
@@ -471,6 +635,7 @@ class SearcherSettings(QtWidgets.QWidget):
         # NOTE Close --------------------------------------
         if event.type() == QtCore.QEvent.Close:
             self.ui.isopened = False
+            self.resetdb = False
             self.parentwindow.opensettingstool.setChecked(False)
             self.performcheck=True
 

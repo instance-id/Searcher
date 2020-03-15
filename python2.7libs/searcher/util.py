@@ -1,4 +1,3 @@
-# ------------------------------------------------------------------------ Imports
 from __future__ import print_function
 from __future__ import absolute_import
 from searcher import enum
@@ -12,53 +11,90 @@ if os.environ["HFS"] != "":
     ver = os.environ["HFS"]
     hver = int(ver[ver.rindex('.')+1:])
     from hutil.Qt import QtCore
-# endregion
 
+script_path = os.path.dirname(os.path.realpath(__file__))
+
+# ------------------------------------------------------- Helper Functions
+# SECTION Helper Functions -----------------------------------------------
+# --------------------------------------------- DEBUG_LEVEL
+# NOTE DEBUG_LEVEL ----------------------------------------
 DEBUG_LEVEL = enum.Enum('NONE', 'TIMER', 'ALL')
 class Dbug(object):
-    def __init__(self, enabled, level):
+    def __init__(self, enabled, level, perf, mainwindow=False):
         self.enabled = enabled
         self.level = level
+        self.performance = perf
+        self.mainwindow = mainwindow
     def __nonzero__(self): return bool(self.enabled)
 
+class AppColors(object):
+    def __init__(self, colors={}):
+        self.text1 = colors['text1']
+        self.text2 = colors['text2']
+        self.stats1 = colors['stats1']
+        self.stats2 = colors['stats2']
 
-SequenceT = Tuple[str, ...]
+# -------------------------------------------- get_settings
+# NOTE get_settings ---------------------------------------
+def get_settings():
+    return getattr(hou.session, "SETTINGS", None)
 
-# ------------------------------------------------------------------------ Helper Functions
+# ------------------------------------------ Bool Converter
+# NOTE Bool Converter -------------------------------------
 def bc(v):
     return str(v).lower() in ("yes", "true", "t", "1")
-# endregion
 
-# ------------------------------------------------------------------------ Application Settings
+# !SECTION
+
+# --------------------------------------------------------------- Settings
+# SECTION Settings -------------------------------------------------------
+# ------------------------------------------- SETTINGS_KEYS
+# NOTE SETTINGS_KEYS --------------------------------------
 SETTINGS_KEYS = [
-    'in_memory_db',     # 0
-    'database_path',    # 1
-    'savewindowsize',   # 2
-    'windowsize',       # 3
-    'debugflag',        # 4
-    'pinwindow',        # 5
-    'defaulthotkey',    # 6
-    'showctx',          # 7
-    'animatedsettings', # 8
-    'maxresults',       # 9
-    'debuglevel'        # 10
+    'in_memory_db',                          # 0
+    'database_path',                         # 1
+    'savewindowsize',                        # 2
+    'windowsize',                            # 3
+    'debugflag',                             # 4
+    'pinwindow',                             # 5
+    'defaulthotkey',                         # 6
+    'showctx',                               # 7
+    'animatedsettings',                      # 8
+    'maxresults',                            # 9
+    'debuglevel',                            # 10
+    'lastkey',                               # 11
+    'metrics',                               # 12
+    'metricsmainwindow',                     # 13                    
+    'appcolors',                             # 14
 ]
 
-# Include parameter type if it is to be processed by settings menu, else mark NA
+# ------------------------------------------ SETTINGS_TYPES
+# Include parameter type if it is to be processed, else mark NA
+# {bool, text, int, intval} get processed by settings menu
+# {flag} is a bool but handled separate from settings menu
+# {NA} is other, handled separaretly as well
+# NOTE SETTINGS_TYPES -------------------------------------
 SETTINGS_TYPES = {
-    SETTINGS_KEYS[0]:  'bool',   # in_memory_db
-    SETTINGS_KEYS[1]:  'text',   # database_path
-    SETTINGS_KEYS[2]:  'bool',   # savewindowsize
-    SETTINGS_KEYS[3]:  'int',    # windowsize
-    SETTINGS_KEYS[4]:  'bool',   # debugflag
-    SETTINGS_KEYS[5]:  'NA',     # pinwindow
-    SETTINGS_KEYS[6]:  'text',   # defaulthotkey
-    SETTINGS_KEYS[7]:  'NA',     # showctx
-    SETTINGS_KEYS[8]:  'bool',   # animatedsettings
-    SETTINGS_KEYS[9]:  'intval', # maxresults
-    SETTINGS_KEYS[10]: 'cbx',   # debuglevel
+    SETTINGS_KEYS[0]:  'bool',               # in_memory_db
+    SETTINGS_KEYS[1]:  'text',               # database_path
+    SETTINGS_KEYS[2]:  'bool',               # savewindowsize
+    SETTINGS_KEYS[3]:  'int',                # windowsize
+    SETTINGS_KEYS[4]:  'bool',               # debugflag
+    SETTINGS_KEYS[5]:  'flag',               # pinwindow
+    SETTINGS_KEYS[6]:  'text',               # defaulthotkey
+    SETTINGS_KEYS[7]:  'flag',               # showctx
+    SETTINGS_KEYS[8]:  'bool',               # animatedsettings
+    SETTINGS_KEYS[9]:  'intval',             # maxresults
+    SETTINGS_KEYS[10]: 'cbx',                # debuglevel
+    SETTINGS_KEYS[11]: 'NA',                 # lastkey
+    SETTINGS_KEYS[12]: 'bool',               # metrics
+    SETTINGS_KEYS[13]: 'flag',               # metricsmainwindow
+    SETTINGS_KEYS[14]: 'NA',                 # appcolors
 }
 
+# ---------------------------------------- DEFAULT_SETTINGS
+# Default settings automatically applied upon creations
+# NOTE DEFAULT_SETTINGS -----------------------------------
 DEFAULT_SETTINGS = {
     SETTINGS_KEYS[0]: "False",               # in_memory_db
     SETTINGS_KEYS[1]: "",                    # database_path
@@ -71,10 +107,29 @@ DEFAULT_SETTINGS = {
     SETTINGS_KEYS[8]: "True",                # animatedsettings
     SETTINGS_KEYS[9]: 100,                   # maxresults
     SETTINGS_KEYS[10]: "NONE",               # debuglevel
+    SETTINGS_KEYS[11]: "",                   # lastkey
+    SETTINGS_KEYS[12]: "False",              # metrics
+    SETTINGS_KEYS[13]: "False",              # metricsmainwindow
+    SETTINGS_KEYS[14]: {                     # appcolors
+    "text1" : "#55cd49",
+    "text2" : "#55cd49",
+    "stats1" : "Orange",
+    "stats2" : "Yellow",
+    },            
 }
+# !SECTION
 
-# ------------------------------------------------------------------------ Key Translations
-# Directional conversion
+# ------------------------------------------------------- Key Translations
+# SECTION Key Translations -----------------------------------------------
+
+# --------------------------------------------- CTXSHOTCUTS
+# Context shortcodes for predefined results
+# NOTE CTXSHOTCUTS ----------------------------------------
+CTXSHOTCUTS = [":v", ":c", ":g"]
+
+# ------------------------------------------ KEYCONVERSIONS
+# Convertions for arrow keys (Should be moved to main dict)
+# NOTE KEYCONVERSIONS -------------------------------------
 KEYCONVERSIONS = {
     "DownArrow":  "down",
     "UpArrow":    "up",
@@ -82,7 +137,9 @@ KEYCONVERSIONS = {
     "RightArrow": "right",
 }
 
+# ---------------------------------------------- HOTKEYLIST
 # List of possible hotkeys to use a temp keys when running commands
+# NOTE HOTKEYLIST -----------------------------------------
 HOTKEYLIST = [
     (u"Ctrl+Alt+Shift+F7"),
     (u"Ctrl+Alt+Shift+F6"),
@@ -91,7 +148,22 @@ HOTKEYLIST = [
     (u"Ctrl+Alt+Shift+F10")
 ]
 
+def gethotkeys():
+    hkeys = []
+    settings = get_settings()
+    hkeys.append(settings[SETTINGS_KEYS[6]])
+    for key in HOTKEYLIST:
+        hkeys.append(key)
+    return hkeys
+
+# Used for bitmasking to determine modifiers
+MODIFIERS = {}
+# Used for constructing a bitmasked modifier
+REVERSE_MODIFIERS = {}
+
+# ------------------------------------------- MODIFIER_KEYS
 # Used to detect if a keypress was just a modifier
+# NOTE MODIFIER_KEYS --------------------------------------
 MODIFIER_KEYS = {
     QtCore.Qt.Key_Alt:      "Alt",
     QtCore.Qt.Key_Meta:     "Meta",
@@ -99,12 +171,18 @@ MODIFIER_KEYS = {
     QtCore.Qt.Key_Control:  "Ctrl",
 }
 
-# Used for bitmasking to determine modifiers
-MODIFIERS = {}
-# Used for constructing a bitmasked modifier
-REVERSE_MODIFIERS = {}
+# NOTE MODIFIERS ------------------------------------------
+MODIFIERS = {
+    "Shift":        QtCore.Qt.ShiftModifier,
+    "Control":      QtCore.Qt.ControlModifier,
+    "Ctrl":         QtCore.Qt.ControlModifier,
+    "Meta":         QtCore.Qt.MetaModifier,
+    "Alt":          QtCore.Qt.AltModifier,
+}
 
+# -------------------------------------------- SPECIAL_KEYS
 # Special keys
+# NOTE SPECIAL_KEYS ---------------------------------------
 SPECIAL_KEYS = {
     QtCore.Qt.Key_Backspace:    "BACKSPACE",
     QtCore.Qt.Key_Delete:       "DELETE",
@@ -124,8 +202,9 @@ SPECIAL_KEYS = {
     QtCore.Qt.Key_Home:         "Page_Home",
 }
 
-# --------------------------------------------------- Platform conversions
+# ------------------------------------------------ Platform
 # # Platform conversions
+# NOTE Platform -------------------------------------------
 # if platform == "linux" or platform == "linux2":
 #     tmp = {
 #         QtCore.Qt.ShiftModifier:     "Shift",
@@ -171,14 +250,8 @@ SPECIAL_KEYS = {
 #     REVERSE_MODIFIERS.update(tmp)
 # endregion
 
-MODIFIERS = {
-    "Shift":        QtCore.Qt.ShiftModifier,
-    "Control":      QtCore.Qt.ControlModifier,
-    "Ctrl":         QtCore.Qt.ControlModifier,
-    "Meta":         QtCore.Qt.MetaModifier,
-    "Alt":          QtCore.Qt.AltModifier,
-}
-
+# ------------------------------------------------ KEY_DICT
+# NOTE KEY_DICT -------------------------------------------
 KEY_DICT = {
     # ------------------------------------- Grey keys
     "Escape":       QtCore.Qt.Key_Escape,
@@ -349,7 +422,12 @@ KEY_DICT = {
     "AsciiTilde":   QtCore.Qt.Key_AsciiTilde,
     "~":            QtCore.Qt.Key_AsciiTilde,
 }
+# !SECTION
 
+# --------------------------------------------------- Houdini Translations
+# SECTION Houdini Translations -------------------------------------------
+# --------------------------------------------- CONTEXTTYPE
+# NOTE CONTEXTTYPE ----------------------------------------
 CONTEXTTYPE = {
     "Cop2": "COP",
     "CopNet": "COPNET",
@@ -367,6 +445,8 @@ CONTEXTTYPE = {
     "VopNet": "VEX",
 }
 
+# ----------------------------------------------- PANETYPES
+# NOTE PANETYPES ------------------------------------------
 PANETYPES = {
     hou.paneTabType.AssetBrowser: ["h.pane.projectm"],
     hou.paneTabType.BundleList: ["h.pane.bundle"],
@@ -392,12 +472,10 @@ PANETYPES = {
     hou.paneTabType.Textport: ["h.pane.textport"],
     hou.paneTabType.TreeView: ["tree"],
 }
-# endregion
+# !SECTION
 
-# ------------------------------------------------------------------------ UI Constants
-ICON_SIZE = hou.ui.scaledSize(32)
-EDIT_ICON_SIZE = hou.ui.scaledSize(28)
-
+# --------------------------------------------------------------- UI Info
+# SECTION UI Info -------------------------------------------------------
 # DOP_pyrosolver
 # MISC_database
 # MISC_python
@@ -410,6 +488,16 @@ EDIT_ICON_SIZE = hou.ui.scaledSize(28)
 # NETVIEW_image_link
 # NETVIEW_image_link_located
 
+# --------------------------------------------------- Icons
+# NOTE Icons ----------------------------------------------
+ICON_SIZE = hou.ui.scaledSize(32)
+EDIT_ICON_SIZE = hou.ui.scaledSize(28)
+
+ABOUT_ICON1 = hou.ui.createQtIcon(
+    'NETVIEW_info_button',
+    EDIT_ICON_SIZE,
+    EDIT_ICON_SIZE
+)
 
 BUG_ICON = hou.ui.createQtIcon(
     'NETVIEW_64bit_badge',
@@ -423,14 +511,20 @@ COLLAPSE_ICON = hou.ui.createQtIcon(
     EDIT_ICON_SIZE
 )
 
+DOWN_ICON = hou.ui.createQtIcon(
+    'BUTTONS_down',
+    EDIT_ICON_SIZE,
+    EDIT_ICON_SIZE
+)
+
 EXPAND_ICON = hou.ui.createQtIcon(
     'BUTTONS_expand_right',
     EDIT_ICON_SIZE,
     EDIT_ICON_SIZE
 )
 
-INFO_ICON = hou.ui.createQtIcon(
-    'BUTTONS_info',
+FILE_ICON = hou.ui.createQtIcon(
+    'BUTTONS_folder',
     EDIT_ICON_SIZE,
     EDIT_ICON_SIZE
 )
@@ -441,8 +535,8 @@ HELP_ICON = hou.ui.createQtIcon(
     EDIT_ICON_SIZE
 )
 
-ABOUT_ICON1 = hou.ui.createQtIcon(
-    'NETVIEW_info_button',
+INFO_ICON = hou.ui.createQtIcon(
+    'BUTTONS_info',
     EDIT_ICON_SIZE,
     EDIT_ICON_SIZE
 )
@@ -471,18 +565,12 @@ SETTINGS_ICON = hou.ui.createQtIcon(
     EDIT_ICON_SIZE
 )
 
-MENUSTYLE = """QMenu {background-color: rgb(64,64,64); menu-scrollable: 1; margin: 0px;}
-                   QMenu:item {background-color: rgb(46,46,46);  padding: 5px 25px; margin: 1px; height:16px;}
-                   QMenu:item:selected {background-color: rgb(64,64,64);}
-                   QMenu:separator {background-color: rgb(0,0,0); height: 1px; margin: 5px;}
-                   QMenu:icon {padding: 5px;}
-                   QMenu:icon:checked {flat: true;}"""
+UP_ICON = hou.ui.createQtIcon(
+    'BUTTONS_up',
+    EDIT_ICON_SIZE,
+    EDIT_ICON_SIZE
+)
 
-TOOLTIP = """QToolTip {background-color: rgb(64,64,64); menu-scrollable: 1; margin: 0px;}
-                   QToolTip:item {background-color: rgb(46,46,46);  padding: 5px 25px; margin: 1px; height:16px;}
-                   QToolTip:icon {padding: 5px;}
-                   QToolTip:icon:checked {flat: true;}"""
+# !SECTION 
 
-CTXSHOTCUTS = [":v", ":c", ":g"]
-# endregion
-
+                                        # color: rgb(246, 158, 50); 

@@ -18,7 +18,7 @@ class Ui_SearcherSettings(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(SearcherSettings.sizePolicy().hasHeightForWidth())
         SearcherSettings.setSizePolicy(sizePolicy)
-        SearcherSettings.setMinimumSize(QtCore.QSize(450, 300))
+        SearcherSettings.setMinimumSize(QtCore.QSize(width, height))
         SearcherSettings.setBaseSize(QtCore.QSize(0, 0))
 
         self.gridLayout = QtWidgets.QGridLayout(SearcherSettings)
@@ -75,7 +75,7 @@ class Ui_SearcherSettings(object):
         self.secondrow.addItem(spacerItem)
 
         self.maxresults_lbl = QtWidgets.QLabel(SearcherSettings)
-        self.maxresults_lbl.setObjectName("label_3")
+        self.maxresults_lbl.setObjectName("maxresults_lbl")
         self.secondrow.addWidget(self.maxresults_lbl)
         self.maxresults_txt = QtWidgets.QSpinBox(SearcherSettings)
         self.maxresults_txt.setMinimum(1)
@@ -97,7 +97,7 @@ class Ui_SearcherSettings(object):
         self.thirdrow.setObjectName("thirdrow")
 
         self.defaulthotkey_lbl = QtWidgets.QLabel(SearcherSettings)
-        self.defaulthotkey_lbl.setObjectName("label_2")
+        self.defaulthotkey_lbl.setObjectName("defaulthotkey_lbl")
         self.thirdrow.addWidget(self.defaulthotkey_lbl)
 
         self.defaulthotkey_txt = QtWidgets.QLineEdit(SearcherSettings)
@@ -118,7 +118,7 @@ class Ui_SearcherSettings(object):
         self.fourthrow.setObjectName("fourthrow")
 
         self.dbpath_lbl = QtWidgets.QLabel(SearcherSettings)
-        self.dbpath_lbl.setObjectName("label")
+        self.dbpath_lbl.setObjectName("dbpath_lbl")
         self.fourthrow.addWidget(self.dbpath_lbl)
 
         self.databasepath_txt = QtWidgets.QLineEdit(SearcherSettings)
@@ -137,12 +137,14 @@ class Ui_SearcherSettings(object):
         self.fifthrow.setObjectName("fifthrow")
 
         self.maint_lbl = QtWidgets.QLabel(SearcherSettings)
-        self.maint_lbl.setObjectName("label_4")
+        self.maint_lbl.setObjectName("maint_lbl")
         self.fifthrow.addWidget(self.maint_lbl)
 
-        self.test1_btn = QtWidgets.QPushButton(SearcherSettings)
-        self.test1_btn.setObjectName("test1_btn")
-        self.fifthrow.addWidget(self.test1_btn)
+        self.metrics_chk = QtWidgets.QCheckBox(SearcherSettings)
+        self.metrics_chk.setLayoutDirection(QtCore.Qt.RightToLeft)
+        self.metrics_chk.setTristate(False)
+        self.metrics_chk.setObjectName("metrics_chk")
+        self.fifthrow.addWidget(self.metrics_chk)
 
         self.cleardata_btn = QtWidgets.QPushButton(SearcherSettings)
         self.cleardata_btn.setObjectName("cleardata_btn")
@@ -170,6 +172,10 @@ class Ui_SearcherSettings(object):
         self.bug_btn = QtWidgets.QToolButton(SearcherSettings)
         self.bug_btn.setObjectName("bug_btn")
         self.sixthrow.addWidget(self.bug_btn)
+
+        self.theme_btn = QtWidgets.QToolButton(SearcherSettings)
+        self.theme_btn.setObjectName("theme_btn")
+        self.sixthrow.addWidget(self.theme_btn)
 
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.sixthrow.addItem(spacerItem1)
@@ -227,12 +233,13 @@ class Ui_SearcherSettings(object):
 
         # -------------------------------------------------- fifthrow
         self.maint_lbl.setText(_translate("SearcherSettings", "Maintenance utilities:"))
-        self.test1_btn.setText(_translate("SearcherSettings", "Maint Button"))
+        self.metrics_chk.setText(_translate("SearcherSettings", "Enable performance metrics"))
         self.cleardata_btn.setText(_translate("SearcherSettings", "Clear Data"))
 
         # ------------------------------------------------- sixthrow
         self.about_btn.setText(_translate("SearcherSettings", "..."))
-        self.bug_btn.setText(_translate("About", "..."))
+        self.bug_btn.setText(_translate("SearcherSettings", "..."))
+        self.theme_btn.setText(_translate("SearcherSettings", "..."))
         self.debugflag_chk.setText(_translate("SearcherSettings", "Debug Mode"))
         self.discard_btn.setText(_translate("SearcherSettings", "Discard"))
         self.save_btn.setText(_translate("SearcherSettings", "Save"))

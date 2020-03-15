@@ -1,0 +1,116 @@
+===============================================================================
+EXTENSION NAME : linecounter
+EXTENSION VERSION : 0.2.7
+-------------------------------------------------------------------------------
+count time : 2020-03-13 02:25:02
+count workspace : e:\GitHub\Searcher
+total files : 35
+total code lines : 4969
+total comment lines : 607
+total blank lines : 741
+
+    statistics
+   |      extension|     total code|  total comment|    total blank|percent|
+   -------------------------------------------------------------------------
+   |               |            158|              0|             27|    3.2|
+   |            .md|              2|              0|              0|  0.040|
+   |            .py|           4107|            607|            714|     83|
+   |            .ui|            702|              0|              0|     14|
+   -------------------------------------------------------------------------
+.gitignore, code is 97, comment is 0, blank is 20.
+README.md, code is 2, comment is 0, blank is 0.
+scripts\456.py, code is 299, comment is 30, blank is 55.
+scripts\python\__init__py, code is 0, comment is 0, blank is 0.
+scripts\python\searcher\__init__.py, code is 0, comment is 6, blank is 0.
+scripts\python\searcher\about.py, code is 27, comment is 0, blank is 7.
+scripts\python\searcher\about_ui.py, code is 68, comment is 8, blank is 13.
+scripts\python\searcher\animator.py, code is 46, comment is 1, blank is 11.
+scripts\python\searcher\bugreport.py, code is 27, comment is 0, blank is 7.
+scripts\python\searcher\bugreport_ui.py, code is 68, comment is 8, blank is 13.
+scripts\python\searcher\database.py, code is 324, comment is 61, blank is 52.
+scripts\python\searcher\datahandler.py, code is 64, comment is 6, blank is 23.
+scripts\python\searcher\enum.py, code is 29, comment is 6, blank is 3.
+scripts\python\searcher\HelpButton.py, code is 34, comment is 5, blank is 13.
+scripts\python\searcher\images\logo.png, it is a binary file.
+scripts\python\searcher\inspect.py, code is 637, comment is 66, blank is 138.
+scripts\python\searcher\language_en.py, code is 31, comment is 4, blank is 4.
+scripts\python\searcher\linklabel, code is 0, comment is 0, blank is 0.
+scripts\python\searcher\platformselect.py, code is 25, comment is 0, blank is 6.
+scripts\python\searcher\ptime.py, code is 19, comment is 3, blank is 11.
+scripts\python\searcher\scratch, code is 61, comment is 0, blank is 7.
+scripts\python\searcher\searcher.py, code is 940, comment is 137, blank is 139.
+scripts\python\searcher\searcher_data.py, code is 57, comment is 1, blank is 13.
+scripts\python\searcher\searcher_settings.py, code is 419, comment is 66, blank is 55.
+scripts\python\searcher\searchersettings_ui.py, code is 165, comment is 23, blank is 51.
+scripts\python\searcher\session.py, code is 64, comment is 16, blank is 31.
+scripts\python\searcher\ui_files\about.ui, code is 120, comment is 0, blank is 0.
+scripts\python\searcher\ui_files\searcher_ui.py, code is 111, comment is 6, blank is 8.
+scripts\python\searcher\ui_files\searcher_ui.ui, code is 248, comment is 0, blank is 0.
+scripts\python\searcher\ui_files\SearcherSettings.py, code is 168, comment is 6, blank is 7.
+scripts\python\searcher\ui_files\SearcherSettings.ui, code is 334, comment is 0, blank is 0.
+scripts\python\searcher\util.py, code is 381, comment is 148, blank is 37.
+scripts\python\searcher\version.py, code is 7, comment is 0, blank is 2.
+scripts\python\searcher\widgets\__init__py, code is 0, comment is 0, blank is 0.
+scripts\python\searcher\widgets\collapsedock.py, code is 97, comment is 0, blank is 15.
+===============================================================================
+===============================================================================
+EXTENSION NAME : linecounter
+EXTENSION VERSION : 0.2.7
+-------------------------------------------------------------------------------
+count time : 2020-03-13 02:28:04
+count workspace : e:\GitHub\Searcher
+total files : 39
+total code lines : 5092
+total comment lines : 607
+total blank lines : 790
+
+    statistics
+   |      extension|     total code|  total comment|    total blank|percent|
+   -------------------------------------------------------------------------
+   |            .md|              2|              0|              0|  0.039|
+   |               |            158|              0|             27|    3.1|
+   |         .shelf|             23|              0|              3|   0.45|
+   |            .py|           4107|            607|            714|     81|
+   |           .txt|            100|              0|             46|    2.0|
+   |            .ui|            702|              0|              0|     14|
+   -------------------------------------------------------------------------
+.gitignore, code is 97, comment is 0, blank is 20.
+Help\searcher\index.txt, code is 50, comment is 0, blank is 23.
+Help\searcher\main.txt, code is 50, comment is 0, blank is 23.
+README.md, code is 2, comment is 0, blank is 0.
+scripts\456.py, code is 299, comment is 30, blank is 55.
+scripts\python\__init__py, code is 0, comment is 0, blank is 0.
+scripts\python\searcher\__init__.py, code is 0, comment is 6, blank is 0.
+scripts\python\searcher\about.py, code is 27, comment is 0, blank is 7.
+scripts\python\searcher\about_ui.py, code is 68, comment is 8, blank is 13.
+scripts\python\searcher\animator.py, code is 46, comment is 1, blank is 11.
+scripts\python\searcher\bugreport.py, code is 27, comment is 0, blank is 7.
+scripts\python\searcher\bugreport_ui.py, code is 68, comment is 8, blank is 13.
+scripts\python\searcher\database.py, code is 324, comment is 61, blank is 52.
+scripts\python\searcher\datahandler.py, code is 64, comment is 6, blank is 23.
+scripts\python\searcher\enum.py, code is 29, comment is 6, blank is 3.
+scripts\python\searcher\HelpButton.py, code is 34, comment is 5, blank is 13.
+scripts\python\searcher\images\logo.png, it is a binary file.
+scripts\python\searcher\inspect.py, code is 637, comment is 66, blank is 138.
+scripts\python\searcher\language_en.py, code is 31, comment is 4, blank is 4.
+scripts\python\searcher\linklabel, code is 0, comment is 0, blank is 0.
+scripts\python\searcher\platformselect.py, code is 25, comment is 0, blank is 6.
+scripts\python\searcher\ptime.py, code is 19, comment is 3, blank is 11.
+scripts\python\searcher\scratch, code is 61, comment is 0, blank is 7.
+scripts\python\searcher\searcher.py, code is 940, comment is 137, blank is 139.
+scripts\python\searcher\searcher_data.py, code is 57, comment is 1, blank is 13.
+scripts\python\searcher\searcher_settings.py, code is 419, comment is 66, blank is 55.
+scripts\python\searcher\searchersettings_ui.py, code is 165, comment is 23, blank is 51.
+scripts\python\searcher\session.py, code is 64, comment is 16, blank is 31.
+scripts\python\searcher\ui_files\about.ui, code is 120, comment is 0, blank is 0.
+scripts\python\searcher\ui_files\searcher_ui.py, code is 111, comment is 6, blank is 8.
+scripts\python\searcher\ui_files\searcher_ui.ui, code is 248, comment is 0, blank is 0.
+scripts\python\searcher\ui_files\SearcherSettings.py, code is 168, comment is 6, blank is 7.
+scripts\python\searcher\ui_files\SearcherSettings.ui, code is 334, comment is 0, blank is 0.
+scripts\python\searcher\util.py, code is 381, comment is 148, blank is 37.
+scripts\python\searcher\version.py, code is 7, comment is 0, blank is 2.
+scripts\python\searcher\widgets\__init__py, code is 0, comment is 0, blank is 0.
+scripts\python\searcher\widgets\collapsedock.py, code is 97, comment is 0, blank is 15.
+toolbar\searcher.shelf, code is 12, comment is 0, blank is 2.
+toolbar\searchertool.shelf, code is 11, comment is 0, blank is 1.
+===============================================================================

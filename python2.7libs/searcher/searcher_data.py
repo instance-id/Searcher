@@ -50,14 +50,15 @@ def savesettings(settingdict):
         else:
             print("Could not save settings: " + str(e))
 
-
 def loadsettings():
     results = {}
     try:
         settingsdata.beginGroup('Searcher')
         for i in range(len(util.SETTINGS_KEYS)):
-            results.update(
-                {util.SETTINGS_KEYS[i]: settingsdata.value(util.SETTINGS_KEYS[i])})
+            if util.SETTINGS_TYPES[util.SETTINGS_KEYS[i]] in {"bool", "flag"}:
+                results.update({util.SETTINGS_KEYS[i]: util.bc(settingsdata.value(util.SETTINGS_KEYS[i]))})
+            else:
+                results.update({util.SETTINGS_KEYS[i]: settingsdata.value(util.SETTINGS_KEYS[i])})
 
         settingsdata.endGroup()
         return results

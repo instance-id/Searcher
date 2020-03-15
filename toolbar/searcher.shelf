@@ -6,7 +6,9 @@
  a single file. -->
 
   <tool name="searcher" label="Searcher" icon="hicon:/SVGIcons.index?BUTTONS_link.svg">
-    <script scriptType="python"><![CDATA[from searcher import searcher
+    <script scriptType="python"><![CDATA[from __future__ import print_function
+from __future__ import absolute_import
+from searcher import searcher
 reload(searcher)
 
 searcher.CreateSearcherPanel(kwargs)]]></script>
