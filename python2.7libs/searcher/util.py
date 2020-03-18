@@ -11,6 +11,8 @@ if os.environ["HFS"] != "":
     ver = os.environ["HFS"]
     hver = int(ver[ver.rindex('.')+1:])
     from hutil.Qt import QtCore
+else:
+    from PyQt5 import QtCore
 
 script_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -44,7 +46,7 @@ def get_settings():
 def bc(v):
     return str(v).lower() in ("yes", "true", "t", "1")
 
-# !SECTION
+# !SECTION Helper Functions
 
 # --------------------------------------------------------------- Settings
 # SECTION Settings -------------------------------------------------------
@@ -66,10 +68,22 @@ SETTINGS_KEYS = [
     'metrics',                               # 12
     'metricsmainwindow',                     # 13                    
     'appcolors',                             # 14
+    'expanditems',                           # 15
+]
+
+# --------------------------------------------- COLORFIELDS
+# The names of the customizable colorfields
+# NOTE COLORFIELDS ----------------------------------------
+COLORFIELDS = [
+    'text1',                                # 0
+    'text2',                                # 1
+    'stats1',                               # 2
+    'stats2',                               # 3
+    'tooltip',                              # 4
 ]
 
 # ------------------------------------------ SETTINGS_TYPES
-# Include parameter type if it is to be processed, else mark NA
+# Include type if it is to be processed, else mark NA
 # {bool, text, int, intval} get processed by settings menu
 # {flag} is a bool but handled separate from settings menu
 # {NA} is other, handled separaretly as well
@@ -90,6 +104,7 @@ SETTINGS_TYPES = {
     SETTINGS_KEYS[12]: 'bool',               # metrics
     SETTINGS_KEYS[13]: 'flag',               # metricsmainwindow
     SETTINGS_KEYS[14]: 'NA',                 # appcolors
+    SETTINGS_KEYS[15]: 'flag',                 # expanditems
 }
 
 # ---------------------------------------- DEFAULT_SETTINGS
@@ -111,13 +126,15 @@ DEFAULT_SETTINGS = {
     SETTINGS_KEYS[12]: "False",              # metrics
     SETTINGS_KEYS[13]: "False",              # metricsmainwindow
     SETTINGS_KEYS[14]: {                     # appcolors
-    "text1" : "#55cd49",
-    "text2" : "#55cd49",
-    "stats1" : "Orange",
-    "stats2" : "Yellow",
-    },            
+        COLORFIELDS[0] : "#AEAEAE",
+        COLORFIELDS[1] : "#AEAEAE",
+        COLORFIELDS[2] : "#f1f1f1",
+        COLORFIELDS[3] : "#f1f1f1",
+        COLORFIELDS[4] : "#AEAEAE",
+    },         
+    SETTINGS_KEYS[15]: "True",              # expanditems
 }
-# !SECTION
+# !SECTION Settings
 
 # ------------------------------------------------------- Key Translations
 # SECTION Key Translations -----------------------------------------------
@@ -422,7 +439,7 @@ KEY_DICT = {
     "AsciiTilde":   QtCore.Qt.Key_AsciiTilde,
     "~":            QtCore.Qt.Key_AsciiTilde,
 }
-# !SECTION
+# !SECTION Key Translations
 
 # --------------------------------------------------- Houdini Translations
 # SECTION Houdini Translations -------------------------------------------
@@ -472,7 +489,7 @@ PANETYPES = {
     hou.paneTabType.Textport: ["h.pane.textport"],
     hou.paneTabType.TreeView: ["tree"],
 }
-# !SECTION
+# !SECTION Houdini Translations
 
 # --------------------------------------------------------------- UI Info
 # SECTION UI Info -------------------------------------------------------
@@ -507,6 +524,12 @@ BUG_ICON = hou.ui.createQtIcon(
 
 COLLAPSE_ICON = hou.ui.createQtIcon(
     'BUTTONS_collapse_left',
+    EDIT_ICON_SIZE,
+    EDIT_ICON_SIZE
+)
+
+COLOR_ICON = hou.ui.createQtIcon(
+    'BUTTONS_chooser_color',
     EDIT_ICON_SIZE,
     EDIT_ICON_SIZE
 )
@@ -571,6 +594,4 @@ UP_ICON = hou.ui.createQtIcon(
     EDIT_ICON_SIZE
 )
 
-# !SECTION 
-
-                                        # color: rgb(246, 158, 50); 
+# !SECTION  UI Info 

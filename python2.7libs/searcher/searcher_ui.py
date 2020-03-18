@@ -57,6 +57,9 @@ class Ui_Searcher(object):
             QtWidgets.QSizePolicy.Minimum
         )
 
+        self.expander = QtWidgets.QToolButton()
+        self.expander.setObjectName("expander")
+
         self.metricpos = QtWidgets.QToolButton()
         self.metricpos.setObjectName("metricpos")
 
@@ -171,9 +174,9 @@ class Ui_Searcher(object):
         self.infolbl_font = QtGui.QFont()
         self.infolbl_font.setPointSize(9)
         self.infolbl_font.setBold(False)
-        self.infolbl_font.setWeight(50)
+        self.infolbl_font.setWeight(40)
         self.info_lbl.setFont(self.infolbl_font)
-        self.info_lbl.setStyleSheet(u"background-color: rgb(11,11,11); border-bottom: 1px solid rgb(100, 100, 100);")
+        self.info_lbl.setStyleSheet(u"background-color: rgba(11, 11, 11, 0); border-bottom: 1px solid rgb(100, 100, 100);")
         self.info_lbl.setMargin(3)
         self.info_lbl.setIndent(5)
         
@@ -181,7 +184,7 @@ class Ui_Searcher(object):
         # NOTE Info Panel ---------------------------------
         self.overlay = overlayLabel(self.info_lbl)
         self.overlay.setFont(self.infolbl_font)
-        self.overlay.setStyleSheet(u"background-color: rgb(11,11,11); border-bottom: 1px solid rgb(100, 100, 100); ")
+        self.overlay.setStyleSheet(u"background-color: rgb(11, 11, 11); border-bottom: 1px solid rgb(100, 100, 100); ")
         self.overlay.setMargin(3)
         self.overlay.setIndent(5)
         
@@ -196,7 +199,7 @@ class Ui_Searcher(object):
         treetotal_size.setHeightForWidth(self.treetotal_lbl.sizePolicy().hasHeightForWidth())
         self.treetotal_lbl.setSizePolicy(treetotal_size)        
         self.treetotal_lbl.setMinimumSize(QtCore.QSize(160, 0))
-        self.treetotal_lbl.setMaximumSize(QtCore.QSize(160, 16777215))
+        # self.treetotal_lbl.setMaximumSize(QtCore.QSize(160, 16777215))
         self.treetotal_lbl.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         
         # Style ---------
@@ -205,7 +208,7 @@ class Ui_Searcher(object):
         self.treetotallbl_font.setBold(False)
         self.treetotallbl_font.setWeight(50)
         self.treetotal_lbl.setFont(self.treetotallbl_font)
-        self.treetotal_lbl.setStyleSheet(u"background-color: rgb(11,11,11); border-bottom: 1px solid rgb(100, 100, 100); ")
+        self.treetotal_lbl.setStyleSheet(u"background-color: rgb(11, 11, 11); border-bottom: 1px solid rgb(100, 100, 100); ")
         self.treetotal_lbl.setMargin(3)
         self.treetotal_lbl.setIndent(5)
 
@@ -214,6 +217,7 @@ class Ui_Searcher(object):
         self.titlerow.addItem(self.titlespacer1)
         self.titlerow.addWidget(self.searcherlbl)
         self.titlerow.addItem(self.titlespacer2)
+        self.titlerow.addWidget(self.expander)
         self.titlerow.addWidget(self.metricpos)
         self.titlerow.addWidget(self.contexttoggle)
         self.titlerow.addWidget(self.helpButton)
@@ -246,7 +250,7 @@ class Ui_Searcher(object):
         # --------------------------------------- ResizeHandles
         # NOTE ResizeHandles ----------------------------------
         self.leftresize = QtWidgets.QSizeGrip(self.info_lbl)
-        self.leftresize.setStyleSheet(u"color: rgba(0,0,0, 0); background-color: rgba(0,0,0, 0);")
+        self.leftresize.setStyleSheet(u"color: rgba(0, 0, 0, 0); background-color: rgba(0, 0, 0, 0);")
         pos = self.info_lbl.mapToGlobal(
                     QtCore.QPoint(0, 0))
         self.leftresize.setGeometry(
@@ -257,7 +261,7 @@ class Ui_Searcher(object):
             )
 
         self.rightresize = QtWidgets.QSizeGrip(self.treetotal_lbl)
-        self.rightresize.setStyleSheet(u"color: rgba(0,0,0, 0); background-color: rgba(0,0,0, 0);")
+        self.rightresize.setStyleSheet(u"color: rgba(0, 0, 0, 0); background-color: rgba(0, 0, 0, 0);")
         pos = self.treetotal_lbl.mapToGlobal(
                     QtCore.QPoint(100, 0))
         self.rightresize.setGeometry(
@@ -268,8 +272,6 @@ class Ui_Searcher(object):
             )
 
         self.mainlayout.addLayout(self.gridLayout)
-        
-
 
 class overlayLabel(QtWidgets.QLabel):
     def __init__(self, parent=None):

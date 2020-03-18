@@ -29,12 +29,10 @@ if os.environ["HFS"] != "":
     from hutil.Qt import QtGui
     from hutil.Qt import QtCore
     from hutil.Qt import QtWidgets
-    if hver >= 395:
-        from hutil.Qt import QtUiTools
-    elif hver <= 394 and hver >= 391:
-        from hutil.Qt import _QtUiTools
-    elif hver < 391 and hver >= 348:
-        from hutil.Qt import QtUiTools
+else:
+    from PyQt5 import QtGui
+    from PyQt5 import QtCore
+    from PyQt5 import QtWidgets
 
 reload(about)
 reload(theme)
@@ -95,7 +93,7 @@ class SearcherSettings(QtWidgets.QWidget):
         self.modifylayout = False
         self.uiwidth = width
         self.uiheight = height
-        
+        self.windowlist = ["about", "bugreport", "theme"]
         # --------------------------------------------- beginui
         # NOTE beginui ----------------------------------------
         self.setObjectName('searcher-settings')
@@ -115,25 +113,32 @@ class SearcherSettings(QtWidgets.QWidget):
         self.ui.setupUi(self, self.uiwidth, self.uiheight, bc(self.settings[util.SETTINGS_KEYS[8]]))
         self.ui.retranslateUi(self)
 
+        self.about = about.About(self)
+        self.about.setAttribute(QtCore.Qt.WA_StyledBackground, True)
+        self.about.setWindowFlags(
+            QtCore.Qt.Tool |
+            QtCore.Qt.FramelessWindowHint |
+            QtCore.Qt.WindowStaysOnTopHint
+        )
+        self.about.resize(width, height - 180)
+
         self.bugreport = bugreport.BugReport(self)
         self.bugreport.setAttribute(QtCore.Qt.WA_StyledBackground, True)
         self.bugreport.setWindowFlags(
             QtCore.Qt.Tool |
-            # QtCore.Qt.WindowStaysOnTopHint |
             QtCore.Qt.FramelessWindowHint |
             QtCore.Qt.NoDropShadowWindowHint
         )
-        self.bugreport.resize(width, height - 60)
+        self.bugreport.resize(width, height - 180)
 
         self.theme = theme.Theme(self)
         self.theme.setAttribute(QtCore.Qt.WA_StyledBackground, True)
         self.theme.setWindowFlags(
             QtCore.Qt.Tool |
-            # QtCore.Qt.WindowStaysOnTopHint |
             QtCore.Qt.FramelessWindowHint |
             QtCore.Qt.NoDropShadowWindowHint
         )
-        self.theme.resize(width, height - 190)
+        self.theme.resize(width, height - 90)
 
         self.settingslayout = QtWidgets.QVBoxLayout()
 
@@ -178,12 +183,14 @@ class SearcherSettings(QtWidgets.QWidget):
         self.cleardata.setToolTip(la.TT_SETTINGS[self.cleardata.objectName()])
 
         # sixthrow
-        self.about = self.ui.about_btn
-        self.about.setToolTip(la.TT_SETTINGS[self.about.objectName()])
+        self.aboutbtn = self.ui.about_btn
+        self.aboutbtn.setToolTip(la.TT_SETTINGS[self.aboutbtn.objectName()])
+        self.aboutbtn.setCheckable(True)
+        self.aboutbtn.setChecked(False)
         about_button_size = hou.ui.scaledSize(32)
-        self.about.setProperty("flat", True)
-        self.about.setIcon(util.ABOUT_ICON1)
-        self.about.setIconSize(QtCore.QSize(
+        self.aboutbtn.setProperty("flat", True)
+        self.aboutbtn.setIcon(util.ABOUT_ICON1)
+        self.aboutbtn.setIconSize(QtCore.QSize(
             about_button_size,
             about_button_size
         ))
@@ -204,9 +211,9 @@ class SearcherSettings(QtWidgets.QWidget):
         self.themebtn.setToolTip(la.TT_SETTINGS[self.themebtn.objectName()])
         self.themebtn.setCheckable(True)
         self.themebtn.setChecked(False)
-        theme_button_size = hou.ui.scaledSize(21)
+        theme_button_size = hou.ui.scaledSize(27)
         self.themebtn.setProperty("flat", True)
-        self.themebtn.setIcon(util.BUG_ICON)
+        self.themebtn.setIcon(util.COLOR_ICON)
         self.themebtn.setIconSize(QtCore.QSize(
             theme_button_size,
             theme_button_size
@@ -242,9 +249,9 @@ class SearcherSettings(QtWidgets.QWidget):
         self.hotkey_icon.clicked.connect(self.hotkeyicon_cb)
         self.dbpath_btn.clicked.connect(self.dbpath_cb)
         self.cleardata.clicked.connect(self.cleardata_cb)
-        self.about.clicked.connect(self.about_cb)
-        self.bugreportbtn.clicked.connect(self.bug_cb)
-        self.themebtn.clicked.connect(self.theme_cb)
+        self.aboutbtn.clicked.connect(self.window_cb)
+        self.bugreportbtn.clicked.connect(self.window_cb)
+        self.themebtn.clicked.connect(self.window_cb)
         self.savedata.clicked.connect(self.save_cb)
         self.discarddata.clicked.connect(self.discard_cb)
 
@@ -267,62 +274,46 @@ class SearcherSettings(QtWidgets.QWidget):
         self.updatecurrentvalues()
         self.fieldsetup()
 
+    # --------------------------------------------------------------- Functions
+    # SECTION Functions -------------------------------------------------------
+    def closewindows(self):
+        for i in range(len(self.windowlist)):
+            if getattr(self, self.windowlist[i]).isVisible():
+                getattr(self, self.windowlist[i]).close()
+                getattr(self, self.windowlist[i] + "btn").setChecked(False)
+
+    # ----------------------------------------- mapposition
+    # NOTE mapposition ------------------------------------
+    def mapposition(self, w, h, s):
+        pos = s.mapToGlobal(QtCore.QPoint(w ,h))
+        getattr(self, s.objectName()).setGeometry(
+            pos.x(),
+            pos.y(),
+            getattr(self, s.objectName()).width(),
+            getattr(self, s.objectName()).height()) 
+        getattr(self, s.objectName()).show()
+    # !SECTION
+        
     # --------------------------------------------------------------- Callbacks
     # SECTION Callbacks -------------------------------------------------------
-    # ---------------------------------------------- bug_cb
-    # NOTE bug_cb -----------------------------------------
-    def bug_cb(self, toggled):
-        if toggled == True and not self.bugreport.isVisible():
-            if self.animatedsettings.isChecked():
-                pos = self.bugreportbtn.mapToGlobal(
-                    QtCore.QPoint( -43, 34))
-            else:
-                pos = self.bugreportbtn.mapToGlobal(
-                    QtCore.QPoint( -45, 35))
-            self.bugreport.setGeometry(
-                    pos.x(),
-                    pos.y(),
-                    self.bugreport.width(),
-                    self.bugreport.height()
-                )
-            self.bugreport.show()
-        else:
-            self.bugreport.close()
+    # ------------------------------------------- window_cb
+    # NOTE window_cb --------------------------------------
+    def window_cb(self, toggled):
+        self.closewindows()
+        s = self.sender()
 
-    # -------------------------------------------- theme_cb
-    # NOTE theme_cb ---------------------------------------
-    def theme_cb(self, toggled):
-        if toggled == True and not self.theme.isVisible():
-            if self.animatedsettings.isChecked():
-                pos = self.themebtn.mapToGlobal(
-                    QtCore.QPoint( -77, 34))
-            else:
-                pos = self.themebtn.mapToGlobal(
-                    QtCore.QPoint( -79, 35))
-            self.theme.setGeometry(
-                    pos.x(),
-                    pos.y(),
-                    self.theme.width(),
-                    self.theme.height()
-                )
-            self.theme.show()
+        if toggled == True and not getattr(self, s.objectName()).isVisible():
+            if s.objectName() == "about":
+                self.mapposition(-9, 34, s) if self.animatedsettings.isChecked() else self.mapposition(-11, 36, s)
+            elif s.objectName() == "bugreport":
+                self.mapposition(-43, 34, s) if self.animatedsettings.isChecked() else self.mapposition(-45, 36, s)
+            elif s.objectName() == "theme":
+                self.mapposition(-77, 34, s) if self.animatedsettings.isChecked() else self.mapposition(-79, 36, s)
         else:
-            self.theme.close()
+            if s.objectName() in self.windowlist:
+                getattr(self, s.objectName()).close()
 
-    # -------------------------------------------- about_cb
-    # NOTE about_cb ---------------------------------------
-    def about_cb(self):
-        self.aboutui = about.About(self.parentwindow)
-        self.aboutui.setAttribute(QtCore.Qt.WA_StyledBackground, True)
-        self.aboutui.setWindowFlags(
-            QtCore.Qt.Popup |
-            QtCore.Qt.WindowStaysOnTopHint |
-            QtCore.Qt.NoDropShadowWindowHint |
-            QtCore.Qt.WindowStaysOnTopHint
-        )
-        self.aboutui.setParent(self.parentwindow)
-        self.aboutui.move(self.pos().x() - 175, self.pos().y())
-        self.aboutui.show()
+
         
     # --------------------------------------- hotkeyicon_cb
     # NOTE hotkeyicon_cb ----------------------------------
@@ -392,20 +383,19 @@ class SearcherSettings(QtWidgets.QWidget):
                 print(self.settings)
 
             searcher_data.savesettings(self.settings)
+            
             if self.resetdb:
                 hou.session.DBCONNECTION = None
                 hou.session.DATABASE = None
                 self.resetdb = False
+
             if self.modifylayout:
                 self.parentwindow.sui.metricpos.setVisible(
                     self.settings[util.SETTINGS_KEYS[12]])
+
             self.performcheck = False
-            if self.bugreport.isVisible():
-                self.bugreport.close()
-                self.bugreportbtn.setChecked(False)
-            if self.theme.isVisible():
-                self.theme.close()
-                self.themebtn.setChecked(False)
+            self.closewindows()
+
             if self.animatedsettings.isChecked() and not self.waitforclose:
                 self.parentwindow.anim.start_animation(False)
                 self.isopened = True
@@ -419,12 +409,8 @@ class SearcherSettings(QtWidgets.QWidget):
     # ------------------------------------------ discard_cb
     # NOTE discard_cb -------------------------------------
     def discard_cb(self):
-        if self.bugreport.isVisible():
-            self.bugreport.close()
-            self.bugreportbtn.setChecked(False)
-        if self.theme.isVisible():
-            self.theme.close()
-            self.themebtn.setChecked(False)
+        self.closewindows()
+
         if self.settings[util.SETTINGS_KEYS[8]]:
             self.parentwindow.anim.start_animation(False)
             self.isopened = True
@@ -577,30 +563,17 @@ class SearcherSettings(QtWidgets.QWidget):
                         if self.checkforchanges():
                             self.savecheck()
                     if self.animatedsettings.isChecked() and not self.waitforclose:
-                        if self.bugreport.isVisible():
-                            self.bugreport.close()
-                            self.bugreportbtn.setChecked(False)
-                        if self.theme.isVisible():
-                            self.theme.close()
-                            self.themebtn.setChecked(False)
+                        self.closewindows()
                         self.parentwindow.anim.start_animation(False)
                         self.isopened = True
                         return True
                     elif self.waitforclose:
-                        if self.bugreport.isVisible():
-                            self.bugreport.close()
-                        if self.theme.isVisible():
-                            self.theme.close()
-                            self.themebtn.setChecked(False)
+                        self.closewindows()
                         self.close()
                         self.parentwindow.close()
                         return True
                     else:
-                        if self.bugreport.isVisible():
-                            self.bugreport.close()
-                        if self.theme.isVisible():
-                            self.theme.close()
-                            self.themebtn.setChecked(False)
+                        self.closewindows()
                         self.close()
                         return True
             else:

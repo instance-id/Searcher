@@ -66,3 +66,121 @@
                         print("{} value {}".format(util.SETTINGS_KEYS[i], str(self.currentsettings[util.SETTINGS_KEYS[i]])))
                     return True
         return False
+
+
+    def bug_cb(self, toggled):
+        if toggled == True and not self.bugreport.isVisible():
+            if self.animatedsettings.isChecked():
+                pos = self.bugreportbtn.mapToGlobal(
+                    QtCore.QPoint( -43, 34))
+            else:
+                pos = self.bugreportbtn.mapToGlobal(
+                    QtCore.QPoint( -45, 35))
+            self.bugreport.setGeometry(
+                    pos.x(),
+                    pos.y(),
+                    self.bugreport.width(),
+                    self.bugreport.height()
+                )
+            self.bugreport.show()
+        else:
+            self.bugreport.close()
+
+    def theme_cb(self, toggled):
+        if toggled == True and not self.theme.isVisible():
+            if self.animatedsettings.isChecked():
+                pos = self.themebtn.mapToGlobal(
+                    QtCore.QPoint( -77, 34))
+            else:
+                pos = self.themebtn.mapToGlobal(
+                    QtCore.QPoint( -79, 35))
+            self.theme.setGeometry(
+                    pos.x(),
+                    pos.y(),
+                    self.theme.width(),
+                    self.theme.height()
+                )
+            self.theme.show()
+        else:
+            self.theme.close()
+
+    def about_cb(self):
+        self.aboutui = about.About(self.parentwindow)
+        self.aboutui.setAttribute(QtCore.Qt.WA_StyledBackground, True)
+        self.aboutui.setWindowFlags(
+            QtCore.Qt.Popup |
+            QtCore.Qt.WindowStaysOnTopHint |
+            QtCore.Qt.NoDropShadowWindowHint |
+            QtCore.Qt.WindowStaysOnTopHint
+        )
+        self.aboutui.setParent(self.parentwindow)
+        self.aboutui.move(self.pos().x() - 175, self.pos().y())
+        self.aboutui.show()
+
+
+        # ------------------------------------------------------- FONTS
+style script ----------
+def getfontdb():
+    return getattr(hou.session, "FONTDB", None)
+
+def getfont(font, size = -1, weight = -1):
+    if font in getfontdb().families():
+        fontstr = ""
+        fontstr += ("Using %s" % font)
+        if size >= 0:
+            fontstr += (" : Size %s" % size)
+        if weight >= 0:
+            fontstr += (" : Weight %s" % weight)
+    else:
+        if hou.isUIAvailable():
+                hou.ui.setStatusMessage(("%s not available" % font), severity=hou.severityType.Message)
+                return QtGui.QFont()
+        else:
+            print(("%s not available" % font))
+            return QtGui.QFont()
+
+    return QtGui.QFont(font, size, weight)
+-------
+
+
+
+
+        self.infolbl = self.sui.info_lbl
+        self.infolbl_font = style.getfont("JetBrains Mono", 8)
+        self.infolbl_font.setWeight(40)
+        self.infolbl_font.setLetterSpacing(QtGui.QFont.AbsoluteSpacing, -1)
+        self.infolbl_font.setWordSpacing(-2)
+        # self.infolbl.setFont(self.infolbl_font)
+
+        self.treetotal_lbl = self.sui.treetotal_lbl
+        self.treetotal_lbl_font = style.getfont("JetBrains Mono", 8)
+        self.treetotal_lbl_font.setWeight(40)
+        self.treetotal_lbl_font.setLetterSpacing(QtGui.QFont.AbsoluteSpacing, -1)
+        self.treetotal_lbl_font.setWordSpacing(0)
+        # self.treetotal_lbl.setFont(self.treetotal_lbl_font)
+        # self.treetotal_lbl.setMinimumSize(QtCore.QSize(50, 0))
+
+        # ------------------------------------------------------- Spacing
+        # tnum = str(treeitemsnum)
+        # goalnum = 5
+        # if len(tnum) == 3:
+        #     itmvald = tnum.rjust((goalnum + 2) - count_chars(str(treeitemsnum)), " ")
+        # else: 
+        #     itmvald = tnum.rjust((goalnum) - count_chars(str(treeitemsnum)), " ")
+        # itm = itmvald.replace(" ", "&nbsp;")
+
+        # ------------------------------------------------------- Auto - Add font
+        jbfont = getattr(hou.session, "FONTDB", None)
+        if not getattr(hou.session, "FONTDB", None):
+            fontlocation = os.path.join(script_path, "fonts")
+            jbfontfolder = "JetBrainsMono-1.0.0"
+            f = []
+            for (dirpath, dirnames, filenames) in os.walk(os.path.join(fontlocation, jbfontfolder)):
+                f.extend(filenames)
+                break
+            if f:
+                for font in f:
+                    fontdb = QtGui.QFontDatabase()
+                    fontdb.addApplicationFont(os.path.join(fontlocation, jbfontfolder, font))
+                    print("Added %s" % font)
+                hou.session.FONTDB = fontdb

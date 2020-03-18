@@ -12,10 +12,11 @@ TT_MW = {
     "helpButton" :              "Open help panel",
     "metricposmain" :           "Change the position of metrics to Houdinis main window",
     "metricposself" :           "Change the position of metrics to Searchers window",
+    "expander" :                "Expand or collapse all tree items",
 }   
 # NOTE Tooltops Settings    
 TT_SETTINGS = { 
-    "about_btn":                "Contact and other info",
+    "about":                    "Contact and other info",
     "projectTitle" :            "Thanks for using Searcher!",
     "lang_cbox" :               "When translations become available they can be selected here",
     "inmemory_chk" :            "Enable to use an in-memory database instead of SQLite file",
@@ -26,19 +27,15 @@ TT_SETTINGS = {
     "dbpath_icon": "",  
     "dbpath_lbl" :              "The location in which Searcher stores it's database file",
     "databasepath_txt" :        "The location in which Searcher stores it's database file",
-    "defaulthotkey_lbl" :       ("If left to the default value of (Ctrl+Alt+Shift+F7), "
-                                "in the event that Searcher detects a conflict it will "
-                                "automatically attempt to try different key combinations."),
-    "defaulthotkey_txt" :       ("If left to the default value of (Ctrl+Alt+Shift+F7), "
-                                "in the event that Searcher detects a conflict it will "
-                                "automatically attempt to try different key combinations."),
+    "defaulthotkey_lbl" :       "Key used to trigger unbound actions",
+    "defaulthotkey_txt" :       "Key used to trigger unbound actions",
     "cleardata_btn" :           "If, for some reason, Searcher is having issues this function will clear out the database and start fresh",
     "save_btn" :                "Save your settings",
     "discard_btn" :             "Disgard settings changes",
     "debugflag_chk":            "Toggle debug messages",
     "debuglevel_cbx":           "Select level of debugging", 
-    "bug_btn":                  "Bug report form", 
-    "theme_btn":                "Change colors", 
+    "bugreport":                "Bug report form", 
+    "theme":                    "Change colors", 
     "metrics_chk":              "Enable performance metrics to view query and render times", 
 }
 

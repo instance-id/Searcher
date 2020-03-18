@@ -1,14 +1,20 @@
-from hutil.Qt import QtCore, QtGui, QtWidgets
-import os
+# -*- coding: utf-8 -*-
 
-scriptpath = os.path.dirname(os.path.realpath(__file__))
+# Form implementation generated from reading ui file 'about.ui'
+#
+# Created by: PyQt5 UI code generator 5.14.1
+#
+# WARNING! All changes made in this file will be lost!
+
+
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_About(object):
     def setupUi(self, About):
         About.setObjectName("About")
         About.setWindowModality(QtCore.Qt.NonModal)
-        About.resize(185, 251)
+        About.resize(384, 135)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -17,7 +23,6 @@ class Ui_About(object):
         About.setMinimumSize(QtCore.QSize(100, 0))
         About.setBaseSize(QtCore.QSize(0, 0))
         About.setStyleSheet("")
-
         self.gridLayout = QtWidgets.QGridLayout(About)
         self.gridLayout.setContentsMargins(-1, -1, -1, 6)
         self.gridLayout.setSpacing(6)
@@ -53,7 +58,7 @@ class Ui_About(object):
         self.logo.setSizePolicy(sizePolicy)
         self.logo.setMaximumSize(QtCore.QSize(120, 120))
         self.logo.setText("")
-        self.logo.setPixmap(QtGui.QPixmap(scriptpath + "/images/logo.png"))
+        self.logo.setPixmap(QtGui.QPixmap("C:/Users/mosthated/Downloads/483688212.png"))
         self.logo.setScaledContents(True)
         self.logo.setObjectName("logo")
         self.gridLayout.addWidget(self.logo, 0, 1, 1, 1)
@@ -64,14 +69,5 @@ class Ui_About(object):
     def retranslateUi(self, About):
         _translate = QtCore.QCoreApplication.translate
         About.setWindowTitle(_translate("About", "Form"))
-        self.github.setText(_translate("About", '<a href="http://github.com/instance-id/"><font color=#E6E6E6>github/instance-id</font></a>'))
-        self.web.setText(_translate("About", '<a href="https://instance.id/"><font color=#E6E6E6>instance.id</font></a>'))
-
-# class LinkLabel(QtWidgets.QLabel):
-#     def __init__(self, parent, text):
-#         super(LinkLabel, self).__init__(parent)
-
-#         self.setText(text)
-#         self.setTextFormat(QtCore.Qt.RichText)
-#         self.setTextInteractionFlags(QtCore.Qt.TextBrowserInteraction)
-#         self.setOpenExternalLinks(True)
+        self.web.setText(_translate("About", "instance.id"))
+        self.github.setText(_translate("About", "github.com/instance-id"))

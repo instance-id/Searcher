@@ -1,5 +1,4 @@
 
-# region Imports
 from __future__ import print_function
 from __future__ import absolute_import
 import weakref
@@ -14,25 +13,24 @@ if os.environ["HFS"] != "":
     from hutil.Qt import QtCore
     from hutil.Qt import QtWidgets
 
-# ----------------------------------------------------------------- Help
-# NOTE -----------------------------------------------------------------
-
-
-class HelpButton(QtWidgets.QPushButton):
+# ---------------------------------------------------- Help
+# NOTE Help -----------------------------------------------
+class HelpButton(QtWidgets.QToolButton):
     """Generic Help button."""
 
     def __init__(self, name, tooltip, size, parent=None):
-        super(HelpButton, self).__init__(
-            hou.qt.createIcon("BUTTONS_help"), "", parent=parent
-        )
+        super(HelpButton, self).__init__(parent=parent)
 
         self._name = name
         self.setToolTip(tooltip)
-        self.setIconSize(QtCore.QSize(size, size))
-        self.setMaximumSize(QtCore.QSize(size, size))
-        self.setFlat(True)
-
         self.clicked.connect(self.display_help)
+        help_button_size = hou.ui.scaledSize(16)
+        self.setProperty("flat", True)
+        self.setIcon(hou.qt.createIcon("BUTTONS_help"))
+        self.setIconSize(QtCore.QSize(
+            help_button_size,
+            help_button_size
+        ))
 
     def display_help(self):
         """Display help panel."""

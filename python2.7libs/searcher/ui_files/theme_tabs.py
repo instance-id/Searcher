@@ -1,14 +1,20 @@
-from hutil.Qt import QtCore, QtGui, QtWidgets
-import os
+# -*- coding: utf-8 -*-
 
-scriptpath = os.path.dirname(os.path.realpath(__file__))
+# Form implementation generated from reading ui file 'theme_tabs.ui'
+#
+# Created by: PyQt5 UI code generator 5.14.1
+#
+# WARNING! All changes made in this file will be lost!
+
+
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_Theme(object):
     def setupUi(self, Theme):
         Theme.setObjectName("Theme")
         Theme.setWindowModality(QtCore.Qt.NonModal)
-        Theme.resize(450, 300)
+        Theme.resize(535, 208)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -16,7 +22,7 @@ class Ui_Theme(object):
         Theme.setSizePolicy(sizePolicy)
         Theme.setMinimumSize(QtCore.QSize(100, 0))
         Theme.setBaseSize(QtCore.QSize(0, 0))
-        Theme.setStyleSheet("") 
+        Theme.setStyleSheet("")
         self.gridLayout = QtWidgets.QGridLayout(Theme)
         self.gridLayout.setContentsMargins(-1, -1, -1, 6)
         self.gridLayout.setSpacing(6)
@@ -258,9 +264,8 @@ class Ui_Theme(object):
         self.verticalLayout.addWidget(self.tabWidget)
         self.gridLayout.addLayout(self.verticalLayout, 0, 0, 1, 1)
 
-
         self.retranslateUi(Theme)
-        self.setVisibility()
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(Theme)
 
     def retranslateUi(self, Theme):
@@ -277,16 +282,3 @@ class Ui_Theme(object):
         self.label_5.setText(_translate("Theme", "TextLabel"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("Theme", "Text"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("Theme", "Window"))
-    
-    def setVisibility(self):
-        self.label_7.setVisible(False)
-        self.label_6.setVisible(False)
-        self.label_5.setVisible(False)
-
-        self.lineEdit_4.setVisible(False)
-        self.lineEdit_3.setVisible(False)     
-        self.lineEdit.setVisible(False)
-
-        self.toolButton_6.setVisible(False)
-        self.toolButton_7.setVisible(False)
-        self.toolButton_8.setVisible(False)

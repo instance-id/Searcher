@@ -16,12 +16,10 @@ if os.environ["HFS"] != "":
     from hutil.Qt import QtGui
     from hutil.Qt import QtCore
     from hutil.Qt import QtWidgets
-    if hver >= 395:
-        from hutil.Qt import QtUiTools
-    elif hver <= 394 and hver >= 391:
-        from hutil.Qt import _QtUiTools
-    elif hver < 391 and hver >= 348:
-        from hutil.Qt import QtUiTools
+else:
+    from PyQt5 import QtGui
+    from PyQt5 import QtCore
+    from PyQt5 import QtWidgets
 
 scriptpath = os.path.dirname(os.path.realpath(__file__))
 
@@ -43,76 +41,81 @@ def getRGBColor(hex):
 class Theme(QtWidgets.QWidget):
     """ Searcher coloring"""
 
+    # --------------------------------------------------------------- Init
+    # SECTION Init -------------------------------------------------------
     def __init__(self, parent=None):
         super(Theme, self).__init__(parent=parent)
         self.setParent(parent)
+        self.parent = parent
         self.ui = theme_ui.Ui_Theme()
         self.ui.setupUi(self)
         self.ui.retranslateUi(self)
 
         self.settings = util.get_settings()
         self.colors = self.settings[util.SETTINGS_KEYS[14]]
-        
-        self.text1 = self.ui.text1
-        self.text1.setText(self.settings[util.SETTINGS_KEYS[14]]['text1'])
-        self.text1btn = self.ui.text1btn
-        self.text1btn.setStyleSheet("background-color:" + self.text1.text())
-        self.text1btn.setAutoFillBackground(True)
-        self.text1btn.clicked.connect(self.chooseColor)
-        
-        self.text2 = self.ui.text2
-        self.text2.setText(self.settings[util.SETTINGS_KEYS[14]]['text2'])
-        self.text2btn = self.ui.text2btn
-        self.text2btn.setStyleSheet("background-color:" + self.text2.text())
-        self.text2btn.setAutoFillBackground(True)
-        self.text2btn.clicked.connect(self.chooseColor)
 
-        self.stats1 = self.ui.stats1
-        self.stats1.setText(self.settings[util.SETTINGS_KEYS[14]]['stats1'])
-        self.stats1btn = self.ui.stats1btn
-        self.stats1btn.setStyleSheet("background-color:" + self.stats1.text())
-        self.stats1btn.setAutoFillBackground(True)
-        self.stats1btn.clicked.connect(self.chooseColor)
+        self.tabpanel = self.ui.tabWidget
+        self.tabpanel.currentChanged.connect(self.curTabChange)
 
-        self.stats2 = self.ui.stats2
-        self.stats2.setText(self.settings[util.SETTINGS_KEYS[14]]['stats2'])
-        self.stats2btn = self.ui.stats2btn
-        self.stats2btn.setStyleSheet("background-color:" + self.stats2.text())
-        self.stats2btn.setAutoFillBackground(True)
-        self.stats2btn.clicked.connect(self.chooseColor)
-                      
+        self.tab1 = self.ui.tab
+        self.tab1.setLayout(self.ui.r1)
+
+        # --------------------------------------------------- Build Fields
+        # SECTION Build Fields -------------------------------------------
+        for i in range(len(util.COLORFIELDS)):
+            # ---------------------------------- Colorfield
+            # NOTE Colorfield -----------------------------
+            v = getattr(self.ui, util.COLORFIELDS[i])
+            v.setText(self.settings[util.SETTINGS_KEYS[14]][util.COLORFIELDS[i]])
+            v.setVisible(True)
+
+            # --------------------------- Colorfield Button
+            # NOTE Colorfield Button ----------------------
+            v_btn = getattr(self.ui, util.COLORFIELDS[i] + '_btn') 
+            v_btn.setStyleSheet("background-color:" + v.text())
+            v_btn.setAutoFillBackground(True)
+            v_btn.clicked.connect(self.chooseColor)
+            v_btn.setObjectName(util.COLORFIELDS[i])
+            v_btn.setVisible(True)
+
+            # ---------------------------- Colorfield Label
+            # NOTE Colorfield Label -----------------------
+            v_lbl = getattr(self.ui, util.COLORFIELDS[i] + '_lbl') 
+            v_lbl.setVisible(True) 
+
+        # !SECTION Build Fields
+
         self.save = self.ui.savetheme
-
-
-
         self.save.pressed.connect(self.save_cb)
 
+        self.curTabChange(0)  
+        self.installEventFilter(self)    
+
+        # !SECTION Init              
+
+    # ------------------------------------------------------------- Callbacks
+    # SECTION Callbacks -----------------------------------------------------
+    # ---------------------------------------- curTabChange
+    # NOTE curTabChange -----------------------------------
+    def curTabChange(self, index):
+        for i in range(self.tabpanel.count()):
+            if i == index:
+                self.tabpanel.widget(i).setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+            else:
+                self.tabpanel.widget(i).setSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
+
     def save_cb(self):
-        self.settings[util.SETTINGS_KEYS[14]]['text1'] = self.text1.text()
-        self.settings[util.SETTINGS_KEYS[14]]['text2'] = self.text2.text()
-        self.settings[util.SETTINGS_KEYS[14]]['stats1'] = self.stats1.text()
-        self.settings[util.SETTINGS_KEYS[14]]['stats2'] = self.stats2.text()
-
-        searcher_data.savesettings(self.settings[util.SETTINGS_KEYS[14]])
-
-    def button1_cb(self):
-        new_color = hou.ui.selectColor()
-        self.button1.set
-
-        color = hou.qt.toQColor(new_color)
-        self.colorfield.setColor(color)
-        hou.Color
-        print(new_color)
-        print(new_color.rgb())
-        c = getHexColor(new_color)
-        print(c)
-        print(getRGBColor(c))
+        for i in range(len(util.COLORFIELDS)):
+            self.settings[util.SETTINGS_KEYS[14]][util.COLORFIELDS[i]] = getattr(self.ui, util.COLORFIELDS[i]).text()
+        
+        searcher_data.savesettings(self.settings)
+        self.parent.themebtn.setChecked(False)
+        self.close()
 
     def chooseColor(self):
         sender = self.sender()
         name = sender.objectName()
-        colorfield = getattr(self, name)
-
+        colorfield = getattr(self.ui, name)
         qcolor = QtGui.QColor()
         qcolor.setNamedColor(colorfield.text())
         color = hou.Color()
@@ -135,4 +138,21 @@ class Theme(QtWidgets.QWidget):
             if newcolor.isValid():
                 colorfield.setText(newcolor.name())
                 sender.setStyleSheet("background-color:" + colorfield.text())
+    
+    # !SECTION Callbacks
 
+    # ------------------------------------------------------------- Events
+    # SECTION Events -----------------------------------------------------
+    def eventFilter(self, obj, event):
+        # ------------------------------------------ Window
+        # NOTE Window -------------------------------------
+        if event.type() == QtCore.QEvent.Show:
+            self.parent.ui.save_btn.setVisible(False)
+            self.parent.ui.discard_btn.setVisible(False)
+        if event.type() == QtCore.QEvent.Close:
+            self.parent.ui.save_btn.setVisible(True)
+            self.parent.ui.discard_btn.setVisible(True)
+
+        return QtCore.QObject.eventFilter(self, obj, event)
+    
+    # !SECTION Events

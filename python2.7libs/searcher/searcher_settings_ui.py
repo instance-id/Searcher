@@ -166,15 +166,15 @@ class Ui_SearcherSettings(object):
         self.sixthrow.setObjectName("sixthrow")
 
         self.about_btn = QtWidgets.QToolButton(SearcherSettings)
-        self.about_btn.setObjectName("about_btn")
+        self.about_btn.setObjectName("about")
         self.sixthrow.addWidget(self.about_btn)
 
         self.bug_btn = QtWidgets.QToolButton(SearcherSettings)
-        self.bug_btn.setObjectName("bug_btn")
+        self.bug_btn.setObjectName("bugreport")
         self.sixthrow.addWidget(self.bug_btn)
 
         self.theme_btn = QtWidgets.QToolButton(SearcherSettings)
-        self.theme_btn.setObjectName("theme_btn")
+        self.theme_btn.setObjectName("theme")
         self.sixthrow.addWidget(self.theme_btn)
 
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)

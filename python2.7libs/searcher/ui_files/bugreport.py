@@ -1,14 +1,20 @@
-from hutil.Qt import QtCore, QtGui, QtWidgets
-import os
+# -*- coding: utf-8 -*-
 
-scriptpath = os.path.dirname(os.path.realpath(__file__))
+# Form implementation generated from reading ui file 'bugreport.ui'
+#
+# Created by: PyQt5 UI code generator 5.14.1
+#
+# WARNING! All changes made in this file will be lost!
+
+
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_BugReport(object):
     def setupUi(self, BugReport):
         BugReport.setObjectName("BugReport")
         BugReport.setWindowModality(QtCore.Qt.NonModal)
-        BugReport.resize(450, 300)
+        BugReport.resize(393, 172)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -62,7 +68,7 @@ class Ui_BugReport(object):
         self.logo.setSizePolicy(sizePolicy)
         self.logo.setMaximumSize(QtCore.QSize(120, 120))
         self.logo.setText("")
-        self.logo.setPixmap(QtGui.QPixmap(scriptpath + "/images/logo.png"))
+        self.logo.setPixmap(QtGui.QPixmap("C:/Users/mosthated/Downloads/483688212.png"))
         self.logo.setScaledContents(True)
         self.logo.setObjectName("logo")
         self.horizontalLayout_3.addWidget(self.logo)

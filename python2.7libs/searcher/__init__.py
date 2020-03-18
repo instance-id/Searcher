@@ -1,6 +1,5 @@
-#PYPANEL CODE
-# from searcher import searcher
-# reload(searcher)
-# 
-# def createInterface():
-#     return searcher.Searcher()
+__package__ = "searcher"
+__version__ = "0.1b"
+__author__ = "instance.id"
+__copyright__ = "2020 All rights reserved. See LICENSE for more details."
+__status__ = "Prototype"

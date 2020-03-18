@@ -23,6 +23,10 @@ __author__ = "instance.id"
 __copyright__ = "2020 All rights reserved. See LICENSE for more details."
 __status__ = "Prototype"
 
+# settingsfile = "searcher_settings.ini"
+# searcher_settings = os.path.join(
+#     hou.homeHoudiniDirectory(), 'Searcher', settingsfile
+# )
 
 current_file_path = os.path.abspath(
     inspect.getsourcefile(lambda: 0)
@@ -113,15 +117,22 @@ def getdata():
         branches = hou.hotkeys.contextsInContext(context_symbol)
         for branch in branches:
             branch_path = "%s/%s" % (r, branch['label'])
-            contextdata.append(
-                {'context': branch['symbol'], 'title': branch['label'], 'description': branch['help']})
+            contextdata.append({
+                'context': branch['symbol'], 
+                'title': branch['label'], 
+                'description': branch['help']
+            })
             commands = hou.hotkeys.commandsInContext(branch['symbol'])
             for command in commands:
                 keys = hou.hotkeys.assignments(command['symbol'])
                 ctx = command['symbol'].rsplit('.', 1)
-                hotkeydata.append(
-                    {'hotkey_symbol': command['symbol'], 'label': command['label'], 'description': command['help'],
-                     'assignments': " ".join(keys), 'context': ctx[0]})
+                hotkeydata.append({
+                    'hotkey_symbol': command['symbol'], 
+                    'label': command['label'], 
+                    'description': command['help'],
+                    'assignments': " ".join(keys), 
+                    'context': ctx[0]
+                })
             getcontexts(branch_path, branch['symbol'], root)
 
     getcontexts("", "", rval)

@@ -15,9 +15,9 @@ if os.environ["HFS"] != "":
     from hutil.Qt import QtCore
 
 
-settingsfile = "searcher_settings.ini"
 scriptpath = os.path.dirname(os.path.realpath(__file__))
 defaultdbpath = os.path.join(scriptpath, 'db', 'searcher.db')
+settingsfile = "searcher_settings.ini"
 searcher_settings = os.path.join(
     hou.homeHoudiniDirectory(), 'Searcher', settingsfile
 )

@@ -7,5 +7,37 @@
         "gocommandtext",
         "updatetmphk",
         "updatetmphotkey"
-    ]
+    ],
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/*.pyc": true,
+        "**/*.meta": true,
+        "**/*.*.meta": true,
+        "**/*.unity": true,
+        "**/*.unityproj": true,
+        "**/*.mat": true,
+        "**/*.fbx": true,
+        "**/*.FBX": true,
+        "**/*.tga": true,
+        "**/*.cubemap": true,
+        "**/*.prefab": true,
+        "**/Library": true,
+        "**/ProjectSettings": true,
+        "**/Temp": true,
+        "**/.history": true,
+        "**/.vscode": true,
+        "**/.idea": true,
+        "**/venv": true,
+        "python2.7libs/peewee-3.13.1.dist-info": true,
+        "python2.7libs/*.dist-info": true,
+        "python2.7libs/playhouse": true,
+        "python2.7libs/qtpy": true,
+        "python2.7libs/Qt.py": true,
+        "python2.7libs/peewee.py": true
+    },
+    "explorerExclude.backup": null
 }
