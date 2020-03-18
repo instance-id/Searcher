@@ -48,13 +48,13 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-searcher.db
+*.db
 python2.7libs/*
 !python2.7libs/searcher/
 python2.7libs/searcher/.history
 **.history*
 python2.7libs/searcher/go/houdini
-python2.7libs/searcher/db*
+python2.7libs/searcher/db
 python2.7libs/searcher/_conversion
 # PyInstaller
 #  Usually these files are written by a python script from a template
