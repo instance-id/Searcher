@@ -20,8 +20,8 @@ from searcher import HelpButton
 from searcher import language_en as la
 
 class Ui_Searcher(object):
-    def setupUi(self, Searcher):
-
+    def setupUi(self, Searcher, animated):
+        self.animated = animated
         Searcher.setObjectName("Searcher")
         Searcher.setWindowModality(QtCore.Qt.NonModal)
         Searcher.setStyleSheet(u"background-color: rgb(42,42,42); border: 0px solid black")
@@ -199,7 +199,6 @@ class Ui_Searcher(object):
         treetotal_size.setHeightForWidth(self.treetotal_lbl.sizePolicy().hasHeightForWidth())
         self.treetotal_lbl.setSizePolicy(treetotal_size)        
         self.treetotal_lbl.setMinimumSize(QtCore.QSize(160, 0))
-        # self.treetotal_lbl.setMaximumSize(QtCore.QSize(160, 16777215))
         self.treetotal_lbl.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         
         # Style ---------
@@ -250,28 +249,33 @@ class Ui_Searcher(object):
         # --------------------------------------- ResizeHandles
         # NOTE ResizeHandles ----------------------------------
         self.leftresize = QtWidgets.QSizeGrip(self.info_lbl)
+        self.leftresize.setObjectName("resizeleft")
+        self.leftresize.setMaximumSize(QtCore.QSize(25, 25))
         self.leftresize.setStyleSheet(u"color: rgba(0, 0, 0, 0); background-color: rgba(0, 0, 0, 0);")
         pos = self.info_lbl.mapToGlobal(
-                    QtCore.QPoint(0, 0))
+                    QtCore.QPoint(-3, 0))
         self.leftresize.setGeometry(
                 pos.x(),
                 pos.y(),
                 self.leftresize.width(),
                 self.leftresize.height()
-            )
+        )
 
         self.rightresize = QtWidgets.QSizeGrip(self.treetotal_lbl)
+        self.rightresize.setMaximumSize(QtCore.QSize(25, 25))
+        self.rightresize.setObjectName("resizeright")
         self.rightresize.setStyleSheet(u"color: rgba(0, 0, 0, 0); background-color: rgba(0, 0, 0, 0);")
         pos = self.treetotal_lbl.mapToGlobal(
-                    QtCore.QPoint(100, 0))
+                    QtCore.QPoint(138, 0))
         self.rightresize.setGeometry(
                 pos.x(),
                 pos.y(),
                 self.rightresize.width(),
                 self.rightresize.height()
-            )
-
-        self.mainlayout.addLayout(self.gridLayout)
+        )
+        self.vlayout = self.gridLayout
+        # self.mainlayout.addLayout(self.gridLayout)
+       
 
 class overlayLabel(QtWidgets.QLabel):
     def __init__(self, parent=None):

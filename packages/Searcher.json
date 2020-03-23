@@ -1,0 +1,23 @@
+{ 
+	"env" : 
+	[
+	    {
+	        "SEARCHER" : "E:\\GitHub\\Searcher"
+	    },
+	    {
+	        "HOUDINI_PATH" : "$SEARCHER\\"
+	    },
+	    {
+	     	"HOUDINI_SCRIPT_PATH": "$SEARCHER\\scripts"
+	    },
+	    {
+	    	"HOUDINI_DSO_PATH": "$SEARCHER\\houdini\\python27\\dlls"
+	    },
+	    {
+	    	"PYTHONPATH" : "$SEARCHER\\python2.7libs;$SEARCHER\\houdini\\python27;"
+	    },
+	    {
+	    	"PATH": "$SEARCHER\\python27\\dlls"
+	    }, 
+	]
+}

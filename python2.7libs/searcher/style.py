@@ -13,6 +13,8 @@ else:
     from PyQt5 import QtGui
 
 script_path = os.path.dirname(os.path.realpath(__file__))
+PATH = os.path.join(script_path, "images")
+imgroot = PATH.replace("\\", "/")
 
 settings = util.get_settings()
 
@@ -49,6 +51,37 @@ TOOLTIP = """QToolTip { background-color: rgb(64,64,64); menu-scrollable: 1; mar
                    QToolTip:icon { padding: 5px; }
                    QToolTip:icon:checked { flat: true; }"""
 
+# --------------------------------------- styleresizehandle
+# NOTE styleresizehandle ----------------------------------
+def styleresizehandle(obj, enter):
+    if enter:
+        resizeimg = (imgroot + "/%s.png" % obj.objectName())
+        sheet = ""
+        sheet += (
+        """QSizeGrip {
+                background-image: url(%s);
+                background-repeat: no-repeat;
+                background-position: center;
+                padding-bottom: 15px;
+                width: 25px;
+                height: 25px;
+                background-color: rgba(0, 0, 0, 0);
+                }""" 
+            % resizeimg
+            )
+        obj.setStyleSheet(sheet)
+    else:
+        sheet = ""
+        sheet += (
+        """QSizeGrip {
+                image: url(None);
+                width: 15px;
+                height: 15px;
+                background-color: rgba(0, 0, 0, 0);
+                }""" 
+            )
+        obj.setStyleSheet(sheet)
+
 # ----------------------------------------------- INFOLABEL
 # NOTE INFOLABEL ------------------------------------------
 INFOLABEL = """ background-color: rgba(11,11,11,1); border-bottom: 1px solid rgb(100, 100, 100); """
@@ -60,22 +93,24 @@ SETTINGSMENU = """ QWidget { background: rgb(58, 58, 58); }
 
 # ---------------------------------------- styleresulttotal
 # NOTE styleresulttotal -----------------------------------
-def styleresulttotal(appcolors, treecatnum, treeitemsnum):
-    return (("<font color='%s'><b>%s</b></font> : <font color='%s'>Contexts </font> | " % (appcolors.stats1, treecatnum, appcolors.text1 ))
-            + ("<font color='%s'><b>%s</b></font> : <font color='%s'>Results </font>  " % (appcolors.stats1,  treeitemsnum, appcolors.text1)))
+def styleresulttotal(treecatnum, treeitemsnum):
+    appcolors = settings[util.SETTINGS_KEYS[14]]
+    return (("<font color='%s'><b>%s</b></font> : <font color='%s'>Contexts </font> | " % (appcolors[util.COLORFIELDS[2]], treecatnum, appcolors[util.COLORFIELDS[0]]))
+            + ("<font color='%s'><b>%s</b></font> : <font color='%s'>Results </font>  " % (appcolors[util.COLORFIELDS[2]],  treeitemsnum, appcolors[util.COLORFIELDS[0]])))
 
 # --------------------------------------------- styletimers
 # NOTE styletimers ----------------------------------------
-def styletimers(appcolors, outdata):
-    return (("<font color='%s'>Search Regex <font color='%s'> <b>%0.4f</b> </font> ms</font> | " % (str(appcolors.text1), str(appcolors.stats1), outdata[0])) 
-              + ("<font color='%s'>Context Search <font color='%s'> <b>%0.4f</b> </font> ms</font> | " % (str(appcolors.text1), str(appcolors.stats1), outdata[1])) 
-              + ("<font color='%s'>Hotkey Search <font color='%s'> <b>%0.4f</b> </font> ms</font> | " % (str(appcolors.text1), str(appcolors.stats1), outdata[2])) 
-              + ("<font color='%s'>Tree build <font color='%s'> <b>%0.4f</b> </font> ms</font> | " % (str(appcolors.text1), str(appcolors.stats1), outdata[3]))
-              + ("<font color='%s'>Total : <font color='%s'> <b>%0.4f</b> </font> ms</font> " % (str(appcolors.text1), str(appcolors.stats1), outdata[4])))
+def styletimers(outdata):
+    appcolors = settings[util.SETTINGS_KEYS[14]]
+    return (("<font color='%s'>Search Regex <font color='%s'> <b>%0.4f</b> </font> ms</font> | " % (str(appcolors[util.COLORFIELDS[0]]), str(appcolors[util.COLORFIELDS[2]]), outdata[0])) 
+              + ("<font color='%s'>Context Search <font color='%s'> <b>%0.4f</b> </font> ms</font> | " % (str(appcolors[util.COLORFIELDS[0]]), str(appcolors[util.COLORFIELDS[2]]), outdata[1])) 
+              + ("<font color='%s'>Hotkey Search <font color='%s'> <b>%0.4f</b> </font> ms</font> | " % (str(appcolors[util.COLORFIELDS[0]]), str(appcolors[util.COLORFIELDS[2]]), outdata[2])) 
+              + ("<font color='%s'>Tree build <font color='%s'> <b>%0.4f</b> </font> ms</font> | " % (str(appcolors[util.COLORFIELDS[0]]), str(appcolors[util.COLORFIELDS[2]]), outdata[3]))
+              + ("<font color='%s'>Total : <font color='%s'> <b>%0.4f</b> </font> ms</font> " % (str(appcolors[util.COLORFIELDS[0]]), str(appcolors[util.COLORFIELDS[2]]), outdata[4])))
 
 # -------------------------------------------- returntimers
 # NOTE returntimers ---------------------------------------
-def returntimers(appcolors, outdata):
+def returntimers(outdata):
     return (("Search Regex  %0.4f ms | " % outdata[0])
               + ("Context Search  %0.4f ms | " % outdata[1])
               + ("Hotkey Search  %0.4f ms | " % outdata[2])
@@ -92,6 +127,7 @@ def gettooltipstyle(text):
 def gettreeviewstyle():
     PATH = os.path.join(script_path, "images")
     root = PATH.replace("\\", "/")
+
     sheet = ""
     sheet += ("""QTreeWidget { 
             background: rgb(32, 32, 32); 
@@ -180,12 +216,13 @@ def gettreeviewstyle():
     sheet += (
         """QTreeWidget::item::has-children {
                             text-align: center;  
-                            color: rgba(255, 193, 7, 0.8);  
+                            color: %s;  
                             border: 0px solid rgba(71, 71, 71, 0.8); 
                             padding-left: 0px;  padding-bottom: 0px; 
                             padding-top: 0px;  
                             border-radius: 0px;
                         } """
+                        % str(settings[util.SETTINGS_KEYS[14]][util.COLORFIELDS[1]])
     )
     sheet += (
         """QTreeWidget::branch:has-siblings:!adjoins-item {

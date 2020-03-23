@@ -118,7 +118,7 @@
         self.aboutui.show()
 
 
-        # ------------------------------------------------------- FONTS
+# ------------------------------------------------------- CUSTOM FONT LOADER
 style script ----------
 def getfontdb():
     return getattr(hou.session, "FONTDB", None)
@@ -142,45 +142,183 @@ def getfont(font, size = -1, weight = -1):
     return QtGui.QFont(font, size, weight)
 -------
 
+    # CUSTOM FONT LOADER
+    self.infolbl = self.sui.info_lbl
+    self.infolbl_font = style.getfont("JetBrains Mono", 8)
+    self.infolbl_font.setWeight(40)
+    self.infolbl_font.setLetterSpacing(QtGui.QFont.AbsoluteSpacing, -1)
+    self.infolbl_font.setWordSpacing(-2)
+    # self.infolbl.setFont(self.infolbl_font)
+
+    self.treetotal_lbl = self.sui.treetotal_lbl
+    self.treetotal_lbl_font = style.getfont("JetBrains Mono", 8)
+    self.treetotal_lbl_font.setWeight(40)
+    self.treetotal_lbl_font.setLetterSpacing(QtGui.QFont.AbsoluteSpacing, -1)
+    self.treetotal_lbl_font.setWordSpacing(0)
+    # self.treetotal_lbl.setFont(self.treetotal_lbl_font)
+    # self.treetotal_lbl.setMinimumSize(QtCore.QSize(50, 0))
+
+    # ------------------------------------------------------- Spacing
+    # tnum = str(treeitemsnum)
+    # goalnum = 5
+    # if len(tnum) == 3:
+    #     itmvald = tnum.rjust((goalnum + 2) - count_chars(str(treeitemsnum)), " ")
+    # else: 
+    #     itmvald = tnum.rjust((goalnum) - count_chars(str(treeitemsnum)), " ")
+    # itm = itmvald.replace(" ", "&nbsp;")
+
+    # ------------------------------------------------------- Auto - Add font
+    jbfont = getattr(hou.session, "FONTDB", None)
+    if not getattr(hou.session, "FONTDB", None):
+        fontlocation = os.path.join(script_path, "fonts")
+        jbfontfolder = "JetBrainsMono-1.0.0"
+        f = []
+        for (dirpath, dirnames, filenames) in os.walk(os.path.join(fontlocation, jbfontfolder)):
+            f.extend(filenames)
+            break
+        if f:
+            for font in f:
+                fontdb = QtGui.QFontDatabase()
+                fontdb.addApplicationFont(os.path.join(fontlocation, jbfontfolder, font))
+                print("Added %s" % font)
+            hou.session.FONTDB = fontdb
 
 
 
-        self.infolbl = self.sui.info_lbl
-        self.infolbl_font = style.getfont("JetBrains Mono", 8)
-        self.infolbl_font.setWeight(40)
-        self.infolbl_font.setLetterSpacing(QtGui.QFont.AbsoluteSpacing, -1)
-        self.infolbl_font.setWordSpacing(-2)
-        # self.infolbl.setFont(self.infolbl_font)
+    # # ----------------------------------------- chooseColor
+    # # NOTE chooseColor ------------------------------------
+    # def chooseColor(self):
+    #     sender = self.sender()
+    #     name = sender.objectName()
+    #     colorfield = getattr(self.ui, name)
+        
+    #     qcolor = QtGui.QColor()
+    #     qcolor.setNamedColor(colorfield.text())
 
-        self.treetotal_lbl = self.sui.treetotal_lbl
-        self.treetotal_lbl_font = style.getfont("JetBrains Mono", 8)
-        self.treetotal_lbl_font.setWeight(40)
-        self.treetotal_lbl_font.setLetterSpacing(QtGui.QFont.AbsoluteSpacing, -1)
-        self.treetotal_lbl_font.setWordSpacing(0)
-        # self.treetotal_lbl.setFont(self.treetotal_lbl_font)
-        # self.treetotal_lbl.setMinimumSize(QtCore.QSize(50, 0))
+    #     color = hou.Color()
+    #     color.setRGB((
+    #         qcolor.redF(), 
+    #         qcolor.greenF(), 
+    #         qcolor.blueF())
+    #     )
 
-        # ------------------------------------------------------- Spacing
-        # tnum = str(treeitemsnum)
-        # goalnum = 5
-        # if len(tnum) == 3:
-        #     itmvald = tnum.rjust((goalnum + 2) - count_chars(str(treeitemsnum)), " ")
-        # else: 
-        #     itmvald = tnum.rjust((goalnum) - count_chars(str(treeitemsnum)), " ")
-        # itm = itmvald.replace(" ", "&nbsp;")
+    #     result = hou.ui.selectColor(initial_color = color)
+    #     allWidgets = QtWidgets.QApplication.allWidgets()
+    #     for w in allWidgets:
+    #         if "Select Color" in w.windowTitle():
+    #             pos = self.parent.mapToGlobal(
+    #                 QtCore.QPoint(-self.parent.width(), -self.parent.height()))
+    #             w.setGeometry(
+    #                 pos.x(),
+    #                 pos.y(),
+    #                 w.width(),
+    #                 w.height()
+    #             )
+    #             # w.move(self.parent.width()200, 100)
 
-        # ------------------------------------------------------- Auto - Add font
-        jbfont = getattr(hou.session, "FONTDB", None)
-        if not getattr(hou.session, "FONTDB", None):
-            fontlocation = os.path.join(script_path, "fonts")
-            jbfontfolder = "JetBrainsMono-1.0.0"
-            f = []
-            for (dirpath, dirnames, filenames) in os.walk(os.path.join(fontlocation, jbfontfolder)):
-                f.extend(filenames)
-                break
-            if f:
-                for font in f:
-                    fontdb = QtGui.QFontDatabase()
-                    fontdb.addApplicationFont(os.path.join(fontlocation, jbfontfolder, font))
-                    print("Added %s" % font)
-                hou.session.FONTDB = fontdb
+    #     if result:
+    #         rgb = result.rgb()
+    #         newcolor = QtGui.QColor(
+    #             rgb[0]*255, 
+    #             rgb[1]*255, 
+    #             rgb[2]*255
+    #         )
+            
+    #         if newcolor.isValid():
+    #             colorfield.setText(newcolor.name())
+    #             sender.setStyleSheet("background-color:" + colorfield.text())
+
+
+
+
+
+    # ----------------------------------------- chooseColor
+    # NOTE chooseColor ------------------------------------
+    def chooseColor(self):
+        sender = self.sender()
+        
+        self.name = sender.objectName()
+        self.colorfield[self.name] = (getattr(self.ui, self.name), sender)
+        
+        qcolor = QtGui.QColor()
+        qcolor.setNamedColor(self.colorfield[self.name][0].text())
+
+        # color = hou.Color()
+        # color = QtGui.QColor()
+        # color.setRGB((
+        #     qcolor.redF(), 
+        #     qcolor.greenF(), 
+        #     qcolor.blueF())
+        # )
+
+        # hou.ui.openColorEditor(self.colorchange_cb, include_alpha=False, initial_color = color)
+        # hd.executeDeferred(self._opencoloreditor, color)
+        colord = QtWidgets.QColorDialog(self)
+        colord.setModal(False)
+        pos = self.parentwindow.mapToGlobal(
+            QtCore.QPoint(self.parentwindow.width(), self.parentwindow.height()))
+        colord.move(
+            pos.x() + 300,
+            pos.y(),
+        )
+        colord.getColor(
+            initial=qcolor, 
+            parent=self,
+            options=QtWidgets.QColorDialog.DontUseNativeDialog
+        )
+        # colord.setWindowFlags(
+        #     QtCore.Qt.CustomizeWindowHint
+        #     # | QtCore.Qt.WindowStaysOnTopHint 
+        #     # | QtCore.Qt.X11BypassWindowManagerHint
+        # )
+        # self.activateWindow()  
+        # self._opencoloreditor(color)
+
+
+
+        # NOTE PANES ---------------------------
+                        # hou.playbar.moveToBottom()
+
+                    # for ii in i:
+                    #     print(ii)
+                    # print("Under mouse: ", i.windowTitle())
+                print("--------------------------------------")
+                current_desktop = hou.ui.curDesktop()
+                # allpanes = current_desktop.panes()
+                # if allpanes:
+                #     try:
+                #         self.processdesktop("current_desktop.panes()", allpanes)
+                #     except:
+                #         pass
+                # panetabsd = current_desktop.paneTabs()
+                # panetabs = hou.ui.paneTabs()
+                # if panetabs:
+                #     try:
+                #         self.processdesktop("current_desktop.paneTabs()", panetabsd)
+                #         self.processdesktop("hou.ui.paneTabs()", panetabs) #  ------ Good one
+                #     except:
+                #         pass
+                # floating = hou.ui.floatingPanels()
+                # if floating:
+                #     try:
+                #         self.processdesktop("current_desktop.floatingPanels()", floating)
+                #         print(floating.name())
+                #     except:
+                #         pass
+                # desktoppane = current_desktop.paneUnderCursor()
+                # if desktoppane:
+                #     try:
+                #         self.processdesktop("current_desktop.paneUnderCursor()", desktoppane)
+                #     except:
+                #         pass
+                # desktoptab = current_desktop.paneTabUnderCursor()
+                # if desktoptab:
+                #     try:
+                #         self.processdesktop("current_desktop.paneTabUnderCursor()", desktoptab)
+                #     except:
+                #         pass
+
+                allWidgets = QtWidgets.QApplication.allWidgets()
+                for w in allWidgets:
+                    if "playbar" in w.windowTitle():
+                        print("Is Playbar? ", w.windowTitle(), w)

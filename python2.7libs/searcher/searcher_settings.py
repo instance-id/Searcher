@@ -9,7 +9,7 @@ from searcher import about_ui
 from searcher import theme_ui
 from searcher import bugreport
 from searcher import bugreport_ui
-from searcher import searcher_data
+from searcher import settings_data
 from searcher import language_en as la
 from searcher import searcher_settings_ui
 
@@ -94,6 +94,8 @@ class SearcherSettings(QtWidgets.QWidget):
         self.uiwidth = width
         self.uiheight = height
         self.windowlist = ["about", "bugreport", "theme"]
+        self.parentwindow.oldPos = self.parentwindow.pos()
+
         # --------------------------------------------- beginui
         # NOTE beginui ----------------------------------------
         self.setObjectName('searcher-settings')
@@ -116,27 +118,33 @@ class SearcherSettings(QtWidgets.QWidget):
         self.about = about.About(self)
         self.about.setAttribute(QtCore.Qt.WA_StyledBackground, True)
         self.about.setWindowFlags(
-            QtCore.Qt.Tool |
-            QtCore.Qt.FramelessWindowHint |
-            QtCore.Qt.WindowStaysOnTopHint
+            QtCore.Qt.Tool 
+            | QtCore.Qt.FramelessWindowHint 
+            | QtCore.Qt.CustomizeWindowHint
+            #| QtCore.Qt.NoDropShadowWindowHint 
+            # | QtCore.Qt.X11BypassWindowManagerHint
         )
         self.about.resize(width, height - 180)
 
         self.bugreport = bugreport.BugReport(self)
         self.bugreport.setAttribute(QtCore.Qt.WA_StyledBackground, True)
         self.bugreport.setWindowFlags(
-            QtCore.Qt.Tool |
-            QtCore.Qt.FramelessWindowHint |
-            QtCore.Qt.NoDropShadowWindowHint
+            QtCore.Qt.Tool 
+            | QtCore.Qt.FramelessWindowHint 
+            | QtCore.Qt.CustomizeWindowHint
+            #| QtCore.Qt.NoDropShadowWindowHint
+            # | QtCore.Qt.X11BypassWindowManagerHint
         )
         self.bugreport.resize(width, height - 180)
 
         self.theme = theme.Theme(self)
         self.theme.setAttribute(QtCore.Qt.WA_StyledBackground, True)
         self.theme.setWindowFlags(
-            QtCore.Qt.Tool |
-            QtCore.Qt.FramelessWindowHint |
-            QtCore.Qt.NoDropShadowWindowHint
+            QtCore.Qt.Tool
+            | QtCore.Qt.FramelessWindowHint
+            | QtCore.Qt.CustomizeWindowHint
+            | QtCore.Qt.NoDropShadowWindowHint
+            # | QtCore.Qt.X11BypassWindowManagerHint
         )
         self.theme.resize(width, height - 90)
 
@@ -260,17 +268,8 @@ class SearcherSettings(QtWidgets.QWidget):
         self.settingslayout = self.ui.verticallayout
         self.setLayout(self.ui.gridLayout)
         
-        # ---------------------------------------- eventfilters
-        # NOTE eventfilters -----------------------------------
-        self.installEventFilter(self)
-        self.ui.maxresults_lbl.installEventFilter(self)
-        self.ui.defaulthotkey_lbl.installEventFilter(self)
-        self.ui.dbpath_lbl.installEventFilter(self)
-        self.bugreportbtn.installEventFilter(self)
-        self.about.installEventFilter(self)
-        self.cleardata.installEventFilter(self)
-        self.savedata.installEventFilter(self)
-        self.discarddata.installEventFilter(self)
+        # ----------------------------------- Startup Functions
+        # NOTE Startup Functions ------------------------------
         self.updatecurrentvalues()
         self.fieldsetup()
 
@@ -285,18 +284,22 @@ class SearcherSettings(QtWidgets.QWidget):
     # ----------------------------------------- mapposition
     # NOTE mapposition ------------------------------------
     def mapposition(self, w, h, s):
-        pos = s.mapToGlobal(QtCore.QPoint(w ,h))
+        parent =  s.parent()
+        pos = parent.mapToGlobal(QtCore.QPoint(w ,h))
         getattr(self, s.objectName()).setGeometry(
             pos.x(),
-            pos.y(),
+            pos.y() + parent.height(),
             getattr(self, s.objectName()).width(),
             getattr(self, s.objectName()).height()) 
         getattr(self, s.objectName()).show()
-    # !SECTION
+    # !SECTION Functions
         
     # --------------------------------------------------------------- Callbacks
     # SECTION Callbacks -------------------------------------------------------
     # ------------------------------------------- window_cb
+    # The sender is the actual button, but the button is 
+    # the same as the window instance so that both can be 
+    # sent and accessed in methods via one variable.
     # NOTE window_cb --------------------------------------
     def window_cb(self, toggled):
         self.closewindows()
@@ -304,16 +307,14 @@ class SearcherSettings(QtWidgets.QWidget):
 
         if toggled == True and not getattr(self, s.objectName()).isVisible():
             if s.objectName() == "about":
-                self.mapposition(-9, 34, s) if self.animatedsettings.isChecked() else self.mapposition(-11, 36, s)
+                self.mapposition(0, 0, s) if self.animatedsettings.isChecked() else self.mapposition(0, 0, s)
             elif s.objectName() == "bugreport":
-                self.mapposition(-43, 34, s) if self.animatedsettings.isChecked() else self.mapposition(-45, 36, s)
+                self.mapposition(0, 0, s) if self.animatedsettings.isChecked() else self.mapposition(0, 0, s)
             elif s.objectName() == "theme":
-                self.mapposition(-77, 34, s) if self.animatedsettings.isChecked() else self.mapposition(-79, 36, s)
+                self.mapposition(0, 0, s) if self.animatedsettings.isChecked() else self.mapposition(0, 0, s)
         else:
             if s.objectName() in self.windowlist:
                 getattr(self, s.objectName()).close()
-
-
         
     # --------------------------------------- hotkeyicon_cb
     # NOTE hotkeyicon_cb ----------------------------------
@@ -382,7 +383,7 @@ class SearcherSettings(QtWidgets.QWidget):
             if self.isdebug and self.isdebug.level in {"ALL"}:
                 print(self.settings)
 
-            searcher_data.savesettings(self.settings)
+            settings_data.savesettings(self.settings)
             
             if self.resetdb:
                 hou.session.DBCONNECTION = None
@@ -406,6 +407,7 @@ class SearcherSettings(QtWidgets.QWidget):
                 self.parentwindow.close()
             else:
                 self.close()
+
     # ------------------------------------------ discard_cb
     # NOTE discard_cb -------------------------------------
     def discard_cb(self):
@@ -418,7 +420,7 @@ class SearcherSettings(QtWidgets.QWidget):
         else:
             self.close()
 
-    # !SECTION
+    # !SECTION Callbacks
 
     # ----------------------------------------------------------------- Actions
     # SECTION Actions ---------------------------------------------------------
@@ -521,79 +523,150 @@ class SearcherSettings(QtWidgets.QWidget):
             self.hkholder = ""
         elif buttonindex == 1:
             self.hkholder = ""
-    # !SECTION
+    
+    # ------------------------------------ closeroutine
+    # NOTE closeroutine -------------------------------
+    def closeroutine(self):
+        if self.performcheck:
+            if self.checkforchanges():
+                self.savecheck()
+        if self.animatedsettings.isChecked() and not self.waitforclose:
+            self.closewindows()
+            self.parentwindow.anim.start_animation(False)
+            self.isopened = True
+            return True
+        elif self.waitforclose:
+            self.closewindows()
+            self.close()
+            self.parentwindow.close()
+            return True
+        else:
+            self.closewindows()
+            self.close()
+
+    # !SECTION Actions
+
+    def movesubwindows(self, pos, resize=False):
+        if self.about.isVisible():
+            if resize: self.about.move(self.about.x() + pos.x(), self.about.y())
+            else: self.about.move(self.about.x() + pos.x(), self.about.y() + pos.y())
+        if self.bugreport.isVisible():
+            if resize: self.bugreport.move(self.bugreport.x() + pos.x(), self.bugreport.y())
+            else: self.bugreport.move(self.bugreport.x() + pos.x(), self.bugreport.y() + pos.y())
+        if self.theme.isVisible():
+            if resize: self.theme.move(self.theme.x() + pos.x(), self.theme.y())
+            else: self.theme.move(self.theme.x() + pos.x(), self.theme.y() + pos.y())
 
     # ------------------------------------------------------------- Events
     # SECTION Events -----------------------------------------------------
+    # ------------------------------------- addeventfilters
+    # NOTE addeventfilters --------------------------------
+    def addeventfilters(self):
+        self.installEventFilter(self)
+        self.about.installEventFilter(self)
+        self.savedata.installEventFilter(self)
+        self.cleardata.installEventFilter(self)
+        self.discarddata.installEventFilter(self)
+        self.bugreportbtn.installEventFilter(self)
+        self.ui.dbpath_lbl.installEventFilter(self)
+        self.ui.maxresults_lbl.installEventFilter(self)
+        self.ui.defaulthotkey_lbl.installEventFilter(self)
+
+    # ---------------------------------- removeeventfilters
+    # NOTE removeeventfilters -----------------------------
+    def removeeventfilters(self):
+        self.removeEventFilter(self)
+        self.about.removeEventFilter(self)
+        self.savedata.removeEventFilter(self)
+        self.cleardata.removeEventFilter(self)
+        self.discarddata.removeEventFilter(self)
+        self.bugreportbtn.removeEventFilter(self)
+        self.ui.dbpath_lbl.removeEventFilter(self)
+        self.ui.maxresults_lbl.removeEventFilter(self)
+        self.ui.defaulthotkey_lbl.removeEventFilter(self)
+
     def eventFilter(self, obj, event):
+        event_type = event.type()
+
         # ------------------------------------------ Window
         # NOTE Window -------------------------------------
-        if event.type() == QtCore.QEvent.WindowActivate:
+        if event_type == QtCore.QEvent.WindowActivate:
+            self.addeventfilters()
             self.ui.isopened = True
             self.performcheck = True
-            # self.updatecurrentvalues()
-            return True
 
         # ------------------------------------------- Mouse
-        # NOTE Mouse --------------------------------------
-        if event.type() == QtCore.QEvent.MouseButtonDblClick:
+        # SECTION Mouse -----------------------------------
+        # ----------------------- MouseButtonPress
+        # NOTE MouseButtonPress ------------------
+        if event_type == QtCore.QEvent.MouseButtonPress:
+            if obj == self:
+                self.activateWindow()
+
+        # -------------------- MouseButtonDblClick
+        # NOTE MouseButtonDblClick ---------------
+        if event_type == QtCore.QEvent.MouseButtonDblClick:
             if obj == self.defaulthotkey:
                 self.hkholder = self.defaulthotkey.text()
                 self.defaulthotkey.setText("")
                 self.defaulthotkey.setPlaceholderText("Input key sequence")
                 self.canedit = True
-        if event.type() == QtCore.QEvent.Enter:
+
+        # ---------------------------------- Enter
+        # NOTE Enter -----------------------------
+        if event_type == QtCore.QEvent.Enter:
             self.parentwindow.checktooltip(obj)
-        if event.type() == QtCore.QEvent.Leave:
+
+        # ---------------------------------- Leave
+        # NOTE Leave -----------------------------
+        if event_type == QtCore.QEvent.Leave:
             self.parentwindow.checktooltip(obj, True)
-        if event.type() == QtCore.QEvent.ToolTip:
+
+        # -------------------------------- ToolTip
+        # NOTE ToolTip ---------------------------
+        if event_type == QtCore.QEvent.ToolTip:
             return True
+        # !SECTION
 
         # ---------------------------------------- Keypress
-        # NOTE Keypress -----------------------------------
-        if event.type() == QtCore.QEvent.KeyPress:
+        # SECTION Keypress --------------------------------
+        if event_type == QtCore.QEvent.KeyPress:
+        # ---------------------------------- Key_D
+        # NOTE Key_D -----------------------------
             if event.key() == QtCore.Qt.Key_D:
                 if obj != self.defaulthotkey:
                     if not self.debugflag.isVisible():
                         self.debugflag.setVisible(True)
 
+        # ----------------------------- Key_Escape
+        # NOTE Key_Escape ------------------------
             if event.key() == QtCore.Qt.Key_Escape:
                 if obj == self:
-                    if self.performcheck:
-                        if self.checkforchanges():
-                            self.savecheck()
-                    if self.animatedsettings.isChecked() and not self.waitforclose:
-                        self.closewindows()
-                        self.parentwindow.anim.start_animation(False)
-                        self.isopened = True
-                        return True
-                    elif self.waitforclose:
-                        self.closewindows()
-                        self.close()
-                        self.parentwindow.close()
-                        return True
-                    else:
-                        self.closewindows()
-                        self.close()
-                        return True
+                    self.closeroutine()
+                    return True
+
+        # ----------------------------------- else
+        # NOTE else ------------------------------
             else:
-                self.keyindex += 1
-                self.keystring = hou.qt.qtKeyToString(
-                    event.key(), 
-                    int(event.modifiers()), 
-                    event.text()
-                )
-                if self.canedit:
-                    if self.keystring not in ["Esc", "Backspace"]:
-                        if self.defaulthotkey.hasFocus():
-                            self.KeySequence = QtGui.QKeySequence(self.keystring).toString()
-                            self.defaulthotkey.setText(self.KeySequence)
-                    if self.keystring in ["Esc", "Backspace"]:
-                        self.defaulthotkey.setText(self.hkholder)
+                if obj == self.defaulthotkey:
+                    self.keyindex += 1
+                    self.keystring = hou.qt.qtKeyToString(
+                        event.key(), 
+                        int(event.modifiers()), 
+                        event.text()
+                    )
+                    if self.canedit:
+                        if self.keystring not in ["Esc", "Backspace"]:
+                            if self.defaulthotkey.hasFocus():
+                                self.KeySequence = QtGui.QKeySequence(self.keystring).toString()
+                                self.defaulthotkey.setText(self.KeySequence)
+                        if self.keystring in ["Esc", "Backspace"]:
+                            self.defaulthotkey.setText(self.hkholder)
+        # !SECTION
 
         # -------------------------------------- Keyrelease
-        # NOTE Keyrelease ---------------------------------
-        if event.type() == QtCore.QEvent.KeyRelease:
+        # SECTION Keyrelease ------------------------------
+        if event_type == QtCore.QEvent.KeyRelease:
             if event.key() == QtCore.Qt.Key_Escape:
                 return QtCore.QObject.eventFilter(self, obj, event)
             else:
@@ -603,17 +676,22 @@ class SearcherSettings(QtWidgets.QWidget):
                         self.defaulthotkey.setText(self.hkholder)
                     if self.defaulthotkey.text() != "":
                         self.canedit = False
+        # !SECTION
 
         # ------------------------------------------- Close
         # NOTE Close --------------------------------------
-        if event.type() == QtCore.QEvent.Close:
+        if event_type == QtCore.QEvent.Close:
             self.ui.isopened = False
             self.resetdb = False
             self.parentwindow.opensettingstool.setChecked(False)
             self.performcheck=True
-
+            if not self.parentwindow.isActiveWindow():
+                self.parentwindow.activateWindow()
+            self.removeeventfilters()
+            
         return QtCore.QObject.eventFilter(self, obj, event)
-
+    
+    # !SECTION Events
 
 class LinkLabel(QtWidgets.QLabel):
     def __init__(self, parent, text):
@@ -623,3 +701,5 @@ class LinkLabel(QtWidgets.QLabel):
         self.setTextFormat(Qt.RichText)
         self.setTextInteractionFlags(Qt.TextBrowserInteraction)
         self.setOpenExternalLinks(True)
+
+

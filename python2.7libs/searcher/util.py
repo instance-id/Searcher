@@ -31,15 +31,30 @@ class Dbug(object):
 
 class AppColors(object):
     def __init__(self, colors={}):
-        self.text1 = colors['text1']
-        self.text2 = colors['text2']
-        self.stats1 = colors['stats1']
-        self.stats2 = colors['stats2']
+        self.text1 =    colors[COLORFIELDS[0]]
+        self.text2 =    colors[COLORFIELDS[1]]
+        self.stats1 =   colors[COLORFIELDS[2]]
+        self.stats2 =   colors[COLORFIELDS[3]]
+        self.tooltip =  colors[COLORFIELDS[4]]
+
+# -------------------------------------------- get_platform
+# NOTE get_platform ---------------------------------------
+def get_platform():
+    return getattr(hou.session, "PLATFORM", None)
 
 # -------------------------------------------- get_settings
 # NOTE get_settings ---------------------------------------
 def get_settings():
     return getattr(hou.session, "SETTINGS", None)
+
+
+    
+# -------------------------------------------- get_settings
+# NOTE get_settings ---------------------------------------
+def get_path(folders=None):
+    script_path = os.path.dirname(os.path.realpath(__file__))
+    PATH = os.path.join(script_path, '/'.join(folders))
+    return PATH.replace("\\", "/")
 
 # ------------------------------------------ Bool Converter
 # NOTE Bool Converter -------------------------------------
@@ -114,7 +129,7 @@ DEFAULT_SETTINGS = {
     SETTINGS_KEYS[0]: "False",               # in_memory_db
     SETTINGS_KEYS[1]: "",                    # database_path
     SETTINGS_KEYS[2]: "False",               # savewindowsize
-    SETTINGS_KEYS[3]: [1000, 600],           # windowsize
+    SETTINGS_KEYS[3]: [750, 350],           # windowsize
     SETTINGS_KEYS[4]: "False",               # debugflag
     SETTINGS_KEYS[5]: "False",               # pinwindow
     SETTINGS_KEYS[6]: u"Ctrl+Alt+Shift+F7",  # defaulthotkey
@@ -126,11 +141,11 @@ DEFAULT_SETTINGS = {
     SETTINGS_KEYS[12]: "False",              # metrics
     SETTINGS_KEYS[13]: "False",              # metricsmainwindow
     SETTINGS_KEYS[14]: {                     # appcolors
-        COLORFIELDS[0] : "#AEAEAE",
-        COLORFIELDS[1] : "#AEAEAE",
-        COLORFIELDS[2] : "#f1f1f1",
-        COLORFIELDS[3] : "#f1f1f1",
-        COLORFIELDS[4] : "#AEAEAE",
+        COLORFIELDS[0] : "#607FAE",
+        COLORFIELDS[1] : "#D2A00C",
+        COLORFIELDS[2] : "#c2efe5",
+        COLORFIELDS[3] : "#c2efe5",
+        COLORFIELDS[4] : "#607FAE",
     },         
     SETTINGS_KEYS[15]: "True",              # expanditems
 }
@@ -278,7 +293,7 @@ KEY_DICT = {
     "Return":       QtCore.Qt.Key_Return,
     "Enter":        QtCore.Qt.Key_Enter,
     "Insert":       QtCore.Qt.Key_Insert,
-    "Delete":       QtCore.Qt.Key_Delete,
+    "Del":          QtCore.Qt.Key_Delete,
     "Pause":        QtCore.Qt.Key_Pause,
     "Print":        QtCore.Qt.Key_Print,
     "SysReq":       QtCore.Qt.Key_SysReq,
@@ -462,32 +477,43 @@ CONTEXTTYPE = {
     "VopNet": "VEX",
 }
 
+# --------------------------------------------------- PANES
+# NOTE PANES ----------------------------------------------
+PANES = [
+    "playbar",
+    "shelf",
+]
+
 # ----------------------------------------------- PANETYPES
 # NOTE PANETYPES ------------------------------------------
 PANETYPES = {
-    hou.paneTabType.AssetBrowser: ["h.pane.projectm"],
-    hou.paneTabType.BundleList: ["h.pane.bundle"],
-    hou.paneTabType.ChannelEditor: ["h.pane.chedit", "h.pane.chedit.dope", "h.pane.chedit.dope.py", "h.pane.chedit.graph", "h.pane.chedit.graph.py", "h.pane.chedit.table", "h.pane.chedit.table.py"],
-    hou.paneTabType.ChannelList: ["h.pane.chlist", "h.pane.chlist.ch", "h.pane.chlist.layers", "h.pane.chlist.parmbox"],
-    hou.paneTabType.ChannelViewer: ["h.pane.gview.selmodechview"],
-    hou.paneTabType.CompositorViewer: ["h.pane.imgui.state", "h.pane.imgui.state.cop"],
-    hou.paneTabType.DetailsView: ["h.pane.details"],
-    hou.paneTabType.HandleList: ["h.pane.manip"],
-    hou.paneTabType.HelpBrowser: [""],
-    hou.paneTabType.IPRViewer: ["h.pane.ipr"],
-    hou.paneTabType.LightLinker: ["h.pane.linkeditor", "h.pane.linkeditor.sheet", ],
-    hou.paneTabType.MaterialPalette: ["h.pane.material"],
-    hou.paneTabType.NetworkEditor: ["h.pane.wsheet"],
-    hou.paneTabType.OutputViewer: ["h.pane.outputsview"],
-    hou.paneTabType.Parm: ["h.pane.editparms", "h.pane.parms"],
-    hou.paneTabType.ParmSpreadsheet: ["h.pane.parmsheet"],
+    hou.paneTabType.AssetBrowser:       ["h.pane.projectm"],
+    hou.paneTabType.BundleList:         ["h.pane.bundle"],
+    hou.paneTabType.ChannelEditor:      ["h.pane.chedit", "h.pane.chedit.dope", "h.pane.chedit.dope.py", "h.pane.chedit.graph", "h.pane.chedit.graph.py", "h.pane.chedit.table", "h.pane.chedit.table.py"],
+    hou.paneTabType.ChannelList:        ["h.pane.chlist", "h.pane.chlist.ch", "h.pane.chlist.layers", "h.pane.chlist.parmbox"],
+    hou.paneTabType.ChannelViewer:      ["h.pane.gview.selmodechview"],
+    hou.paneTabType.CompositorViewer:   ["h.pane.imgui.state", "h.pane.imgui.state.cop"],
+    hou.paneTabType.DetailsView:        ["h.pane.details"],
+    hou.paneTabType.HandleList:         ["h.pane.manip"],
+    hou.paneTabType.HelpBrowser:        [""],
+    hou.paneTabType.IPRViewer:          ["h.pane.ipr"],
+    hou.paneTabType.LightLinker:        ["h.pane.linkeditor", "h.pane.linkeditor.sheet", ],
+    hou.paneTabType.MaterialPalette:    ["h.pane.material"],
+    hou.paneTabType.NetworkEditor:      ["h.pane.wsheet"],
+    hou.paneTabType.OutputViewer:       ["h.pane.outputsview"],
+    hou.paneTabType.Parm:               ["h.pane.editparms", "h.pane.parms"],
+    hou.paneTabType.ParmSpreadsheet:    ["h.pane.parmsheet"],
     hou.paneTabType.PerformanceMonitor: ["h.pane.perfmon"],
-    hou.paneTabType.PythonPanel: ["h.py"],
-    hou.paneTabType.PythonShell: ["h.pane.pythonshell", "h.py"],
-    hou.paneTabType.SceneViewer: ["h.pane.gview.selmode", "h.pane.gview.state.select"],
-    hou.paneTabType.TakeList: ["h.pane.take", "h.pane.take.content", "h.pane.take.list"],
-    hou.paneTabType.Textport: ["h.pane.textport"],
-    hou.paneTabType.TreeView: ["tree"],
+    hou.paneTabType.PythonPanel:        ["h.py"],
+    hou.paneTabType.PythonShell:        ["h.pane.pythonshell", "h.py"],
+    hou.paneTabType.SceneViewer:        ["h.pane.gview.selmode", "h.pane.gview.state.select"],
+    hou.paneTabType.TakeList:           ["h.pane.take", "h.pane.take.content", "h.pane.take.list"],
+    hou.paneTabType.Textport:           ["h.pane.textport"],
+    hou.paneTabType.TreeView:           ["tree"],
+    "playbar":                          ["h.playbar"],
+    "shelf":                            ["h.shelf"],
+
+
 }
 # !SECTION Houdini Translations
 
@@ -504,11 +530,19 @@ PANETYPES = {
 # NETVIEW_message_badge
 # NETVIEW_image_link
 # NETVIEW_image_link_located
+# BUTTONS_resizegrip_se -------- Resize
+# BUTTONS_tree 
+# COMMON_opencolorio COP2_colorwheel - Nice color things
 
+# vop_terminals_connected
+# vop_terminals_collapsed
 # --------------------------------------------------- Icons
 # NOTE Icons ----------------------------------------------
 ICON_SIZE = hou.ui.scaledSize(32)
 EDIT_ICON_SIZE = hou.ui.scaledSize(28)
+
+PATH = os.path.join(script_path, "images")
+root = PATH.replace("\\", "/")
 
 ABOUT_ICON1 = hou.ui.createQtIcon(
     'NETVIEW_info_button',
@@ -518,6 +552,12 @@ ABOUT_ICON1 = hou.ui.createQtIcon(
 
 BUG_ICON = hou.ui.createQtIcon(
     'NETVIEW_64bit_badge',
+    EDIT_ICON_SIZE,
+    EDIT_ICON_SIZE
+)
+
+COLLAPSE_ALL_ICON = hou.ui.createQtIcon(
+    (root + "/collapse_all.png"),
     EDIT_ICON_SIZE,
     EDIT_ICON_SIZE
 )
@@ -536,6 +576,12 @@ COLOR_ICON = hou.ui.createQtIcon(
 
 DOWN_ICON = hou.ui.createQtIcon(
     'BUTTONS_down',
+    EDIT_ICON_SIZE,
+    EDIT_ICON_SIZE
+)
+
+EXPAND_ALL_ICON = hou.ui.createQtIcon(
+     (root + "/expand_all.png"),
     EDIT_ICON_SIZE,
     EDIT_ICON_SIZE
 )
@@ -564,14 +610,21 @@ INFO_ICON = hou.ui.createQtIcon(
     EDIT_ICON_SIZE
 )
 
+# BUTTONS_pinned
 PIN_IN_ICON = hou.ui.createQtIcon(
-    'BUTTONS_pin_in_mono',
+    'BUTTONS_pinned',
     EDIT_ICON_SIZE,
     EDIT_ICON_SIZE
 )
 
 PIN_OUT_ICON = hou.ui.createQtIcon(
     'BUTTONS_pin_out_mono',
+    EDIT_ICON_SIZE,
+    EDIT_ICON_SIZE
+)
+
+RESIZEL_ICON = hou.ui.createQtIcon(
+    'BUTTONS_resizegrip_se',
     EDIT_ICON_SIZE,
     EDIT_ICON_SIZE
 )
@@ -595,3 +648,29 @@ UP_ICON = hou.ui.createQtIcon(
 )
 
 # !SECTION  UI Info 
+
+
+# SECTION Widget Tools ---------------------------------------------------
+def widgets_at(mainwindow, pos):
+	"""Return ALL widgets at `pos`
+	Arguments:
+		pos (QPoint): Position at which to get widgets
+	"""
+
+	widgets = []
+	widget_at = mainwindow.widgetAt(pos)
+
+	while widget_at:
+		widgets.append(widget_at)
+
+		# Make widget invisible to further enquiries
+		widget_at.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
+		widget_at = mainwindow.widgetAt(pos)
+
+	# Restore attribute
+	for widget in widgets:
+		widget.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents, False)
+
+	return widgets
+
+    # !SECTION Widget Tools 

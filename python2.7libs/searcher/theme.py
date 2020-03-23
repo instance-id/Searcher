@@ -3,12 +3,14 @@ from __future__ import absolute_import
 
 from searcher import theme_ui
 from searcher import util
-from searcher import searcher_data
+from searcher import settings_data
+from searcher import style
 
 import os
 import sys
 
 import hou
+import hdefereval as hd
 hver = 0
 if os.environ["HFS"] != "":
     ver = os.environ["HFS"]
@@ -46,13 +48,14 @@ class Theme(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super(Theme, self).__init__(parent=parent)
         self.setParent(parent)
-        self.parent = parent
+        self.parentwindow = parent
         self.ui = theme_ui.Ui_Theme()
         self.ui.setupUi(self)
         self.ui.retranslateUi(self)
-
+        self.colorfield = {}
         self.settings = util.get_settings()
         self.colors = self.settings[util.SETTINGS_KEYS[14]]
+        self.coloreditor = None
 
         self.tabpanel = self.ui.tabWidget
         self.tabpanel.currentChanged.connect(self.curTabChange)
@@ -88,6 +91,9 @@ class Theme(QtWidgets.QWidget):
         self.save = self.ui.savetheme
         self.save.pressed.connect(self.save_cb)
 
+        self.discard = self.ui.discardtheme
+        self.discard.pressed.connect(self.discard_cb)
+
         self.curTabChange(0)  
         self.installEventFilter(self)    
 
@@ -104,55 +110,137 @@ class Theme(QtWidgets.QWidget):
             else:
                 self.tabpanel.widget(i).setSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
 
+    # --------------------------------------------- save_cb
+    # NOTE save_cb ----------------------------------------
     def save_cb(self):
         for i in range(len(util.COLORFIELDS)):
             self.settings[util.SETTINGS_KEYS[14]][util.COLORFIELDS[i]] = getattr(self.ui, util.COLORFIELDS[i]).text()
         
-        searcher_data.savesettings(self.settings)
-        self.parent.themebtn.setChecked(False)
+        settings_data.savesettings(self.settings)
+        self.parentwindow.themebtn.setChecked(False)
         self.close()
 
-    def chooseColor(self):
-        sender = self.sender()
-        name = sender.objectName()
-        colorfield = getattr(self.ui, name)
-        qcolor = QtGui.QColor()
-        qcolor.setNamedColor(colorfield.text())
-        color = hou.Color()
-        color.setRGB((
-            qcolor.redF(), 
-            qcolor.greenF(), 
-            qcolor.blueF())
+    # ------------------------------------------ discard_cb
+    # NOTE discard_cb -------------------------------------
+    def discard_cb(self):
+        self.parentwindow.themebtn.setChecked(False)
+        self.close()
+
+    #-------------------------------------- colorchange_cb
+    # NOTE colorchange_cb ---------------------------------
+    def colorchange_cb(self, color, alpha=1.0):
+        rgb = color.rgb()
+        newcolor = QtGui.QColor(
+            rgb[0]*255, 
+            rgb[1]*255, 
+            rgb[2]*255
         )
 
-        result = hou.ui.selectColor(initial_color = color)
-        
-        if result:
-            rgb = result.rgb()
-            newcolor = QtGui.QColor(
-                rgb[0]*255, 
-                rgb[1]*255, 
-                rgb[2]*255
-            )
+        if newcolor.isValid():
+            demotext = ""
+            self.colorfield[self.name][0].setText(newcolor.name())
+            self.colorfield[self.name][1].setStyleSheet("background-color:" + self.colorfield[self.name][0].text())
             
-            if newcolor.isValid():
-                colorfield.setText(newcolor.name())
-                sender.setStyleSheet("background-color:" + colorfield.text())
-    
+            if self.colorfield[self.name][0] == getattr(self.ui, util.COLORFIELDS[0]):
+                outdata = [0.100, 0.200, 0.300, 0.400, 0.500]
+                demotxt = (("<font color='%s'>Search Regex <font color='%s'> <b>%0.4f</b> </font> ms</font> | " % (str(self.colorfield[self.name][0].text()), str(getattr(self.ui, util.COLORFIELDS[2]).text()), outdata[0])) 
+              + ("<font color='%s'>Context Search <font color='%s'> <b>%0.4f</b> </font> ms</font> | " % (str(self.colorfield[self.name][0].text()), str(getattr(self.ui, util.COLORFIELDS[2]).text()), outdata[1])) 
+              + ("<font color='%s'>Hotkey Search <font color='%s'> <b>%0.4f</b> </font> ms</font> | " % (str(self.colorfield[self.name][0].text()), str(getattr(self.ui, util.COLORFIELDS[2]).text()), outdata[2])) 
+              + ("<font color='%s'>Tree build <font color='%s'> <b>%0.4f</b> </font> ms</font> | " % (str(self.colorfield[self.name][0].text()), str(getattr(self.ui, util.COLORFIELDS[2]).text()), outdata[3]))
+              + ("<font color='%s'>Total : <font color='%s'> <b>%0.4f</b> </font> ms</font> " % (str(self.colorfield[self.name][0].text()), str(getattr(self.ui, util.COLORFIELDS[2]).text()), outdata[4])))
+                self.parentwindow.parentwindow.infolbl.setText(demotxt)
+                
+            elif self.colorfield[self.name][0] == getattr(self.ui, util.COLORFIELDS[2]):
+                outdata = [0.100, 0.200, 0.300, 0.400, 0.500]
+                demotxt = (("<font color='%s'>Search Regex <font color='%s'> <b>%0.4f</b> </font> ms</font> | " % (str(getattr(self.ui, util.COLORFIELDS[0]).text()), str(self.colorfield[self.name][0].text()), outdata[0])) 
+              + ("<font color='%s'>Context Search <font color='%s'> <b>%0.4f</b> </font> ms</font> | " % (str(getattr(self.ui, util.COLORFIELDS[0]).text()), str(self.colorfield[self.name][0].text()), outdata[1])) 
+              + ("<font color='%s'>Hotkey Search <font color='%s'> <b>%0.4f</b> </font> ms</font> | " % (str(getattr(self.ui, util.COLORFIELDS[0]).text()), str(self.colorfield[self.name][0].text()), outdata[2])) 
+              + ("<font color='%s'>Tree build <font color='%s'> <b>%0.4f</b> </font> ms</font> | " % (str(getattr(self.ui, util.COLORFIELDS[0]).text()), str(self.colorfield[self.name][0].text()), outdata[3]))
+              + ("<font color='%s'>Total : <font color='%s'> <b>%0.4f</b> </font> ms</font> " % (str(getattr(self.ui, util.COLORFIELDS[0]).text()), str(self.colorfield[self.name][0].text()), outdata[4])))
+                self.parentwindow.parentwindow.infolbl.setText(demotxt)
+
+            elif self.colorfield[self.name][0] == getattr(self.ui, util.COLORFIELDS[4]):
+                text = "This is an example of how the ToolTip text will look with this particular color"
+                demotxt = ("<font color='%s'>%s</font>" % (self.colorfield[self.name][0].text(), text))
+                self.parentwindow.parentwindow.infolbl.setText(demotxt)
+            
+
+    def _opencoloreditor(self, color):
+        allWidgets = QtWidgets.QApplication.allWidgets()
+        for w in allWidgets:
+            if "Select Color" in w.windowTitle():
+                self.coloreditor = w
+                break
+
+        if self.coloreditor:
+            pos = self.parentwindow.mapToGlobal(
+                QtCore.QPoint(self.parentwindow.width(), self.parentwindow.height()))
+            self.coloreditor.setGeometry(
+                pos.x() - ((self.parentwindow.width() * 1.55 ) + 20 ),
+                pos.y() - self.parentwindow.height(),
+                ((self.parentwindow.width() * 0.5) + 44),
+                ((self.parentwindow.height() * 1.2) + 86)
+            )
+        self.parentwindow.parentwindow.activateWindow()  
+        
+    # ----------------------------------------- chooseColor
+    # NOTE chooseColor ------------------------------------
+    def chooseColor(self):
+        sender = self.sender()
+        
+        self.name = sender.objectName()
+        self.colorfield[self.name] = (getattr(self.ui, self.name), sender)
+        
+        qcolor = QtGui.QColor()
+        qcolor.setNamedColor(self.colorfield[self.name][0].text())
+
+        colord = QtWidgets.QColorDialog(self)
+        colord.setModal(False)
+        pos = self.parentwindow.mapToGlobal(
+            QtCore.QPoint(self.parentwindow.width(), self.parentwindow.height()))
+        colord.move(
+            pos.x() + 300,
+            pos.y(),
+        )
+        c = colord.getColor(
+            initial=qcolor, 
+            parent=self,
+            options=QtWidgets.QColorDialog.DontUseNativeDialog
+        )
+        hcolor = hou.qt.fromQColor(c)
+
+        self.colorchange_cb(hcolor[0])
+
     # !SECTION Callbacks
 
     # ------------------------------------------------------------- Events
     # SECTION Events -----------------------------------------------------
     def eventFilter(self, obj, event):
+        event_type = event.type()
+
+        # ------------------------------------------- Mouse
+        # SECTION Mouse -----------------------------------
+        # ----------------------- MouseButtonPress
+        # NOTE MouseButtonPress ------------------
+        # --- Empty for now ---
+        # !SECTION Mouse
+
         # ------------------------------------------ Window
         # NOTE Window -------------------------------------
-        if event.type() == QtCore.QEvent.Show:
-            self.parent.ui.save_btn.setVisible(False)
-            self.parent.ui.discard_btn.setVisible(False)
-        if event.type() == QtCore.QEvent.Close:
-            self.parent.ui.save_btn.setVisible(True)
-            self.parent.ui.discard_btn.setVisible(True)
+        if event_type == QtCore.QEvent.Show:
+            self.parentwindow.ui.save_btn.setVisible(False)
+            self.parentwindow.ui.discard_btn.setVisible(False)
+        if event_type == QtCore.QEvent.Close:
+            self.parentwindow.ui.save_btn.setVisible(True)
+            self.parentwindow.ui.discard_btn.setVisible(True)
+
+        # ---------------------------------------- Keypress
+        # NOTE Keypress -----------------------------------
+        if event_type == QtCore.QEvent.KeyPress:
+            if event.key() == QtCore.Qt.Key_Escape:
+                self.parentwindow.closeroutine()
+                return True
 
         return QtCore.QObject.eventFilter(self, obj, event)
-    
+
     # !SECTION Events

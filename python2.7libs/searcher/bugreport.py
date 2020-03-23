@@ -28,7 +28,22 @@ class BugReport(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super(BugReport, self).__init__(parent=parent)
         self.setParent(parent)
+        self.parentwindow = parent
         self.ui = bugreport_ui.Ui_BugReport()
         self.ui.setupUi(self)
         self.ui.retranslateUi(self)
 
+        self.installEventFilter(self)
+
+    # ------------------------------------------------------------- Events
+    # SECTION Events -----------------------------------------------------
+    def eventFilter(self, obj, event):
+        event_type = event.type()
+
+        # ---------------------------------------- Keypress
+        # NOTE Keypress -----------------------------------
+        if event_type == QtCore.QEvent.KeyPress:
+            if event.key() == QtCore.Qt.Key_Escape:
+                self.parentwindow.closeroutine()
+
+        return QtCore.QObject.eventFilter(self, obj, event)

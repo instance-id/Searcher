@@ -1,6 +1,8 @@
 # SECTION Language US
 language = "en"
 
+
+
 # NOTE  Tooltips
 TT_MW = {   
     "searchbox" :               "Begin typing to search or click magnifying glass icon to display options",
@@ -12,7 +14,8 @@ TT_MW = {
     "helpButton" :              "Open help panel",
     "metricposmain" :           "Change the position of metrics to Houdinis main window",
     "metricposself" :           "Change the position of metrics to Searchers window",
-    "expander" :                "Expand or collapse all tree items",
+    "expand_all" :              "Expand all tree items",
+    "collapse_all" :            "Collapse all tree items",
 }   
 # NOTE Tooltops Settings    
 TT_SETTINGS = { 
@@ -39,7 +42,8 @@ TT_SETTINGS = {
     "metrics_chk":              "Enable performance metrics to view query and render times", 
 }
 
-ERRORMSG = {
+# NOTE database - General Errors  
+DBERRORMSG = {
     "cleardatabase" :           "Could not clear db for refresh: ",
     "updatecontext" :           "Could not update Searcher context database: ",
     "updatechangeindex" :       "Could not update Searcher context database: ",
@@ -49,9 +53,17 @@ ERRORMSG = {
     "getchangeindex" :          "Could not get Searcher changeindex: ",
 }
 
+# NOTE 456 - Initial setup
 MESSAGES = {
     "initialsetup1" :           "Searcher database created",
     "initialsetup2" :           "Searcher database created and populated",
+    "createdefaults" :          "Searcher database created and populated",
+}
+
+# NOTE settings_data - Save/Load
+SETTINGSMESSAGES = {
+    "savesettings" :            "Could not save settings: ",
+    "loadsettings" :            "Could not load settings: ",
 }
 
 # !SECTION

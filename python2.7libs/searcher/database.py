@@ -6,7 +6,7 @@ import hou
 import os
 
 from searcher import util
-from searcher import searcher_data
+from searcher import settings_data
 from searcher import ptime as ptime
 
 
@@ -55,8 +55,8 @@ class HContext(Model):
         table_name = 'hcontext'
         database = db
 
-# # ------------------------------------------- HContextIndex
-# # NOTE HContextIndex --------------------------------------
+# # # ------------------------------------------- HContextIndex
+# # # NOTE HContextIndex --------------------------------------
 # class HContextIndex(FTS5Model):
 #     # rowid = RowIDField()
 #     context = SearchField()
@@ -151,7 +151,7 @@ class Databases(object):
         if inmemory:
             val = ':memory:'
         else:
-            val = (scriptpath + "/db/searcher.db")
+            val = (self.settings[util.SETTINGS_KEYS[1]])
 
         self.db = db
         if not self.db:
@@ -170,7 +170,7 @@ class Databases(object):
                     Settings, 
                     HContext, 
                     Hotkeys, 
-                    HotkeysIndex]
+                    HotkeysIndex,]
                 )
                 self.initialsetup(self.cur)
          
@@ -202,7 +202,7 @@ class Databases(object):
 
                 if len(hkcheck) is 0:
                     self.settings[util.SETTINGS_KEYS[11]] = ""
-                    searcher_data.savesettings(settingdata)
+                    settings_data.savesettings(settingdata)
                     return
 
                 rmresult = hou.hotkeys.removeAssignment(
@@ -212,7 +212,7 @@ class Databases(object):
                     hou.hotkeys.saveOverrides()
                     if len(hkcheck) is 0:
                         self.settings[util.SETTINGS_KEYS[11]] = ""
-                        searcher_data.savesettings(settingdata)
+                        settings_data.savesettings(settingdata)
                         updatechangeindex(int(currentidx))
                     else:
                         hou.hotkeys.clearAssignments(str(lasthk[0]))
@@ -220,7 +220,7 @@ class Databases(object):
                         hkcheck = hou.hotkeys.assignments(str(lasthk[0]))
                         if len(hkcheck) is 0:
                             self.settings[util.SETTINGS_KEYS[11]] = ""
-                            searcher_data.savesettings(settingdata)
+                            settings_data.savesettings(settingdata)
                             updatechangeindex(int(currentidx))
                         else:
                             if hou.isUIAvailable():

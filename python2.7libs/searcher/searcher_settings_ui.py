@@ -1,5 +1,16 @@
 # -*- coding: utf-8 -*-
-from hutil.Qt import QtCore, QtGui, QtWidgets
+import os
+hver = 0
+if os.environ["HFS"] != "":
+    ver = os.environ["HFS"]
+    hver = int(ver[ver.rindex('.')+1:])
+    from hutil.Qt import QtGui
+    from hutil.Qt import QtCore
+    from hutil.Qt import QtWidgets
+else:
+    from PyQt5 import QtGui
+    from PyQt5 import QtCore
+    from PyQt5 import QtWidgets
 
 def bc(v):
     return str(v).lower() in ("yes", "true", "t", "1")
@@ -66,10 +77,10 @@ class Ui_SearcherSettings(object):
         self.secondrow = QtWidgets.QHBoxLayout()
         self.secondrow.setObjectName("secondrow")
 
-        self.lang_cbox = QtWidgets.QComboBox(SearcherSettings)
-        self.lang_cbox.setObjectName("lang_cbox")
-        self.lang_cbox.addItem("")
-        self.secondrow.addWidget(self.lang_cbox)
+        # self.lang_cbox = QtWidgets.QComboBox(SearcherSettings)
+        # self.lang_cbox.setObjectName("lang_cbox")
+        # self.lang_cbox.addItem("")
+        # self.secondrow.addWidget(self.lang_cbox)
 
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.secondrow.addItem(spacerItem)
@@ -177,7 +188,7 @@ class Ui_SearcherSettings(object):
         self.theme_btn.setObjectName("theme")
         self.sixthrow.addWidget(self.theme_btn)
 
-        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem1 = QtWidgets.QSpacerItem(40, 25, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         self.sixthrow.addItem(spacerItem1)
 
         self.debuglevel_cbx = QtWidgets.QComboBox(SearcherSettings)
@@ -221,8 +232,8 @@ class Ui_SearcherSettings(object):
 
         # -------------------------------------------------- thirdrow
         # self.label_3.setText(_translate("SearcherSettings", "Language:"))
-        self.lang_cbox.setCurrentText(_translate("SearcherSettings", "English"))
-        self.lang_cbox.setItemText(0, _translate("SearcherSettings", "English"))
+        # self.lang_cbox.setCurrentText(_translate("SearcherSettings", "English"))
+        # self.lang_cbox.setItemText(0, _translate("SearcherSettings", "English"))
         self.defaulthotkey_lbl.setText(_translate("SearcherSettings", "Hotkey to use for opening unassigned items: "))
         self.defaulthotkey_txt.setPlaceholderText(_translate("SearcherSettings", "Double Click"))
         self.hotkey_icon.setText(_translate("SearcherSettings", "..."))

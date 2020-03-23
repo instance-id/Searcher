@@ -5,7 +5,7 @@ import hou
 import os
 
 from searcher import util
-from searcher import searcher_data
+from searcher import settings_data
 from searcher import ptime as ptime
 from searcher import database
 

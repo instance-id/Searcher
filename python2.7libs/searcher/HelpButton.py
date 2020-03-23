@@ -1,6 +1,8 @@
 
 from __future__ import print_function
 from __future__ import absolute_import
+from searcher import util
+
 import weakref
 import hou
 import os
@@ -26,11 +28,12 @@ class HelpButton(QtWidgets.QToolButton):
         self.clicked.connect(self.display_help)
         help_button_size = hou.ui.scaledSize(16)
         self.setProperty("flat", True)
-        self.setIcon(hou.qt.createIcon("BUTTONS_help"))
+        self.setIcon(hou.qt.createIcon(util.get_path(["images", "help1.png"])))
         self.setIconSize(QtCore.QSize(
             help_button_size,
             help_button_size
         ))
+
 
     def display_help(self):
         """Display help panel."""

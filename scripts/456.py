@@ -1,10 +1,12 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
-from searcher import searcher_data
+from searcher import settings_data
 from searcher import util
 from searcher import platformselect
 from searcher import ptime as ptime
+from searcher import language_en as la
+
 
 from peewee import *
 from peewee import SQL
@@ -23,14 +25,12 @@ __author__ = "instance.id"
 __copyright__ = "2020 All rights reserved. See LICENSE for more details."
 __status__ = "Prototype"
 
-# settingsfile = "searcher_settings.ini"
-# searcher_settings = os.path.join(
-#     hou.homeHoudiniDirectory(), 'Searcher', settingsfile
-# )
-
 current_file_path = os.path.abspath(
     inspect.getsourcefile(lambda: 0)
 )
+
+def get_platform():
+    return getattr(hou.session, "PLATFORM", None)
 
 def get_settings():
     return getattr(hou.session, "SETTINGS", None)
@@ -39,7 +39,10 @@ def get_dbconnection():
     return getattr(hou.session, "DBCONNECTION", None)
 
 scriptpath = os.path.dirname(current_file_path)
-dbpath = os.path.join(scriptpath, "../python2.7libs/searcher/db/searcher.db")
+dbfile = "searcher.db"
+dbpath =  os.path.join(
+    hou.homeHoudiniDirectory(), 'Searcher', dbfile
+)
 
 hou.session.SETTINGS = {}
 hou.session.DBCONNECTION = DatabaseProxy()
@@ -48,7 +51,10 @@ settingdata = {}
 isloading = True
 tempkey = ""
 
-
+# --------------------------------------------------------- DatabaseModels
+# SECTION DatabaseModels -------------------------------------------------
+# ------------------------------------------------ Settings
+# NOTE Settings -------------------------------------------
 class Settings(Model):
     id = IntegerField(unique=True)
     indexvalue = IntegerField()
@@ -62,6 +68,8 @@ class Settings(Model):
         table_name = 'settings'
         database = db
 
+# ------------------------------------------------ HContext
+# NOTE HContext -------------------------------------------
 class HContext(Model):
     id = AutoField()
     context = TextField(unique=True)
@@ -72,6 +80,20 @@ class HContext(Model):
         table_name = 'hcontext'
         database = db
 
+# # ------------------------------------------- HContextIndex
+# # NOTE HContextIndex --------------------------------------
+# class HContextIndex(FTS5Model):
+#     # rowid = RowIDField()
+#     context = SearchField()
+#     title = SearchField()
+#     description = SearchField()
+
+#     class Meta:
+#         database = db
+#         options = {'prefix': [2, 3], 'tokenize': 'porter'}
+
+# ------------------------------------------------- Hotkeys
+# NOTE Hotkeys --------------------------------------------
 class Hotkeys(Model):
     hotkey_symbol = CharField(unique=True)
     label = CharField()
@@ -83,6 +105,8 @@ class Hotkeys(Model):
         table_name = 'hotkeys'
         database = db
 
+# -------------------------------------------- HotkeysIndex
+# NOTE HotkeysIndex ---------------------------------------
 class HotkeysIndex(FTS5Model):
     # rowid = RowIDField()
     hotkey_symbol = SearchField(unindexed=True)
@@ -95,6 +119,7 @@ class HotkeysIndex(FTS5Model):
         # table_name = 'hotkeysindex'
         database = db
         options = {'prefix': [2, 3], 'tokenize': 'porter'}
+# !SECTION DatabaseModels
 
 def create_tables(dbc):
     dbc.create_tables([Settings, HContext, Hotkeys, HotkeysIndex])
@@ -177,9 +202,9 @@ def getchangeindex(cur):
     except(AttributeError, TypeError) as e:
         if hou.isUIAvailable():
             hou.ui.setStatusMessage(
-                (la.ERRORMSG['getchangeindex'] + str(e)), severity=hou.severityType.Warning)
+                (la.DBERRORMSG['getchangeindex'] + str(e)), severity=hou.severityType.Warning)
         else:
-            print(la.ERRORMSG['getchangeindex'] + str(e))
+            print(la.DBERRORMSG['getchangeindex'] + str(e))
 
 # ------------------------------------------- getlastusedhk
 # NOTE getlastusedhk --------------------------------------
@@ -193,7 +218,7 @@ def getlastusedhk(cur):
 
             if len(hkcheck) is 0:
                 settingdata[util.SETTINGS_KEYS[11]] = ""
-                searcher_data.savesettings(settingdata)
+                settings_data.savesettings(settingdata)
                 return
 
             rmresult = hou.hotkeys.removeAssignment(str(lasthk[0]).strip(), str(lasthk[1]).strip())
@@ -202,7 +227,7 @@ def getlastusedhk(cur):
                 hou.hotkeys.saveOverrides()
                 if len(hkcheck) is 0:
                     settingdata[util.SETTINGS_KEYS[11]] = ""
-                    searcher_data.savesettings(settingdata)
+                    settings_data.savesettings(settingdata)
                     currentidx = hou.hotkeys.changeIndex()
                     updatechangeindex(int(currentidx))
                 else:
@@ -211,28 +236,28 @@ def getlastusedhk(cur):
                     hkcheck = hou.hotkeys.assignments(str(lasthk[0]))
                     if len(hkcheck) is 0:
                         settingdata[util.SETTINGS_KEYS[11]] = ""
-                        searcher_data.savesettings(settingdata)
+                        settings_data.savesettings(settingdata)
                         currentidx = hou.hotkeys.changeIndex()
                         updatechangeindex(int(currentidx))
                     else:
                         if hou.isUIAvailable():
                             hou.ui.setStatusMessage(
-                                (la.ERRORMSG['getlastusedhk3']), severity=hou.severityType.Warning)
+                                (la.DBERRORMSG['getlastusedhk3']), severity=hou.severityType.Warning)
                         else:
-                            print(la.ERRORMSG['getlastusedhk3'])
+                            print(la.DBERRORMSG['getlastusedhk3'])
             else:
                 if hou.isUIAvailable():
                     hou.ui.setStatusMessage(
-                        (la.ERRORMSG['getlastusedhk2']), severity=hou.severityType.Warning)
+                        (la.DBERRORMSG['getlastusedhk2']), severity=hou.severityType.Warning)
                 else:
-                    print(la.ERRORMSG['getlastusedhk2'])
+                    print(la.DBERRORMSG['getlastusedhk2'])
 
     except(AttributeError, TypeError) as e:
         if hou.isUIAvailable():
             hou.ui.setStatusMessage(
-                (la.ERRORMSG['getlastusedhk1'] + str(e)), severity=hou.severityType.Warning)
+                (la.DBERRORMSG['getlastusedhk1'] + str(e)), severity=hou.severityType.Warning)
         else:
-            print(la.ERRORMSG['getlastusedhk1'] + str(e))
+            print(la.DBERRORMSG['getlastusedhk1'] + str(e))
 # !SECTION
 
 # ----------------------------------------------------------------- Update
@@ -280,9 +305,9 @@ def updatechangeindex(indexval, new=False):
     except(AttributeError, TypeError) as e:
         if hou.isUIAvailable():
             hou.ui.setStatusMessage(
-                (la.ERRORMSG['updatechangeindex'] + str(e)), severity=hou.severityType.Warning)
+                (la.DBERRORMSG['updatechangeindex'] + str(e)), severity=hou.severityType.Warning)
         else:
-            print(la.ERRORMSG['updatechangeindex'] + str(e))
+            print(la.DBERRORMSG['updatechangeindex'] + str(e))
 
 # ------------------------------------------- updatecontext
 # NOTE updatecontext --------------------------------------
@@ -300,7 +325,7 @@ def updatecontext(debug=False):
 
     except(AttributeError, TypeError) as e:
         hou.ui.setStatusMessage(
-            (la.ERRORMSG['updatecontext'] + str(e)), severity=hou.severityType.Warning)
+            (la.DBERRORMSG['updatecontext'] + str(e)), severity=hou.severityType.Warning)
 # endregion
 
 # ------------------------------------------- cleardatabase
@@ -314,14 +339,14 @@ def cleardatabase():
         db.cursor().execute(delctx)
         db.cursor().execute(delhkindex)
         result = db.cursor().fetchall()
-
         return result
+
     except(AttributeError, TypeError) as e:
         if hou.isUIAvailable():
             hou.ui.setStatusMessage(
-                (la.ERRORMSG['cleardatabase'] + str(e)), severity=hou.severityType.Warning)
+                (la.DBERRORMSG['cleardatabase'] + str(e)), severity=hou.severityType.Warning)
         else:
-            print(la.ERRORMSG['cleardatabase'] + str(e))
+            print(la.DBERRORMSG['cleardatabase'] + str(e))
 # !SECTION
 
 def deferaction(action, val):
@@ -331,44 +356,57 @@ def checklasthk(cur):
     getlastusedhk(cur)
 
 def main():
-    if not os.path.isfile(searcher_data.searcher_settings):
-        searcher_data.createdefaults()
+    platform = get_platform()
+    platform = platformselect.get_platform()
+    
+    if not os.path.exists(settings_data.searcher_path):
+        os.mkdir(settings_data.searcher_path)
+    if not os.path.isfile(settings_data.searcher_settings):
+        if platform == "unix":
+            os.system(("touch %s" % settings_data.searcher_settings))
+        else: os.mknod(settings_data.searcher_settings)
+        settings_data.createdefaults(platform)
 
-    hou.session.SETTINGS = searcher_data.loadsettings()
+    hou.session.SETTINGS = settings_data.loadsettings()
     settingdata = get_settings()
 
     isdebug = util.Dbug(
-        settingdata[util.SETTINGS_KEYS[4]], 
+        settingdata[util.SETTINGS_KEYS[4]],
         str(settingdata[util.SETTINGS_KEYS[10]]),
         settingdata[util.SETTINGS_KEYS[12]],
         settingdata[util.SETTINGS_KEYS[13]],
     )
+    if "linux" in hou.applicationPlatformInfo():
+        print("Platform is Linux")
+    elif "windows" in hou.applicationPlatformInfo():
+        print("Platform is Windows")
 
-    inmemory = util.bc(settingdata[util.SETTINGS_KEYS[0]])
+    inmemory = (settingdata[util.SETTINGS_KEYS[0]])
     if inmemory:
         val = ':memory:'
     else:
-        val = (dbpath)
+        val = str(settingdata[util.SETTINGS_KEYS[1]])
 
     db.initialize(
         SqliteExtDatabase(
             val,
             pragmas=(
-                ("cache_size", -1024 * 64), 
-                ("journal_mode", "off"), 
-                ("temp_store", "memory"), 
+                ("cache_size", -1024 * 64),
+                ("journal_mode", "off"),
+                ("temp_store", "memory"),
                 ("synchronous", 0)
             )))
-    
+
     hou.session.DBCONNECTION = db
     dbc = get_dbconnection()
+
     time1 = ptime.time()
-    if inmemory:    
+    if inmemory:
         create_tables(dbc)
         cur = dbc.cursor()
         initialsetup(cur)
     else:
-        if not os.path.isfile(dbpath):
+        if not os.path.isfile(settingdata[util.SETTINGS_KEYS[1]]):
             create_tables(dbc)
             cur = dbc.cursor()
             deferaction(initialsetup, cur)
