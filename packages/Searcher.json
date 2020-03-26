@@ -1,23 +1,56 @@
-{ 
-	"env" : 
-	[
-	    {
-	        "SEARCHER" : "E:\\GitHub\\Searcher"
-	    },
-	    {
-	        "HOUDINI_PATH" : "$SEARCHER\\"
-	    },
-	    {
-	     	"HOUDINI_SCRIPT_PATH": "$SEARCHER\\scripts"
-	    },
-	    {
-	    	"HOUDINI_DSO_PATH": "$SEARCHER\\houdini\\python27\\dlls"
-	    },
-	    {
-	    	"PYTHONPATH" : "$SEARCHER\\python2.7libs;$SEARCHER\\houdini\\python27;"
-	    },
-	    {
-	    	"PATH": "$SEARCHER\\python27\\dlls"
-	    }, 
+{
+	"env": [
+		{
+			"SEARCHER": [
+				{
+					"houdini_version <= '18.0.391' and houdini_os == 'windows'": "E:/GitHub/Searcher",
+					"method": "append"
+				},
+				{
+					"houdini_version <= '18.0.391' and houdini_os == 'linux'": "/mnt/hgfs/Searcher",
+					"method": "append"
+				}
+			]
+		},
+		{
+			"HOUDINI_PATH": [
+				{
+					"houdini_version <= '18.0.391'": "$SEARCHER/",
+					"method": "append"
+				}
+			]
+		},
+		{
+			"HOUDINI_SCRIPT_PATH": [
+				{
+					"houdini_version <= '18.0.391'": "$SEARCHER/scripts",
+					"method": "append"
+				}
+			]
+		},
+		{
+			"HOUDINI_DSO_PATH": [
+				{
+					"houdini_version <= '18.0.391'": "$SEARCHER/houdini/python27/dlls",
+					"method": "append"
+				}
+			]
+		},
+		{
+			"PYTHONPATH": [
+				{
+					"houdini_version <= '18.0.391'": "$SEARCHER/python2.7libs;$SEARCHER/houdini/python27;",
+					"method": "append"
+				}
+			]
+		},
+		{
+			"PATH": [
+				{
+					"houdini_version <= '18.0.391'": "$SEARCHER/python27/dlls",
+					"method": "append"
+				}
+			]
+		}
 	]
 }

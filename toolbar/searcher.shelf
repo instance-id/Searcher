@@ -5,7 +5,7 @@
  Note, that two definitions of the same element are not allowed in
  a single file. -->
 
-  <tool name="searcher" label="Searcher" icon="hicon:/SVGIcons.index?BUTTONS_link.svg">
+  <tool name="searcher" label="Searcher" icon="hicon:/SVGIcons.index?BUTTONS_search.svg">
     <script scriptType="python"><![CDATA[from __future__ import print_function
 from __future__ import absolute_import
 from searcher import searcher

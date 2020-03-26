@@ -12,12 +12,16 @@ if os.environ["HFS"] != "":
 else:
     from PyQt5 import QtGui
 
+# --------------------------------------------------- Paths
+# NOTE Paths ----------------------------------------------
 script_path = os.path.dirname(os.path.realpath(__file__))
 PATH = os.path.join(script_path, "images")
 imgroot = PATH.replace("\\", "/")
 
 settings = util.get_settings()
 
+# ----------------------------------------------- Functions
+# NOTE Functions ------------------------------------------
 def count_chars(txt):
     result = 0
     for char in txt:
@@ -35,6 +39,10 @@ MAINWINDOW = """ background-color: rgb(42, 42, 42); """
 CONTEXTTOGGLE = """ QPushButton { width: 8px; border: none; }
                     QPushButton:checked { width: 8px; border: none;} """
 
+# ----------------------------------------------- INFOLABEL
+# NOTE INFOLABEL ------------------------------------------
+INFOLABEL = """ background-color: rgba(11,11,11,1); border-bottom: 1px solid rgb(100, 100, 100); """
+
 # ----------------------------------------------- MENUSTYLE
 # NOTE MENUSTYLE ------------------------------------------
 MENUSTYLE = """QMenu { background-color: rgb(64,64,64); menu-scrollable: 1; margin: 0px; }
@@ -50,6 +58,11 @@ TOOLTIP = """QToolTip { background-color: rgb(64,64,64); menu-scrollable: 1; mar
                    QToolTip:item { background-color: rgb(46,46,46);  padding: 5px 25px ; margin: 1px; height:16px; }
                    QToolTip:icon { padding: 5px; }
                    QToolTip:icon:checked { flat: true; }"""
+
+# -------------------------------------------- SETTINGSMENU
+# NOTE SETTINGSMENU ---------------------------------------
+SETTINGSMENU = """ QWidget { background: rgb(58, 58, 58); }
+                   QWidget#SearcherSettings { border: 0px solid rgb(35, 35, 35); }  """
 
 # --------------------------------------- styleresizehandle
 # NOTE styleresizehandle ----------------------------------
@@ -82,21 +95,12 @@ def styleresizehandle(obj, enter):
             )
         obj.setStyleSheet(sheet)
 
-# ----------------------------------------------- INFOLABEL
-# NOTE INFOLABEL ------------------------------------------
-INFOLABEL = """ background-color: rgba(11,11,11,1); border-bottom: 1px solid rgb(100, 100, 100); """
-
-# -------------------------------------------- SETTINGSMENU
-# NOTE SETTINGSMENU ---------------------------------------
-SETTINGSMENU = """ QWidget { background: rgb(58, 58, 58); }
-                   QWidget#SearcherSettings { border: 0px solid rgb(35, 35, 35); }  """
-
 # ---------------------------------------- styleresulttotal
 # NOTE styleresulttotal -----------------------------------
 def styleresulttotal(treecatnum, treeitemsnum):
     appcolors = settings[util.SETTINGS_KEYS[14]]
     return (("<font color='%s'><b>%s</b></font> : <font color='%s'>Contexts </font> | " % (appcolors[util.COLORFIELDS[2]], treecatnum, appcolors[util.COLORFIELDS[0]]))
-            + ("<font color='%s'><b>%s</b></font> : <font color='%s'>Results </font>  " % (appcolors[util.COLORFIELDS[2]],  treeitemsnum, appcolors[util.COLORFIELDS[0]])))
+              + ("<font color='%s'><b>%s</b></font> : <font color='%s'>Results </font>  " % (appcolors[util.COLORFIELDS[2]],  treeitemsnum, appcolors[util.COLORFIELDS[0]])))
 
 # --------------------------------------------- styletimers
 # NOTE styletimers ----------------------------------------
@@ -117,8 +121,15 @@ def returntimers(outdata):
               + ("Tree build  %0.4f ms | " % outdata[3])
               + ("Total :  %0.4f ms " % outdata[4]))
 
-# ------------------------------------- gettooltipstyle
-# NOTE gettooltipstyle --------------------------------
+# -------------------------------------------- setstatusmsg
+# NOTE setstatusmsg ---------------------------------------
+def setstatusmsg(text, severity):
+    stype, scolor = util.SEVERITY[severity]
+    msg = (("<font color='%s'>%s</font>" % (scolor, text)))
+    return msg, stype
+
+# ----------------------------------------- gettooltipstyle
+# NOTE gettooltipstyle ------------------------------------
 def gettooltipstyle(text):
     return (("<font color='%s'>%s</font>" % (settings[util.SETTINGS_KEYS[14]][util.COLORFIELDS[4]], text)))
 

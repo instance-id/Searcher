@@ -1,5 +1,6 @@
 from __future__ import print_function
 from __future__ import absolute_import
+
 from searcher import enum
 
 from sys import platform
@@ -203,6 +204,7 @@ MODIFIER_KEYS = {
     QtCore.Qt.Key_Control:  "Ctrl",
 }
 
+# ----------------------------------------------- MODIFIERS
 # NOTE MODIFIERS ------------------------------------------
 MODIFIERS = {
     "Shift":        QtCore.Qt.ShiftModifier,
@@ -228,8 +230,8 @@ SPECIAL_KEYS = {
     QtCore.Qt.Key_Right:        "Right",
     QtCore.Qt.Key_Up:           "Up",
     QtCore.Qt.Key_Down:         "Down",
-    QtCore.Qt.Key_PageUp:       "Page_Up",
-    QtCore.Qt.Key_PageDown:     "Page_Down",
+    QtCore.Qt.Key_PageUp:       "PageUp",
+    QtCore.Qt.Key_PageDown:     "PageDown",
     QtCore.Qt.Key_End:          "Page_End",
     QtCore.Qt.Key_Home:         "Page_Home",
 }
@@ -434,6 +436,8 @@ KEY_DICT = {
     "X":            QtCore.Qt.Key_X,
     "Y":            QtCore.Qt.Key_Y,
     "Z":            QtCore.Qt.Key_Z,
+    "PageUp":       QtCore.Qt.Key_PageUp,
+    "PageDown":     QtCore.Qt.Key_PageDown,
     "BracketLeft":  QtCore.Qt.Key_BracketLeft,
     "[":            QtCore.Qt.Key_BracketLeft,
     "BracketRight": QtCore.Qt.Key_BracketRight,
@@ -482,43 +486,75 @@ CONTEXTTYPE = {
 PANES = [
     "playbar",
     "shelf",
+    hou.paneTabType.AssetBrowser,
+    hou.paneTabType.BundleList,         
+    hou.paneTabType.ChannelEditor,      
+    hou.paneTabType.ChannelList,        
+    hou.paneTabType.ChannelViewer,      
+    hou.paneTabType.CompositorViewer,   
+    hou.paneTabType.DetailsView,        
+    hou.paneTabType.HandleList,         
+    hou.paneTabType.HelpBrowser,        
+    hou.paneTabType.IPRViewer,          
+    hou.paneTabType.LightLinker,        
+    hou.paneTabType.MaterialPalette,    
+    hou.paneTabType.NetworkEditor,      
+    hou.paneTabType.OutputViewer,       
+    hou.paneTabType.Parm,               
+    hou.paneTabType.ParmSpreadsheet,    
+    hou.paneTabType.PerformanceMonitor, 
+    hou.paneTabType.PythonPanel,        
+    hou.paneTabType.PythonShell,        
+    hou.paneTabType.SceneViewer,        
+    hou.paneTabType.TakeList,           
+    hou.paneTabType.Textport,           
+    hou.paneTabType.TreeView,                                     
 ]
 
 # ----------------------------------------------- PANETYPES
 # NOTE PANETYPES ------------------------------------------
 PANETYPES = {
-    hou.paneTabType.AssetBrowser:       ["h.pane.projectm"],
-    hou.paneTabType.BundleList:         ["h.pane.bundle"],
-    hou.paneTabType.ChannelEditor:      ["h.pane.chedit", "h.pane.chedit.dope", "h.pane.chedit.dope.py", "h.pane.chedit.graph", "h.pane.chedit.graph.py", "h.pane.chedit.table", "h.pane.chedit.table.py"],
-    hou.paneTabType.ChannelList:        ["h.pane.chlist", "h.pane.chlist.ch", "h.pane.chlist.layers", "h.pane.chlist.parmbox"],
-    hou.paneTabType.ChannelViewer:      ["h.pane.gview.selmodechview"],
-    hou.paneTabType.CompositorViewer:   ["h.pane.imgui.state", "h.pane.imgui.state.cop"],
-    hou.paneTabType.DetailsView:        ["h.pane.details"],
-    hou.paneTabType.HandleList:         ["h.pane.manip"],
-    hou.paneTabType.HelpBrowser:        [""],
-    hou.paneTabType.IPRViewer:          ["h.pane.ipr"],
-    hou.paneTabType.LightLinker:        ["h.pane.linkeditor", "h.pane.linkeditor.sheet", ],
-    hou.paneTabType.MaterialPalette:    ["h.pane.material"],
-    hou.paneTabType.NetworkEditor:      ["h.pane.wsheet"],
-    hou.paneTabType.OutputViewer:       ["h.pane.outputsview"],
-    hou.paneTabType.Parm:               ["h.pane.editparms", "h.pane.parms"],
-    hou.paneTabType.ParmSpreadsheet:    ["h.pane.parmsheet"],
-    hou.paneTabType.PerformanceMonitor: ["h.pane.perfmon"],
-    hou.paneTabType.PythonPanel:        ["h.py"],
-    hou.paneTabType.PythonShell:        ["h.pane.pythonshell", "h.py"],
-    hou.paneTabType.SceneViewer:        ["h.pane.gview.selmode", "h.pane.gview.state.select"],
-    hou.paneTabType.TakeList:           ["h.pane.take", "h.pane.take.content", "h.pane.take.list"],
-    hou.paneTabType.Textport:           ["h.pane.textport"],
-    hou.paneTabType.TreeView:           ["tree"],
-    "playbar":                          ["h.playbar"],
-    "shelf":                            ["h.shelf"],
-
-
+    hou.paneTabType.AssetBrowser:       [["h.pane.projectm"], "Asset Browser"],
+    hou.paneTabType.BundleList:         [["h.pane.bundle"], "Bundle List"],
+    hou.paneTabType.ChannelEditor:      [["h.pane.chedit", "h.pane.chedit.dope", "h.pane.chedit.dope.py", "h.pane.chedit.graph", "h.pane.chedit.graph.py", "h.pane.chedit.table", "h.pane.chedit.table.py"], "Channel Editor"],
+    hou.paneTabType.ChannelList:        [["h.pane.chlist", "h.pane.chlist.ch", "h.pane.chlist.layers", "h.pane.chlist.parmbox"], "Channel List"],
+    hou.paneTabType.ChannelViewer:      [["h.pane.gview.selmodechview"], "Channel Viewer"],
+    hou.paneTabType.CompositorViewer:   [["h.pane.imgui.state", "h.pane.imgui.state.cop"], "Compositor Viewer"],
+    hou.paneTabType.DetailsView:        [["h.pane.details"], "Details View"],
+    hou.paneTabType.HandleList:         [["h.pane.manip"], "Handle List"],
+    hou.paneTabType.HelpBrowser:        [[""], "Help Browser"],
+    hou.paneTabType.IPRViewer:          [["h.pane.ipr"], "IPR Viewer"],
+    hou.paneTabType.LightLinker:        [["h.pane.linkeditor", "h.pane.linkeditor.sheet", ], "Light Linker"],
+    hou.paneTabType.MaterialPalette:    [["h.pane.material"], "Material Palette"],
+    hou.paneTabType.NetworkEditor:      [["h.pane.wsheet"], "Network Editor"],
+    hou.paneTabType.OutputViewer:       [["h.pane.outputsview"], "Output Viewer"],
+    hou.paneTabType.Parm:               [["h.pane.editparms", "h.pane.parms"], "Parameters"],
+    hou.paneTabType.ParmSpreadsheet:    [["h.pane.parmsheet"], "Parameter Spreadsheet"],
+    hou.paneTabType.PerformanceMonitor: [["h.pane.perfmon"], "Performance Monitor"],
+    hou.paneTabType.PythonPanel:        [["h.py"], "PythonPanel"],
+    hou.paneTabType.PythonShell:        [["h.pane.pythonshell", "h.py"], "Python Shell"],
+    hou.paneTabType.SceneViewer:        [["h.pane.gview.selmode", "h.pane.gview.state.select"], "Scene Viewer"],
+    hou.paneTabType.TakeList:           [["h.pane.take", "h.pane.take.content", "h.pane.take.list"], "Take List"],
+    hou.paneTabType.Textport:           [["h.pane.textport"], "Textport"],
+    hou.paneTabType.TreeView:           [["tree"], "Tree View"],
+    "playbar":                          [["h.playbar"], "Playbar"],
+    "shelf":                            [["h.shelf"], "Shelf"],
 }
 # !SECTION Houdini Translations
 
 # --------------------------------------------------------------- UI Info
 # SECTION UI Info -------------------------------------------------------
+
+# ------------------------------------------------ SEVERITY
+# NOTE SEVERITY -------------------------------------------
+SEVERITY = {
+    "Message":              [hou.severityType.Message, "#FF0000"],
+    "ImportantMessage":     [hou.severityType.ImportantMessage, "#FF0000"],
+    "Warning":              [hou.severityType.Warning, "#FF0000"],
+    "Error":                [hou.severityType.Error, "FF0000"],
+    "Fatal":                [hou.severityType.Fatal, "#FF0000"],
+}
+
 # DOP_pyrosolver
 # MISC_database
 # MISC_python
