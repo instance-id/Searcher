@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shelfDocument>
+  <!-- This file contains definitions of shelves, toolbars, and tools.
+ It should not be hand-edited when it is being used by the application.
+ Note, that two definitions of the same element are not allowed in
+ a single file. -->
+
+  <toolshelf name="searcher_shelf" label="Searcher Shelf">
+    <memberTool name="searcher::searcher"/>
+    <memberTool name="pyblish"/>
+  </toolshelf>
+
+  <tool name="searcher::searcher" label="Searcher" icon="hicon:/SVGIcons.index?BUTTONS_search.svg">
+    <script scriptType="python"><![CDATA[from __future__ import print_function
+from __future__ import absolute_import
+from searcher import searcher
+import toolutils
+import os
+reload(searcher) 
+
+outputpath =  os.path.join(
+    hou.homeHoudiniDirectory(), 'Searcher', "err.json"
+)
+
+try:
+    searcher.CreateSearcherPanel(**kwargs)
+except(AttributeError, TypeError) as e:
+    log = open(outputpath, 'w') 
+    print(e, file = log) 
+    log.close() ]]></script>
+  </tool>
+</shelfDocument>

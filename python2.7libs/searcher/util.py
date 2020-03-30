@@ -462,6 +462,28 @@ KEY_DICT = {
 
 # --------------------------------------------------- Houdini Translations
 # SECTION Houdini Translations -------------------------------------------
+# ---------------------------------------------- getcontext
+# NOTE getcontext -----------------------------------------
+def getcontext(editor):
+    """Return houdini context string."""
+    hou_context = editor.pwd().childTypeCategory().name()
+    if hou_context == 'Sop':
+        return 'SOP'
+    elif hou_context == 'Dop':
+        return 'DOP'
+    elif hou_context == 'Object':
+        return 'OBJ'
+    elif hou_context == 'Driver':
+        return 'ROP'
+    elif hou_context == 'Chop':
+        return 'CHOP'
+    elif hou_context == 'Vop':
+        return 'VOP'
+    elif hou_context == 'Shop':
+        return 'SHOP'
+    elif hou_context == 'Cop2':
+        return 'COP'
+
 # --------------------------------------------- CONTEXTTYPE
 # NOTE CONTEXTTYPE ----------------------------------------
 CONTEXTTYPE = {
@@ -481,36 +503,6 @@ CONTEXTTYPE = {
     "VopNet": "VEX",
 }
 
-# --------------------------------------------------- PANES
-# NOTE PANES ----------------------------------------------
-PANES = [
-    "playbar",
-    "shelf",
-    hou.paneTabType.AssetBrowser,
-    hou.paneTabType.BundleList,         
-    hou.paneTabType.ChannelEditor,      
-    hou.paneTabType.ChannelList,        
-    hou.paneTabType.ChannelViewer,      
-    hou.paneTabType.CompositorViewer,   
-    hou.paneTabType.DetailsView,        
-    hou.paneTabType.HandleList,         
-    hou.paneTabType.HelpBrowser,        
-    hou.paneTabType.IPRViewer,          
-    hou.paneTabType.LightLinker,        
-    hou.paneTabType.MaterialPalette,    
-    hou.paneTabType.NetworkEditor,      
-    hou.paneTabType.OutputViewer,       
-    hou.paneTabType.Parm,               
-    hou.paneTabType.ParmSpreadsheet,    
-    hou.paneTabType.PerformanceMonitor, 
-    hou.paneTabType.PythonPanel,        
-    hou.paneTabType.PythonShell,        
-    hou.paneTabType.SceneViewer,        
-    hou.paneTabType.TakeList,           
-    hou.paneTabType.Textport,           
-    hou.paneTabType.TreeView,                                     
-]
-
 # ----------------------------------------------- PANETYPES
 # NOTE PANETYPES ------------------------------------------
 PANETYPES = {
@@ -520,6 +512,7 @@ PANETYPES = {
     hou.paneTabType.ChannelList:        [["h.pane.chlist", "h.pane.chlist.ch", "h.pane.chlist.layers", "h.pane.chlist.parmbox"], "Channel List"],
     hou.paneTabType.ChannelViewer:      [["h.pane.gview.selmodechview"], "Channel Viewer"],
     hou.paneTabType.CompositorViewer:   [["h.pane.imgui.state", "h.pane.imgui.state.cop"], "Compositor Viewer"],
+    hou.paneTabType.DataTree:           [["h.pane.datatree"], "Data Tree"],
     hou.paneTabType.DetailsView:        [["h.pane.details"], "Details View"],
     hou.paneTabType.HandleList:         [["h.pane.manip"], "Handle List"],
     hou.paneTabType.HelpBrowser:        [[""], "Help Browser"],

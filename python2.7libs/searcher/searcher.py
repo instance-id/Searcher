@@ -101,10 +101,11 @@ class Searcher(QtWidgets.QWidget):
     """instance.id Searcher for Houdini"""
     # --------------------------------------------------------- Class init
     # SECTION Class init -------------------------------------------------
-    def __init__(self, kwargs, settings, windowsettings, animated):
-        super(Searcher, self).__init__(hou.qt.mainWindow())
+    def __init__(self, settings, windowsettings, animated, kwargs):
+        super(Searcher, self).__init__(parent=hou.qt.mainWindow())
         # self.timerprofile = None  # ANCHOR hou perf timer 
         # self.loadhevent = None    # ANCHOR hou perf timer 
+
         # -------------------------- Constructed
         # NOTE Constructed ----------------------
         self.kwargs = kwargs
@@ -149,6 +150,7 @@ class Searcher(QtWidgets.QWidget):
         self.hcontext_tli = {}
 
         self.tmpkey = None
+        self.getpane = None
         self.tiptimer = None
         self.resizing = False
         self.mouseout = False
@@ -197,6 +199,53 @@ class Searcher(QtWidgets.QWidget):
     # !SECTION Class init
 
     def getwidgets(self):
+        import debugutils as dbug
+        reload(dbug)
+        data = ""
+
+        for shelf in hou.shelves.shelves().values():
+            data += ("Shelf name: %s -------------------------- \n" % shelf)
+            for tool in shelf.tools():
+                data += ("Tool name: %s \n" % tool.name())
+                data +=  ("Tool label: %s \n" % tool.label())
+                data +=  ("Tool keywords: %s \n" % tool.script())
+                # data +=  ("Tool toolMenuLocations: %s \n" % tool.toolMenuOpType())   
+
+
+        outputpath =  os.path.join(
+            hou.homeHoudiniDirectory(), 'Searcher', "output.json"
+        )
+        # info = hou.ui.viewerStateInfo()
+        sample = open(outputpath, 'w') 
+        print(data, file = sample) 
+        sample.close() 
+        # print(info)
+
+        # shelfkeys = hou.shelves.tools().keys()
+        # tools = hou.shelves.tools()
+
+        # for i in range(0, 10):
+        #     tool = tools[shelfkeys[i]]
+        #     print("Tool: %s" % tool)
+        #     for t in tool:
+        #         print("Tool data: %s" % t)
+        #         tools = tools[shelfkeys[t]]
+        #         print("Tool data: %s" % tool[t])
+
+            
+            # toolkeys = tool.keys()
+            # print("Tool keys: %s" % toolkeys)
+            # print(shelfkeys[i])
+
+        # runningtool = hou.shelves.runningTool()
+        # print(runningtool)
+
+        print(self.kwargs)
+        if "editor" in self.kwargs:
+            print(self.kwargs["editor"].pwd())
+
+
+        # print(hou.shelves.tools().keys())
 
         pos = QtGui.QCursor.pos()
         if self.isdebug and self.isdebug.level in {"ALL"}:
@@ -205,9 +254,20 @@ class Searcher(QtWidgets.QWidget):
         mainwin = QtWidgets.QApplication
         undermouse = util.widgets_at(mainwin, pos)
 
+        widgetdata = ""
+        outputpath2 =  os.path.join(
+            hou.homeHoudiniDirectory(), 'Searcher', "widgets.json"
+        )
+        sample2 = open(outputpath2, 'w') 
         for w in undermouse:
+            print(dbug.dumpWidgetLayout(w, "_____"), file = sample2) 
             if w.windowTitle() != "":
                 print("Title: %s" % w.windowTitle())
+
+
+        
+        sample2.close() 
+
 
         # allWidgets = QtWidgets.QApplication.allWidgets()
         # for w in allWidgets:
@@ -544,7 +604,7 @@ class Searcher(QtWidgets.QWidget):
 
     # ---------------------------------------------- getpane
     # NOTE getpane -----------------------------------------
-    def getpane(self):
+    def getpanedata(self):
         try:
             return hou.ui.paneTabUnderCursor()
         except (AttributeError, TypeError) as e:
@@ -687,13 +747,9 @@ class Searcher(QtWidgets.QWidget):
             self.ui.isopened = False
             self.opensettingstool.setChecked(False)
 
- 
-
     # --------------------------------------- textchange_cb
     # NOTE textchange_cb ----------------------------------
     def textchange_cb(self, text):
-        # print(self.holdinfobanner)
-
         self.starttime = ptime.time() # -----------------------------   # ANCHOR Search Timer Start
         if len(text) > 0 and not self.holdinfobanner:
             self.setinfotext(200, self.searchresultstree.toolTip())
@@ -718,6 +774,7 @@ class Searcher(QtWidgets.QWidget):
                 self.hotkeystime = timer
                 self.searchtablepopulate(txt)
         else:
+            self.getpane = None
             self.holdinfobanner = False
             self.searching = False
             self.treetotal_lbl.setText("")
@@ -804,6 +861,11 @@ class Searcher(QtWidgets.QWidget):
             skey                       # String of Qt key identifier
         )
 
+        focustarget = self.getpane if self.getpane else hou.ui.mainQtWindow()
+        if self.getpane:
+            for pane_tab in hou.ui.curDesktop().paneTabs():
+                if pane_tab.name() == focustarget.name():
+                    pane_tab.setIsCurrentTab()
         hou.ui.mainQtWindow().setFocus()
         try:
             hd.executeDeferred(self.app.sendEvent, hou.ui.mainQtWindow(), keypress)
@@ -922,6 +984,7 @@ class Searcher(QtWidgets.QWidget):
         # NOTE None or :c -----------------------
         if ctx is None or ctx == ":c":
             self.ctxsearch = True
+            self.getpane = None
             skipelse = False
             undermouse = None
             pane = ""
@@ -941,13 +1004,11 @@ class Searcher(QtWidgets.QWidget):
 
             if not skipelse:
                 try:
-                    getpane = self.getpane()
-                    if self.isdebug and self.isdebug.level in {"ALL"}: print(getpane)
-                    print("#2 - Pane: %s PaneType: %s" % (getpane, getpane.type()))
-                    if getpane:
-                        panetype = getpane.type()
-                        ctxresult = util.PANETYPES[getpane.type()]
-                        print("#2 - Printing CTX Result: %s" % ctxresult[0])
+                    self.getpane = self.getpanedata()
+                    if self.isdebug and self.isdebug.level in {"ALL"}: print(self.getpane)
+                    if self.getpane:
+                        panetype = self.getpane.type()
+                        ctxresult = util.PANETYPES[self.getpane.type()]
                         results = self.handler.searchctx(ctxresult[0])
                         self.searchbox.blockSignals(True)
                         self.searchbox.setText(":c %s" % ctxresult[1])
@@ -977,13 +1038,13 @@ class Searcher(QtWidgets.QWidget):
                                     self.searchbox.blockSignals(False)
                                     break
                             else:
-                                pass
                                 e = "#3 - Object under mouse cannot be queried"
                                 self.setstatusmsg(str(e), "ImportantMessage")
+                                pass
 
                 except(AttributeError, TypeError) as e:
                     self.setstatusmsg(str(e), "Warning")
-                    pass
+                    return
 
         # ------------------------------------ :v
         # NOTE :v -------------------------------
@@ -999,18 +1060,20 @@ class Searcher(QtWidgets.QWidget):
             ctxresult.append("h")
             results = self.handler.searchctx(ctxresult)
         # !SECTION Context Terms
-
-        self.searchtablepopulate(results)
-        self.ctxsearch = False
-        self.searchbox.clearFocus()
-        self.searchresultstree.setFocus()
-        self.searchresultstree.setCurrentItem(
-            self.searchresultstree.topLevelItem(0).child(0)
-        )
-        endtime = ptime.time()
-        timetotal = ((endtime - self.starttime) * 1000.0)
-        print("CTX Timer: %0.4f" % timetotal)
-
+        if results:
+            self.searchtablepopulate(results)
+            self.ctxsearch = False
+            self.searchbox.clearFocus()
+            self.searchresultstree.setFocus()
+            self.searchresultstree.setCurrentItem(
+                self.searchresultstree.topLevelItem(0).child(0)
+            )
+            # endtime = ptime.time() -------------------------------------- # ANCHOR CTXHotkey Performance Timer 
+            # timetotal = ((endtime - self.starttime) * 1000.0)
+            # print("CTX Timer: %0.4f" % timetotal)
+        else:
+            e = "Unable to locate usable context item"
+            self.setstatusmsg(str(e), "ImportantMessage")
     # --------------------------------- searchtablepopulate
     # NOTE searchtablepopulate ----------------------------
     def searchtablepopulate(self, data):
@@ -1296,7 +1359,7 @@ class Searcher(QtWidgets.QWidget):
         opensettings_shct = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+S"), self)
         opensettings_shct.activated.connect(self.opensettingstool.click)
 
-        getpanes_shct = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+B"), self)
+        getpanes_shct = QtWidgets.QShortcut(QtGui.QKeySequence("ALT+V"), self)
         getpanes_shct.activated.connect(self.getwidgets)
 
         getpanes_shct = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+Tab"), self)
@@ -1433,14 +1496,6 @@ class Searcher(QtWidgets.QWidget):
                     return True
                 else:
                     pass
-                #     if self.menuopened:
-                #         self.searchmenu.setFocus()
-                #     else:
-                #         self.searchbox.blockSignals(True)
-                #         self.searchbox.setText(":c")
-                #         self.searchbox.blockSignals(False)
-                #         self.ctxsearcher()
-                #     return True
 
             # ------------------------------- ESC
             # NOTE ESC --------------------------
@@ -1553,17 +1608,16 @@ def center():
 
 # ----------------------------------- Create Window
 # NOTE Create Window ------------------------------
-def CreateSearcherPanel(kwargs, searcher_window=None):
+def CreateSearcherPanel(searcher_window=None, **kwargs):
     # timerprofile = hou.perfMon.startProfile("Load_Timer")  # ANCHOR hou perf timer ---------------- hou perf timer
     # loadevent = hou.perfMon.startEvent("Start _Timer")     # ANCHOR hou perf timer ---------------- hou perf timer
     # starttime = ptime.time()
     kwargs = kwargs
-
     settings = get_settings()
     windowsettings = QtCore.QSettings("instance.id", "Searcher")
 
     animated = True
-    searcher_window = Searcher(kwargs, settings, windowsettings, animated)
+    searcher_window = Searcher(settings, windowsettings, animated, kwargs)
     searcher_window.addeventfilters()
     searcher_window.setStyleSheet(style.MAINWINDOW)
     searcher_window.setAttribute(QtCore.Qt.WA_StyledBackground, True)
