@@ -14,14 +14,9 @@ from searcher import language_en as la
 from searcher import searcher_settings_ui
 
 from builtins import range
-from past.utils import old_div
-import platform
 import os
 
-import sys
 import hou
-import hdefereval
-from hutil import py23
 hver = 0
 if os.environ["HFS"] != "":
     ver = os.environ["HFS"]
@@ -42,12 +37,6 @@ reload(bugreport)
 reload(bugreport_ui)
 reload(searcher_settings_ui)
 
-# --------------------------------------------------------------------  App Info
-__package__ = "Searcher"
-__version__ = "0.1b"
-__author__ = "instance.id"
-__copyright__ = "2020 All rights reserved. See LICENSE for more details."
-__status__ = "Prototype"
 
 # --------------------------------------------- hou.session
 # NOTE hou.session ----------------------------------------
@@ -121,8 +110,6 @@ class SearcherSettings(QtWidgets.QWidget):
             QtCore.Qt.Tool 
             | QtCore.Qt.FramelessWindowHint 
             | QtCore.Qt.CustomizeWindowHint
-            #| QtCore.Qt.NoDropShadowWindowHint 
-            # | QtCore.Qt.X11BypassWindowManagerHint
         )
         self.about.resize(width, height - 180)
 
@@ -132,10 +119,8 @@ class SearcherSettings(QtWidgets.QWidget):
             QtCore.Qt.Tool 
             | QtCore.Qt.FramelessWindowHint 
             | QtCore.Qt.CustomizeWindowHint
-            #| QtCore.Qt.NoDropShadowWindowHint
-            # | QtCore.Qt.X11BypassWindowManagerHint
         )
-        self.bugreport.resize(width, height - 180)
+        self.bugreport.resize(width, height - 15)
 
         self.theme = theme.Theme(self)
         self.theme.setAttribute(QtCore.Qt.WA_StyledBackground, True)
@@ -144,7 +129,6 @@ class SearcherSettings(QtWidgets.QWidget):
             | QtCore.Qt.FramelessWindowHint
             | QtCore.Qt.CustomizeWindowHint
             | QtCore.Qt.NoDropShadowWindowHint
-            # | QtCore.Qt.X11BypassWindowManagerHint
         )
         self.theme.resize(width, height - 90)
 
@@ -186,6 +170,7 @@ class SearcherSettings(QtWidgets.QWidget):
 
         # fifthrow
         self.metrics = self.ui.metrics_chk
+        self.metrics.setVisible(bc(self.settings[util.SETTINGS_KEYS[4]]))
         self.metrics.setToolTip(la.TT_SETTINGS[self.metrics.objectName()])
         self.cleardata = self.ui.cleardata_btn
         self.cleardata.setToolTip(la.TT_SETTINGS[self.cleardata.objectName()])
@@ -310,6 +295,7 @@ class SearcherSettings(QtWidgets.QWidget):
                 self.mapposition(0, 0, s) if self.animatedsettings.isChecked() else self.mapposition(0, 0, s)
             elif s.objectName() == "bugreport":
                 self.mapposition(0, 0, s) if self.animatedsettings.isChecked() else self.mapposition(0, 0, s)
+                self.bugreport.doweb()
             elif s.objectName() == "theme":
                 self.mapposition(0, 0, s) if self.animatedsettings.isChecked() else self.mapposition(0, 0, s)
         else:

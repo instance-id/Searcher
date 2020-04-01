@@ -53,7 +53,7 @@
          <item>
           <layout class="QHBoxLayout" name="secondrow">
            <item>
-            <widget class="QLineEdit" name="title">
+            <widget class="QLineEdit" name="lineEdit">
              <property name="minimumSize">
               <size>
                <width>175</width>
@@ -61,7 +61,7 @@
               </size>
              </property>
              <property name="placeholderText">
-              <string>Issue Title:</string>
+              <string>Name:</string>
              </property>
             </widget>
            </item>
@@ -70,9 +70,15 @@
          <item>
           <layout class="QHBoxLayout" name="headerrow">
            <item>
-            <widget class="QLabel" name="webview">
-             <property name="text">
-              <string>TextLabel</string>
+            <widget class="QLineEdit" name="lineEdit_2">
+             <property name="minimumSize">
+              <size>
+               <width>175</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="placeholderText">
+              <string>Contact:</string>
              </property>
             </widget>
            </item>
@@ -80,6 +86,13 @@
          </item>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QTextEdit" name="textEdit">
+             <property name="placeholderText">
+              <string>What was the issue?</string>
+             </property>
+            </widget>
+           </item>
            <item>
             <spacer name="verticalSpacer">
              <property name="orientation">

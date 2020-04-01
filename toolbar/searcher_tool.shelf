@@ -27,6 +27,10 @@ try:
 except(AttributeError, TypeError) as e:
     log = open(outputpath, 'w') 
     print(e, file = log) 
-    log.close() ]]></script>
+    log.close() 
+    hou.ui.setStatusMessage(
+                ("Check Searcher Error Log: %s" % outputpath),
+                severity=hou.severityType.Warning
+            )]]></script>
   </tool>
 </shelfDocument>

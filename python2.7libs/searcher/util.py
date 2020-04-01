@@ -120,7 +120,7 @@ SETTINGS_TYPES = {
     SETTINGS_KEYS[12]: 'bool',               # metrics
     SETTINGS_KEYS[13]: 'flag',               # metricsmainwindow
     SETTINGS_KEYS[14]: 'NA',                 # appcolors
-    SETTINGS_KEYS[15]: 'flag',                 # expanditems
+    SETTINGS_KEYS[15]: 'flag',               # expanditems
 }
 
 # ---------------------------------------- DEFAULT_SETTINGS
@@ -130,7 +130,7 @@ DEFAULT_SETTINGS = {
     SETTINGS_KEYS[0]: "False",               # in_memory_db
     SETTINGS_KEYS[1]: "",                    # database_path
     SETTINGS_KEYS[2]: "False",               # savewindowsize
-    SETTINGS_KEYS[3]: [750, 350],           # windowsize
+    SETTINGS_KEYS[3]: [750, 350],            # windowsize
     SETTINGS_KEYS[4]: "False",               # debugflag
     SETTINGS_KEYS[5]: "False",               # pinwindow
     SETTINGS_KEYS[6]: u"Ctrl+Alt+Shift+F7",  # defaulthotkey
@@ -142,11 +142,11 @@ DEFAULT_SETTINGS = {
     SETTINGS_KEYS[12]: "False",              # metrics
     SETTINGS_KEYS[13]: "False",              # metricsmainwindow
     SETTINGS_KEYS[14]: {                     # appcolors
-        COLORFIELDS[0] : "#607FAE",
-        COLORFIELDS[1] : "#D2A00C",
-        COLORFIELDS[2] : "#c2efe5",
-        COLORFIELDS[3] : "#c2efe5",
-        COLORFIELDS[4] : "#607FAE",
+        COLORFIELDS[0] : "#607FAE",          # text1
+        COLORFIELDS[1] : "#D2A00C",          # text2
+        COLORFIELDS[2] : "#c2efe5",          # stats1
+        COLORFIELDS[3] : "#c2efe5",          # stats2
+        COLORFIELDS[4] : "#607FAE",          # tooltip
     },         
     SETTINGS_KEYS[15]: "True",              # expanditems
 }

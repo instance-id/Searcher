@@ -3,8 +3,6 @@
 from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
-import weakref
-import timeit
 
 from searcher import util
 from searcher import style
@@ -23,12 +21,9 @@ import os
 import re
 import sys
 import hou
-import time
-import platform
 import threading
 import hdefereval as hd
 from canvaseventtypes import *
-from string import ascii_letters
 from collections import Iterable
 
 hver = 0
@@ -103,11 +98,12 @@ class Searcher(QtWidgets.QWidget):
     # SECTION Class init -------------------------------------------------
     def __init__(self, settings, windowsettings, animated, kwargs):
         super(Searcher, self).__init__(parent=hou.qt.mainWindow())
-        # self.timerprofile = None  # ANCHOR hou perf timer 
-        # self.loadhevent = None    # ANCHOR hou perf timer 
+        # self.timerprofile = None  # ANCHOR hou perf timer
+        # self.loadhevent = None    # ANCHOR hou perf timer
 
         # -------------------------- Constructed
         # NOTE Constructed ----------------------
+        self.goalnum = 7
         self.kwargs = kwargs
         self.animated = animated
         self.settingdata = settings
@@ -169,7 +165,6 @@ class Searcher(QtWidgets.QWidget):
 
         # --------------------------------- Performance Vars
         # NOTE Performance Vars ----------------------------
-
         self.endtime = 0
         self.starttime = 0
         self.treecatnum = 0
@@ -209,7 +204,7 @@ class Searcher(QtWidgets.QWidget):
                 data += ("Tool name: %s \n" % tool.name())
                 data +=  ("Tool label: %s \n" % tool.label())
                 data +=  ("Tool keywords: %s \n" % tool.script())
-                # data +=  ("Tool toolMenuLocations: %s \n" % tool.toolMenuOpType())   
+                # data +=  ("Tool toolMenuLocations: %s \n" % tool.toolMenuOpType())
 
 
         outputpath =  os.path.join(
@@ -1023,7 +1018,7 @@ class Searcher(QtWidgets.QWidget):
                     pos = QtGui.QCursor.pos()
                     if self.isdebug and self.isdebug.level in {"ALL"}:
                         print("Position: X:%d Y: %d" % (pos.x(), pos.y()))
-                    
+
                     undermouse = util.widgets_at(QtWidgets.QApplication, pos)
                     if undermouse:
                         for w in undermouse:
@@ -1031,7 +1026,7 @@ class Searcher(QtWidgets.QWidget):
                                 ctxresult = util.PANETYPES.get(w.windowTitle()) if w.windowTitle() in util.PANETYPES else None
                                 if ctxresult is not None:
                                     if self.isdebug and self.isdebug.level in {"ALL"}:
-                                        print("Title: %s HContext: %s" (ctxresult[0], ctxresult[1]))
+                                        print("Title: %s HContext: %s" % (ctxresult[0], ctxresult[1]))
                                     results = self.handler.searchctx(ctxresult[0])
                                     self.searchbox.blockSignals(True)
                                     self.searchbox.setText(":c %s" % ctxresult[1])
@@ -1068,18 +1063,18 @@ class Searcher(QtWidgets.QWidget):
             self.searchresultstree.setCurrentItem(
                 self.searchresultstree.topLevelItem(0).child(0)
             )
-            # endtime = ptime.time() -------------------------------------- # ANCHOR CTXHotkey Performance Timer 
+            # endtime = ptime.time() -------------------------------------- # ANCHOR CTXHotkey Performance Timer
             # timetotal = ((endtime - self.starttime) * 1000.0)
             # print("CTX Timer: %0.4f" % timetotal)
         else:
             e = "Unable to locate usable context item"
             self.setstatusmsg(str(e), "ImportantMessage")
+
     # --------------------------------- searchtablepopulate
     # NOTE searchtablepopulate ----------------------------
     def searchtablepopulate(self, data):
         if len(data) > 0:
             # tabletimer = hou.perfMon.startEvent("Table_Populate") ------- # ANCHOR hou perf timer
-            self.goalnum = 7
             self.treecatnum = 0
             self.treeitemsnum = 0
             self.searchresultstree.clear()
@@ -1098,7 +1093,7 @@ class Searcher(QtWidgets.QWidget):
 
             result, hctimer = self.handler.gethcontextod(self.context_list)
             self.hcontexttime = hctimer
-            treebuildtimer = ptime.time() # ------------------------------ # ANCHOR Tree builder Start
+            treebuildtimer = ptime.time()  # ------------------------------ # ANCHOR Tree builder Start
             # TODO Test Map ---------
             for hc in range(len(result)):
                 self.hcontext_tli[result[hc][2]] = (QtWidgets.QTreeWidgetItem(
