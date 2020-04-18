@@ -50,6 +50,9 @@ class Theme(QtWidgets.QWidget):
         self.setParent(parent)
         self.parentwindow = parent
         self.ui = theme_ui.Ui_Theme()
+        # !SECTION Init      
+        
+
         self.ui.setupUi(self)
         self.ui.retranslateUi(self)
         self.colorfield = {}
@@ -94,10 +97,9 @@ class Theme(QtWidgets.QWidget):
         self.discard = self.ui.discardtheme
         self.discard.pressed.connect(self.discard_cb)
 
+    def initmenu(self):
         self.curTabChange(0)  
         self.installEventFilter(self)    
-
-        # !SECTION Init              
 
     # ------------------------------------------------------------- Callbacks
     # SECTION Callbacks -----------------------------------------------------

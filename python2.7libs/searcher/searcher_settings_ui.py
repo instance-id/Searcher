@@ -151,17 +151,17 @@ class Ui_SearcherSettings(object):
         self.maint_lbl.setObjectName("maint_lbl")
         self.fifthrow.addWidget(self.maint_lbl)
 
-        self.metrics_chk = QtWidgets.QCheckBox(SearcherSettings)
-        self.metrics_chk.setLayoutDirection(QtCore.Qt.RightToLeft)
-        self.metrics_chk.setTristate(False)
-        self.metrics_chk.setObjectName("metrics_chk")
-        self.fifthrow.addWidget(self.metrics_chk)
+        # self.metrics_chk = QtWidgets.QCheckBox(SearcherSettings)
+        # self.metrics_chk.setLayoutDirection(QtCore.Qt.RightToLeft)
+        # self.metrics_chk.setTristate(False)
+        # self.metrics_chk.setObjectName("metrics_chk")
+        # self.fifthrow.addWidget(self.metrics_chk)
 
         self.cleardata_btn = QtWidgets.QPushButton(SearcherSettings)
         self.cleardata_btn.setObjectName("cleardata_btn")
         self.fifthrow.addWidget(self.cleardata_btn)
 
-        self.verticallayout.addLayout(self.fifthrow)
+        # self.verticallayout.addLayout(self.fifthrow)
 
         # ---------------------------------------------------- Spacer
         self.line2 = QtWidgets.QFrame(SearcherSettings)
@@ -190,6 +190,14 @@ class Ui_SearcherSettings(object):
 
         spacerItem1 = QtWidgets.QSpacerItem(40, 25, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         self.sixthrow.addItem(spacerItem1)
+
+
+        self.metrics_chk = QtWidgets.QCheckBox(SearcherSettings)
+        self.metrics_chk.setLayoutDirection(QtCore.Qt.RightToLeft)
+        self.metrics_chk.setTristate(False)
+        self.metrics_chk.setObjectName("metrics_chk")
+        self.sixthrow.addWidget(self.metrics_chk)
+
 
         self.debuglevel_cbx = QtWidgets.QComboBox(SearcherSettings)
         self.debuglevel_cbx.setObjectName("debuglevel_cbx")
@@ -244,13 +252,13 @@ class Ui_SearcherSettings(object):
 
         # -------------------------------------------------- fifthrow
         self.maint_lbl.setText(_translate("SearcherSettings", "Maintenance utilities:"))
-        self.metrics_chk.setText(_translate("SearcherSettings", "Enable performance metrics"))
         self.cleardata_btn.setText(_translate("SearcherSettings", "Clear Data"))
 
         # ------------------------------------------------- sixthrow
         self.about_btn.setText(_translate("SearcherSettings", "..."))
         self.bug_btn.setText(_translate("SearcherSettings", "..."))
         self.theme_btn.setText(_translate("SearcherSettings", "..."))
+        self.metrics_chk.setText(_translate("SearcherSettings", "Metrics"))
         self.debugflag_chk.setText(_translate("SearcherSettings", "Debug Mode"))
         self.discard_btn.setText(_translate("SearcherSettings", "Discard"))
         self.save_btn.setText(_translate("SearcherSettings", "Save"))

@@ -28,7 +28,6 @@ class About(QtWidgets.QWidget):
         self.ui.retranslateUi(self)
 
         self.installEventFilter(self)
-
     # ------------------------------------------------------------- Events
     # SECTION Events -----------------------------------------------------
     def eventFilter(self, obj, event):

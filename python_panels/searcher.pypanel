@@ -6,13 +6,13 @@
  same interface or of the interfaces menu are not allowed
  in a single file. -->
   <interface name="searcher" label="Searcher" icon="MISC_python" showNetworkNavigationBar="false" help_url="">
-    <script><![CDATA[from searcher import searcher
+    <script><![CDATA[from searcher import bugreport
 import os
 
-reload(searcher)
+reload(bugreport)
 
 def createInterface():
-    return searcher.Searcher()]]></script>
+    return bugreport.BugReport()]]></script>
     <includeInToolbarMenu menu_position="104" create_separator="false"/>
     <help><![CDATA[]]></help>
   </interface>

@@ -120,7 +120,7 @@ class SearcherSettings(QtWidgets.QWidget):
             | QtCore.Qt.FramelessWindowHint 
             | QtCore.Qt.CustomizeWindowHint
         )
-        self.bugreport.resize(width, height - 15)
+        self.bugreport.resize(width, height - 300)
 
         self.theme = theme.Theme(self)
         self.theme.setAttribute(QtCore.Qt.WA_StyledBackground, True)
@@ -291,13 +291,8 @@ class SearcherSettings(QtWidgets.QWidget):
         s = self.sender()
 
         if toggled == True and not getattr(self, s.objectName()).isVisible():
-            if s.objectName() == "about":
-                self.mapposition(0, 0, s) if self.animatedsettings.isChecked() else self.mapposition(0, 0, s)
-            elif s.objectName() == "bugreport":
-                self.mapposition(0, 0, s) if self.animatedsettings.isChecked() else self.mapposition(0, 0, s)
-                self.bugreport.doweb()
-            elif s.objectName() == "theme":
-                self.mapposition(0, 0, s) if self.animatedsettings.isChecked() else self.mapposition(0, 0, s)
+            self.mapposition(0, 0, s) if self.animatedsettings.isChecked() else self.mapposition(0, 0, s)
+            getattr(self, s.objectName()).initmenu()
         else:
             if s.objectName() in self.windowlist:
                 getattr(self, s.objectName()).close()
