@@ -835,8 +835,9 @@ class Searcher(QtWidgets.QWidget):
         if tmphk:
             self.savelastkey(self.tmpsymbol, key)
 
-        key = key[0].split('+')
-
+        if(key[0] is not '+'):
+            key = key[0].split('+')
+                    
         skey = None
         ikey = None
         key = keyconversion(key)
