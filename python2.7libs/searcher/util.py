@@ -1,25 +1,27 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
+import sys
+
 from searcher import enum
 
-from sys import platform
 from typing import Tuple
 import os
 import hou
+
 hver = 0
-if os.environ["HFS"] != "":
+if os.environ["HFS"] != "" or os.environ["HFS"] is not None:
     ver = os.environ["HFS"]
-    hver = int(ver[ver.rindex('.')+1:])
+    # hver = int(ver[ver.rindex('.') + 1:])
     from hutil.Qt import QtCore
 else:
-    from PyQt5 import QtCore
+    from qtpy import QtCore
 
 script_path = os.path.dirname(os.path.realpath(__file__))
 
-# ------------------------------------------------------- Helper Functions
+# @formatter:off ---------------------------------------- Helper Functions
 # SECTION Helper Functions -----------------------------------------------
-# --------------------------------------------- DEBUG_LEVEL
+# @formatter:off ------------------------------ DEBUG_LEVEL
 # NOTE DEBUG_LEVEL ----------------------------------------
 DEBUG_LEVEL = enum.Enum('NONE', 'TIMER', 'ALL')
 class Dbug(object):
@@ -28,6 +30,7 @@ class Dbug(object):
         self.level = level
         self.performance = perf
         self.mainwindow = mainwindow
+
     def __nonzero__(self): return bool(self.enabled)
 
 class AppColors(object):
@@ -38,35 +41,35 @@ class AppColors(object):
         self.stats2 =   colors[COLORFIELDS[3]]
         self.tooltip =  colors[COLORFIELDS[4]]
 
-# -------------------------------------------- get_platform
+# @formatter:off ----------------------------- get_platform
 # NOTE get_platform ---------------------------------------
 def get_platform():
     return getattr(hou.session, "PLATFORM", None)
 
-# -------------------------------------------- get_settings
+# @formatter:off ----------------------------- get_settings
 # NOTE get_settings ---------------------------------------
 def get_settings():
     return getattr(hou.session, "SETTINGS", None)
 
 
-    
-# -------------------------------------------- get_settings
+# @formatter:off ----------------------------- get_settings
 # NOTE get_settings ---------------------------------------
 def get_path(folders=None):
     script_path = os.path.dirname(os.path.realpath(__file__))
     PATH = os.path.join(script_path, '/'.join(folders))
     return PATH.replace("\\", "/")
 
-# ------------------------------------------ Bool Converter
+# @formatter:off --------------------------- Bool Converter
 # NOTE Bool Converter -------------------------------------
 def bc(v):
     return str(v).lower() in ("yes", "true", "t", "1")
 
 # !SECTION Helper Functions
 
-# --------------------------------------------------------------- Settings
+
+# @formatter:off ------------------------------------------------ Settings
 # SECTION Settings -------------------------------------------------------
-# ------------------------------------------- SETTINGS_KEYS
+# @formatter:off ---------------------------- SETTINGS_KEYS
 # NOTE SETTINGS_KEYS --------------------------------------
 SETTINGS_KEYS = [
     'in_memory_db',                          # 0
@@ -82,12 +85,12 @@ SETTINGS_KEYS = [
     'debuglevel',                            # 10
     'lastkey',                               # 11
     'metrics',                               # 12
-    'metricsmainwindow',                     # 13                    
+    'metricsmainwindow',                     # 13
     'appcolors',                             # 14
     'expanditems',                           # 15
 ]
 
-# --------------------------------------------- COLORFIELDS
+# @formatter:off ------------------------------ COLORFIELDS
 # The names of the customizable colorfields
 # NOTE COLORFIELDS ----------------------------------------
 COLORFIELDS = [
@@ -98,7 +101,7 @@ COLORFIELDS = [
     'tooltip',                              # 4
 ]
 
-# ------------------------------------------ SETTINGS_TYPES
+# @formatter:off --------------------------- SETTINGS_TYPES
 # Include type if it is to be processed, else mark NA
 # {bool, text, int, intval} get processed by settings menu
 # {flag} is a bool but handled separate from settings menu
@@ -123,17 +126,18 @@ SETTINGS_TYPES = {
     SETTINGS_KEYS[15]: 'flag',               # expanditems
 }
 
-# ---------------------------------------- DEFAULT_SETTINGS
+# @formatter:off ------------------------- DEFAULT_SETTINGS
 # Default settings automatically applied upon creations
 # NOTE DEFAULT_SETTINGS -----------------------------------
+defaultHKeys = u"Cmd+Alt+Shift+F7" if sys.platform == 'darwin' else u"Ctrl+Alt+Shift+F7"
 DEFAULT_SETTINGS = {
     SETTINGS_KEYS[0]: "False",               # in_memory_db
     SETTINGS_KEYS[1]: "",                    # database_path
-    SETTINGS_KEYS[2]: "False",               # savewindowsize
+    SETTINGS_KEYS[2]: "True",                # savewindowsize
     SETTINGS_KEYS[3]: [750, 350],            # windowsize
     SETTINGS_KEYS[4]: "False",               # debugflag
     SETTINGS_KEYS[5]: "False",               # pinwindow
-    SETTINGS_KEYS[6]: u"Ctrl+Alt+Shift+F7",  # defaulthotkey
+    SETTINGS_KEYS[6]: defaultHKeys,          # defaulthotkey
     SETTINGS_KEYS[7]: "True",                # showctx
     SETTINGS_KEYS[8]: "True",                # animatedsettings
     SETTINGS_KEYS[9]: 100,                   # maxresults
@@ -147,20 +151,20 @@ DEFAULT_SETTINGS = {
         COLORFIELDS[2] : "#c2efe5",          # stats1
         COLORFIELDS[3] : "#c2efe5",          # stats2
         COLORFIELDS[4] : "#607FAE",          # tooltip
-    },         
+    },
     SETTINGS_KEYS[15]: "True",              # expanditems
 }
 # !SECTION Settings
 
-# ------------------------------------------------------- Key Translations
+# @formatter:off ---------------------------------------- Key Translations
 # SECTION Key Translations -----------------------------------------------
 
-# --------------------------------------------- CTXSHOTCUTS
+# @formatter:off ------------------------------ CTXSHOTCUTS
 # Context shortcodes for predefined results
 # NOTE CTXSHOTCUTS ----------------------------------------
 CTXSHOTCUTS = [":v", ":c", ":g"]
 
-# ------------------------------------------ KEYCONVERSIONS
+# @formatter:off --------------------------- KEYCONVERSIONS
 # Convertions for arrow keys (Should be moved to main dict)
 # NOTE KEYCONVERSIONS -------------------------------------
 KEYCONVERSIONS = {
@@ -170,51 +174,62 @@ KEYCONVERSIONS = {
     "RightArrow": "right",
 }
 
-# ---------------------------------------------- HOTKEYLIST
+# @formatter:off ------------------------------- HOTKEYLIST
 # List of possible hotkeys to use a temp keys when running commands
 # NOTE HOTKEYLIST -----------------------------------------
 HOTKEYLIST = [
-    (u"Ctrl+Alt+Shift+F7"),
-    (u"Ctrl+Alt+Shift+F6"),
-    (u"Ctrl+Alt+Shift+F8"),
-    (u"Ctrl+Alt+Shift+F9"),
-    (u"Ctrl+Alt+Shift+F10")
+    u"Ctrl+Alt+Shift+F7",
+    u"Ctrl+Alt+Shift+F6",
+    u"Ctrl+Alt+Shift+F8",
+    u"Ctrl+Alt+Shift+F9",
+    u"Ctrl+Alt+Shift+F10"
+]
+
+HOTKEYLISTOSX = [
+    u"Cmd+Alt+Shift+F7",
+    u"Cmd+Alt+Shift+F6",
+    u"Cmd+Alt+Shift+F8",
+    u"Cmd+Alt+Shift+F9",
+    u"Cmd+Alt+Shift+F10"
 ]
 
 def gethotkeys():
     hkeys = []
     settings = get_settings()
     hkeys.append(settings[SETTINGS_KEYS[6]])
-    for key in HOTKEYLIST:
+    hklist = HOTKEYLISTOSX if sys.platform == 'darwin' else HOTKEYLIST
+    for key in hklist:
         hkeys.append(key)
     return hkeys
+
 
 # Used for bitmasking to determine modifiers
 MODIFIERS = {}
 # Used for constructing a bitmasked modifier
 REVERSE_MODIFIERS = {}
 
-# ------------------------------------------- MODIFIER_KEYS
+# @formatter:off ---------------------------- MODIFIER_KEYS
 # Used to detect if a keypress was just a modifier
 # NOTE MODIFIER_KEYS --------------------------------------
 MODIFIER_KEYS = {
     QtCore.Qt.Key_Alt:      "Alt",
-    QtCore.Qt.Key_Meta:     "Meta",
+    QtCore.Qt.Key_Meta:     "Cmd",
     QtCore.Qt.Key_Shift:    "Shift",
     QtCore.Qt.Key_Control:  "Ctrl",
 }
 
-# ----------------------------------------------- MODIFIERS
+# @formatter:off -------------------------------- MODIFIERS
 # NOTE MODIFIERS ------------------------------------------
 MODIFIERS = {
-    "Shift":        QtCore.Qt.ShiftModifier,
     "Control":      QtCore.Qt.ControlModifier,
     "Ctrl":         QtCore.Qt.ControlModifier,
+    "Shift":        QtCore.Qt.ShiftModifier,
     "Meta":         QtCore.Qt.MetaModifier,
+    "Cmd":          QtCore.Qt.MetaModifier,
     "Alt":          QtCore.Qt.AltModifier,
 }
 
-# -------------------------------------------- SPECIAL_KEYS
+# @formatter:off ----------------------------- SPECIAL_KEYS
 # Special keys
 # NOTE SPECIAL_KEYS ---------------------------------------
 SPECIAL_KEYS = {
@@ -236,7 +251,7 @@ SPECIAL_KEYS = {
     QtCore.Qt.Key_Home:         "Page_Home",
 }
 
-# ------------------------------------------------ Platform
+# @formatter:off --------------------------------- Platform
 # # Platform conversions
 # NOTE Platform -------------------------------------------
 # if platform == "linux" or platform == "linux2":
@@ -284,10 +299,10 @@ SPECIAL_KEYS = {
 #     REVERSE_MODIFIERS.update(tmp)
 # endregion
 
-# ------------------------------------------------ KEY_DICT
+# @formatter:off --------------------------------- KEY_DICT
 # NOTE KEY_DICT -------------------------------------------
 KEY_DICT = {
-    # ------------------------------------- Grey keys
+    # @formatter:off ---------------------- Grey keys
     "Escape":       QtCore.Qt.Key_Escape,
     "Tab":          QtCore.Qt.Key_Tab,
     "Backtab":      QtCore.Qt.Key_Backtab,
@@ -305,11 +320,12 @@ KEY_DICT = {
     "Up":           QtCore.Qt.Key_Up,
     "Right":        QtCore.Qt.Key_Right,
     "Down":         QtCore.Qt.Key_Down,
-    "Prior":         None,
+    "Prior":        None,
     "Next":         None,
     "Shift":        QtCore.Qt.Key_Shift,
     "Control":      QtCore.Qt.Key_Control,
     "Ctrl":         QtCore.Qt.Key_Control,
+    "Cmd":          QtCore.Qt.Key_Meta,
     "Meta":         QtCore.Qt.Key_Meta,
     "Alt":          QtCore.Qt.Key_Alt,
     "CapsLock":     QtCore.Qt.Key_CapsLock,
@@ -355,7 +371,7 @@ KEY_DICT = {
     "Menu":         QtCore.Qt.Key_Menu,
     "Hyper_L":      QtCore.Qt.Key_Hyper_L,
     "Hyper_R":      QtCore.Qt.Key_Hyper_R,
-    # ------------------------------------- Regular keys
+    # @formatter:off ---------------------- Regular keys
     "Space":        QtCore.Qt.Key_Space,
     "Exclam":       QtCore.Qt.Key_Exclam,
     "!":            QtCore.Qt.Key_Exclam,
@@ -460,9 +476,9 @@ KEY_DICT = {
 }
 # !SECTION Key Translations
 
-# --------------------------------------------------- Houdini Translations
+# @formatter:off ------------------------------------ Houdini Translations
 # SECTION Houdini Translations -------------------------------------------
-# ---------------------------------------------- getcontext
+# @formatter:off ------------------------------- getcontext
 # NOTE getcontext -----------------------------------------
 def getcontext(editor):
     """Return houdini context string."""
@@ -484,7 +500,8 @@ def getcontext(editor):
     elif hou_context == 'Cop2':
         return 'COP'
 
-# --------------------------------------------- CONTEXTTYPE
+
+# @formatter:off ------------------------------ CONTEXTTYPE
 # NOTE CONTEXTTYPE ----------------------------------------
 CONTEXTTYPE = {
     "Cop2": "COP",
@@ -503,7 +520,7 @@ CONTEXTTYPE = {
     "VopNet": "VEX",
 }
 
-# ----------------------------------------------- PANETYPES
+# @formatter:off -------------------------------- PANETYPES
 # NOTE PANETYPES ------------------------------------------
 PANETYPES = {
     hou.paneTabType.AssetBrowser:       [["h.pane.projectm"], "Asset Browser"],
@@ -535,10 +552,10 @@ PANETYPES = {
 }
 # !SECTION Houdini Translations
 
-# --------------------------------------------------------------- UI Info
+# @formatter:off ------------------------------------------------ UI Info
 # SECTION UI Info -------------------------------------------------------
 
-# ------------------------------------------------ SEVERITY
+# @formatter:off --------------------------------- SEVERITY
 # NOTE SEVERITY -------------------------------------------
 SEVERITY = {
     "Message":              [hou.severityType.Message, "#FF0000"],
@@ -560,12 +577,12 @@ SEVERITY = {
 # NETVIEW_image_link
 # NETVIEW_image_link_located
 # BUTTONS_resizegrip_se -------- Resize
-# BUTTONS_tree 
+# BUTTONS_tree
 # COMMON_opencolorio COP2_colorwheel - Nice color things
 
 # vop_terminals_connected
 # vop_terminals_collapsed
-# --------------------------------------------------- Icons
+# @formatter:off ------------------------------------ Icons
 # NOTE Icons ----------------------------------------------
 ICON_SIZE = hou.ui.scaledSize(32)
 EDIT_ICON_SIZE = hou.ui.scaledSize(28)
@@ -681,25 +698,26 @@ UP_ICON = hou.ui.createQtIcon(
 
 # SECTION Widget Tools ---------------------------------------------------
 def widgets_at(mainwindow, pos):
-	"""Return ALL widgets at `pos`
-	Arguments:
-		pos (QPoint): Position at which to get widgets
-	"""
+    """Return ALL widgets at `pos`
+    Arguments:
+        pos (QPoint): Position at which to get widgets
+        :param mainwindow:
+    """
 
-	widgets = []
-	widget_at = mainwindow.widgetAt(pos)
+    widgets = []
+    widget_at = mainwindow.widgetAt(pos)
 
-	while widget_at:
-		widgets.append(widget_at)
+    while widget_at:
+        widgets.append(widget_at)
 
-		# Make widget invisible to further enquiries
-		widget_at.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
-		widget_at = mainwindow.widgetAt(pos)
+        # Make widget invisible to further enquiries
+        widget_at.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
+        widget_at = mainwindow.widgetAt(pos)
 
-	# Restore attribute
-	for widget in widgets:
-		widget.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents, False)
+    # Restore attribute
+    for widget in widgets:
+        widget.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents, False)
 
-	return widgets
+    return widgets
 
-    # !SECTION Widget Tools 
+    # !SECTION Widget Tools

@@ -48,6 +48,29 @@
     <layout class="QVBoxLayout" name="verticalLayout_4">
      <item>
       <layout class="QHBoxLayout" name="secondrow">
+       <item alignment="Qt::AlignLeft">
+        <widget class="QComboBox" name="comboBox">
+         <property name="layoutDirection">
+          <enum>Qt::RightToLeft</enum>
+         </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToContents</enum>
+         </property>
+         <property name="frame">
+          <bool>false</bool>
+         </property>
+         <item>
+          <property name="text">
+           <string>123</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>123123</string>
+          </property>
+         </item>
+        </widget>
+       </item>
        <item>
         <widget class="QLineEdit" name="title">
          <property name="minimumSize">

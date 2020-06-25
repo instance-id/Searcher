@@ -7,7 +7,6 @@ from searcher import platformselect
 from searcher import ptime as ptime
 from searcher import language_en as la
 
-
 from peewee import *
 from peewee import SQL
 from playhouse.sqlite_ext import SqliteExtDatabase, RowIDField, FTS5Model, SearchField
@@ -29,18 +28,22 @@ current_file_path = os.path.abspath(
     inspect.getsourcefile(lambda: 0)
 )
 
+
 def get_platform():
     return getattr(hou.session, "PLATFORM", None)
+
 
 def get_settings():
     return getattr(hou.session, "SETTINGS", None)
 
+
 def get_dbconnection():
     return getattr(hou.session, "DBCONNECTION", None)
 
+
 scriptpath = os.path.dirname(current_file_path)
 dbfile = "searcher.db"
-dbpath =  os.path.join(
+dbpath = os.path.join(
     hou.homeHoudiniDirectory(), 'Searcher', dbfile
 )
 
@@ -50,6 +53,7 @@ db = DatabaseProxy()
 settingdata = {}
 isloading = True
 tempkey = ""
+
 
 # --------------------------------------------------------- DatabaseModels
 # SECTION DatabaseModels -------------------------------------------------
@@ -68,6 +72,7 @@ class Settings(Model):
         table_name = 'settings'
         database = db
 
+
 # ------------------------------------------------ HContext
 # NOTE HContext -------------------------------------------
 class HContext(Model):
@@ -79,6 +84,7 @@ class HContext(Model):
     class Meta:
         table_name = 'hcontext'
         database = db
+
 
 # # ------------------------------------------- HContextIndex
 # # NOTE HContextIndex --------------------------------------
@@ -105,6 +111,7 @@ class Hotkeys(Model):
         table_name = 'hotkeys'
         database = db
 
+
 # -------------------------------------------- HotkeysIndex
 # NOTE HotkeysIndex ---------------------------------------
 class HotkeysIndex(FTS5Model):
@@ -119,16 +126,21 @@ class HotkeysIndex(FTS5Model):
         # table_name = 'hotkeysindex'
         database = db
         options = {'prefix': [2, 3], 'tokenize': 'porter'}
+
+
 # !SECTION DatabaseModels
 
 def create_tables(dbc):
     dbc.create_tables([Settings, HContext, Hotkeys, HotkeysIndex])
 
+
 def worker():
     hd.executeInMainThreadWithResult(updatecontext)
 
+
 def py_unique(data):
     return list(set(data))
+
 
 # ------------------------------------------------- getdata
 # NOTE getdata --------------------------------------------
@@ -143,8 +155,8 @@ def getdata():
         for branch in branches:
             branch_path = "%s/%s" % (r, branch['label'])
             contextdata.append({
-                'context': branch['symbol'], 
-                'title': branch['label'], 
+                'context': branch['symbol'],
+                'title': branch['label'],
                 'description': branch['help']
             })
             commands = hou.hotkeys.commandsInContext(branch['symbol'])
@@ -152,16 +164,17 @@ def getdata():
                 keys = hou.hotkeys.assignments(command['symbol'])
                 ctx = command['symbol'].rsplit('.', 1)
                 hotkeydata.append({
-                    'hotkey_symbol': command['symbol'], 
-                    'label': command['label'], 
+                    'hotkey_symbol': command['symbol'],
+                    'label': command['label'],
                     'description': command['help'],
-                    'assignments': " ".join(keys), 
+                    'assignments': " ".join(keys),
                     'context': ctx[0]
                 })
             getcontexts(branch_path, branch['symbol'], root)
 
     getcontexts("", "", rval)
     return contextdata, hotkeydata
+
 
 # -------------------------------------------- initialsetup
 # NOTE initialsetup ---------------------------------------
@@ -190,6 +203,7 @@ def initialsetup(cur):
             hou.ui.setStatusMessage(
                 la.MESSAGES['initialsetup2'], severity=hou.severityType.Message)
 
+
 # --------------------------------------------------------------- Retrieve
 # SECTION Retrieve -------------------------------------------------------
 # ------------------------------------------ getchangeindex
@@ -205,6 +219,7 @@ def getchangeindex(cur):
                 (la.DBERRORMSG['getchangeindex'] + str(e)), severity=hou.severityType.Warning)
         else:
             print(la.DBERRORMSG['getchangeindex'] + str(e))
+
 
 # ------------------------------------------- getlastusedhk
 # NOTE getlastusedhk --------------------------------------
@@ -258,6 +273,8 @@ def getlastusedhk(cur):
                 (la.DBERRORMSG['getlastusedhk1'] + str(e)), severity=hou.severityType.Warning)
         else:
             print(la.DBERRORMSG['getlastusedhk1'] + str(e))
+
+
 # !SECTION
 
 # ----------------------------------------------------------------- Update
@@ -273,12 +290,14 @@ def dbupdate(cur):
         updatedataasync()
         updatechangeindex(int(currentidx))
 
+
 # ----------------------------------------- updatedataasync
 # NOTE updatedataasync ------------------------------------
 def updatedataasync():
     thread = threading.Thread(target=worker)
     thread.daemon = True
     thread.start()
+
 
 # --------------------------------------- updatechangeindex
 # NOTE updatechangeindex ----------------------------------
@@ -292,12 +311,12 @@ def updatechangeindex(indexval, new=False):
                     defaultkey = util.HOTKEYLIST[i]
 
             Settings.insert(
-                indexvalue=indexval, 
-                defaulthotkey=defaultkey, 
-                searchdescription=0, 
-                searchprefix=0, 
-                searchcurrentcontext=0, 
-                lastused="", 
+                indexvalue=indexval,
+                defaulthotkey=defaultkey,
+                searchdescription=0,
+                searchprefix=0,
+                searchcurrentcontext=0,
+                lastused="",
                 id=1).execute()
         else:
             Settings.update(indexvalue=indexval).where(
@@ -308,6 +327,7 @@ def updatechangeindex(indexval, new=False):
                 (la.DBERRORMSG['updatechangeindex'] + str(e)), severity=hou.severityType.Warning)
         else:
             print(la.DBERRORMSG['updatechangeindex'] + str(e))
+
 
 # ------------------------------------------- updatecontext
 # NOTE updatecontext --------------------------------------
@@ -326,6 +346,8 @@ def updatecontext(debug=False):
     except(AttributeError, TypeError) as e:
         hou.ui.setStatusMessage(
             (la.DBERRORMSG['updatecontext'] + str(e)), severity=hou.severityType.Warning)
+
+
 # endregion
 
 # ------------------------------------------- cleardatabase
@@ -347,24 +369,29 @@ def cleardatabase():
                 (la.DBERRORMSG['cleardatabase'] + str(e)), severity=hou.severityType.Warning)
         else:
             print(la.DBERRORMSG['cleardatabase'] + str(e))
+
+
 # !SECTION
 
 def deferaction(action, val):
     hd.executeDeferred(action, val)
 
+
 def checklasthk(cur):
     getlastusedhk(cur)
+
 
 def main():
     platform = get_platform()
     platform = platformselect.get_platform()
-    
+
     if not os.path.exists(settings_data.searcher_path):
         os.mkdir(settings_data.searcher_path)
     if not os.path.isfile(settings_data.searcher_settings):
         if platform == "unix":
             os.system(("touch %s" % settings_data.searcher_settings))
-        else: os.mknod(settings_data.searcher_settings)
+        else:
+            os.mknod(settings_data.searcher_settings)
         settings_data.createdefaults(platform)
 
     hou.session.SETTINGS = settings_data.loadsettings()

@@ -3,14 +3,14 @@ import os
 hver = 0
 if os.environ["HFS"] != "":
     ver = os.environ["HFS"]
-    hver = int(ver[ver.rindex('.')+1:])
+    # hver = int(ver[ver.rindex('.')+1:])
     from hutil.Qt import QtGui
     from hutil.Qt import QtCore
     from hutil.Qt import QtWidgets
 else:
-    from PyQt5 import QtGui
-    from PyQt5 import QtCore
-    from PyQt5 import QtWidgets
+    from qtpy import QtGui
+    from qtpy import QtCore
+    from qtpy import QtWidgets
 
 def bc(v):
     return str(v).lower() in ("yes", "true", "t", "1")
@@ -52,8 +52,8 @@ class Ui_SearcherSettings(object):
         self.projectTitle.setObjectName("projectTitle")
         self.headerrow.addWidget(self.projectTitle)
 
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.headerrow.addItem(spacerItem)
+        spaceritem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.headerrow.addItem(spaceritem)
 
         self.animatedsettings_chk = QtWidgets.QCheckBox(SearcherSettings)
         self.animatedsettings_chk.setLayoutDirection(QtCore.Qt.RightToLeft)
@@ -82,8 +82,12 @@ class Ui_SearcherSettings(object):
         # self.lang_cbox.addItem("")
         # self.secondrow.addWidget(self.lang_cbox)
 
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.secondrow.addItem(spacerItem)
+        spaceritem = QtWidgets.QSpacerItem(
+            40, 20,
+            QtWidgets.QSizePolicy.Expanding,
+            QtWidgets.QSizePolicy.Minimum
+        )
+        self.secondrow.addItem(spaceritem)
 
         self.maxresults_lbl = QtWidgets.QLabel(SearcherSettings)
         self.maxresults_lbl.setObjectName("maxresults_lbl")
@@ -122,7 +126,7 @@ class Ui_SearcherSettings(object):
         self.hotkey_icon.setObjectName("hotkey_icon")
         self.thirdrow.addWidget(self.hotkey_icon)
         self.verticallayout.addLayout(self.thirdrow)
-        
+
         # ------------------------------------------------- fourthrow
         # NOTE Fourth Row -------------------------------------------
         self.fourthrow = QtWidgets.QHBoxLayout()
@@ -139,17 +143,17 @@ class Ui_SearcherSettings(object):
         self.dbpath_icon = QtWidgets.QToolButton(SearcherSettings)
         self.dbpath_icon.setObjectName("dbpath_icon")
         self.fourthrow.addWidget(self.dbpath_icon)
-    
+
         self.verticallayout.addLayout(self.fourthrow)
-    
+
         # -------------------------------------------------- fifthrow
         # NOTE Fifth Row --------------------------------------------
         self.fifthrow = QtWidgets.QHBoxLayout()
         self.fifthrow.setObjectName("fifthrow")
 
-        self.maint_lbl = QtWidgets.QLabel(SearcherSettings)
-        self.maint_lbl.setObjectName("maint_lbl")
-        self.fifthrow.addWidget(self.maint_lbl)
+        # self.maint_lbl = QtWidgets.QLabel(SearcherSettings)
+        # self.maint_lbl.setObjectName("maint_lbl")
+        # self.fifthrow.addWidget(self.maint_lbl)
 
         # self.metrics_chk = QtWidgets.QCheckBox(SearcherSettings)
         # self.metrics_chk.setLayoutDirection(QtCore.Qt.RightToLeft)
@@ -157,9 +161,9 @@ class Ui_SearcherSettings(object):
         # self.metrics_chk.setObjectName("metrics_chk")
         # self.fifthrow.addWidget(self.metrics_chk)
 
-        self.cleardata_btn = QtWidgets.QPushButton(SearcherSettings)
-        self.cleardata_btn.setObjectName("cleardata_btn")
-        self.fifthrow.addWidget(self.cleardata_btn)
+        # self.cleardata_btn = QtWidgets.QPushButton(SearcherSettings)
+        # self.cleardata_btn.setObjectName("cleardata_btn")
+        # self.fifthrow.addWidget(self.cleardata_btn)
 
         # self.verticallayout.addLayout(self.fifthrow)
 
@@ -251,8 +255,8 @@ class Ui_SearcherSettings(object):
         self.dbpath_icon.setText(_translate("SearcherSettings", "..."))
 
         # -------------------------------------------------- fifthrow
-        self.maint_lbl.setText(_translate("SearcherSettings", "Maintenance utilities:"))
-        self.cleardata_btn.setText(_translate("SearcherSettings", "Clear Data"))
+        # self.maint_lbl.setText(_translate("SearcherSettings", "Maintenance utilities:"))
+        # self.cleardata_btn.setText(_translate("SearcherSettings", "Clear Data"))
 
         # ------------------------------------------------- sixthrow
         self.about_btn.setText(_translate("SearcherSettings", "..."))

@@ -2,13 +2,11 @@ from __future__ import absolute_import
 from searcher import about_ui
 from searcher import util
 import os
-import sys
 
-import hou
 hver = 0
 if os.environ["HFS"] != "":
     ver = os.environ["HFS"]
-    hver = int(ver[ver.rindex('.')+1:])
+    # hver = int(ver[ver.rindex('.')+1:])
     from hutil.Qt import QtGui
     from hutil.Qt import QtCore
     from hutil.Qt import QtWidgets
@@ -27,7 +25,24 @@ class About(QtWidgets.QWidget):
         self.ui.setupUi(self)
         self.ui.retranslateUi(self)
 
+        self.ui.github.mousePressEvent = self.openGithub
+        self.ui.web.mousePressEvent = self.openWeb
+
         self.installEventFilter(self)
+
+    def initmenu(self):
+        return
+
+    def openGithub(self, event):
+        ghurl = '''https://github.com/instance-id/'''
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl(ghurl))
+        self.parentwindow.parentwindow.close()
+
+    def openWeb(self, event):
+        weburl = '''https://instance.id/'''
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl(weburl))
+        self.parentwindow.parentwindow.close()
+
     # ------------------------------------------------------------- Events
     # SECTION Events -----------------------------------------------------
     def eventFilter(self, obj, event):

@@ -1,5 +1,6 @@
 from __future__ import print_function
 from __future__ import division
+
 from builtins import range
 from past.utils import old_div
 from hutil.Qt import QtCore
@@ -30,7 +31,7 @@ def dumpWidgetLayout(widget, prefix=''):
         text += str((prefix, "  layout.contentsMargins:", str(widget.layout().contentsMargins())))
         for i in range(0, layout.count()):
             item = layout.itemAt(i)
-            dir_flag = item.expandingDirections() 
+            dir_flag = item.expandingDirections()
             if (dir_flag & QtCore.Qt.Orientation.Horizontal):
                text += str((prefix, "  -> ", i, ": expand HORIZ"))
             elif (dir_flag & QtCore.Qt.Orientation.Vertical):
@@ -43,5 +44,5 @@ def dumpWidgetLayout(widget, prefix=''):
     text += str((prefix, "  numChildren:", len(widget.children())))
     for child in widget.children():
         dumpWidgetLayout(child, prefix + '  ')
-    
+
     return text

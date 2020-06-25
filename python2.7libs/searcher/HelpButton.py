@@ -11,7 +11,7 @@ import sys
 hver = 0
 if os.environ["HFS"] != "":
     ver = os.environ["HFS"]
-    hver = int(ver[ver.rindex('.')+1:])
+    # hver = int(ver[ver.rindex('.')+1:])
     from hutil.Qt import QtCore
     from hutil.Qt import QtWidgets
 

@@ -17,17 +17,18 @@ from builtins import range
 import os
 
 import hou
+
 hver = 0
 if os.environ["HFS"] != "":
     ver = os.environ["HFS"]
-    hver = int(ver[ver.rindex('.')+1:])
+    # hver = int(ver[ver.rindex('.') + 1:])
     from hutil.Qt import QtGui
     from hutil.Qt import QtCore
     from hutil.Qt import QtWidgets
 else:
-    from PyQt5 import QtGui
-    from PyQt5 import QtCore
-    from PyQt5 import QtWidgets
+    from qtpy import QtGui
+    from qtpy import QtCore
+    from qtpy import QtWidgets
 
 reload(about)
 reload(theme)
@@ -43,13 +44,16 @@ reload(searcher_settings_ui)
 def get_settings():
     return getattr(hou.session, "SETTINGS", None)
 
+
 the_scaled_icon_size = hou.ui.scaledSize(16)
 the_icon_size = 16
 
 scriptpath = os.path.dirname(os.path.realpath(__file__))
 
+
 def bc(v):
     return str(v).lower() in ("yes", "true", "t", "1")
+
 
 class SearcherSettings(QtWidgets.QWidget):
     """ Searcher Settings and Debug Menu"""
@@ -92,7 +96,7 @@ class SearcherSettings(QtWidgets.QWidget):
         self.setBackgroundRole(QtGui.QPalette.Window)
         self.settings = get_settings()
         self.isdebug = util.Dbug(
-            self.settings[util.SETTINGS_KEYS[4]], 
+            self.settings[util.SETTINGS_KEYS[4]],
             str(self.settings[util.SETTINGS_KEYS[10]]),
             self.settings[util.SETTINGS_KEYS[12]],
             self.settings[util.SETTINGS_KEYS[13]],
@@ -107,8 +111,8 @@ class SearcherSettings(QtWidgets.QWidget):
         self.about = about.About(self)
         self.about.setAttribute(QtCore.Qt.WA_StyledBackground, True)
         self.about.setWindowFlags(
-            QtCore.Qt.Tool 
-            | QtCore.Qt.FramelessWindowHint 
+            QtCore.Qt.Tool
+            | QtCore.Qt.FramelessWindowHint
             | QtCore.Qt.CustomizeWindowHint
         )
         self.about.resize(width, height - 180)
@@ -116,8 +120,8 @@ class SearcherSettings(QtWidgets.QWidget):
         self.bugreport = bugreport.BugReport(self)
         self.bugreport.setAttribute(QtCore.Qt.WA_StyledBackground, True)
         self.bugreport.setWindowFlags(
-            QtCore.Qt.Tool 
-            | QtCore.Qt.FramelessWindowHint 
+            QtCore.Qt.Tool
+            | QtCore.Qt.FramelessWindowHint
             | QtCore.Qt.CustomizeWindowHint
         )
         self.bugreport.resize(width, height - 300)
@@ -149,17 +153,18 @@ class SearcherSettings(QtWidgets.QWidget):
         self.maxresults.setToolTip(la.TT_SETTINGS[self.maxresults.objectName()])
         self.animatedsettings = self.ui.animatedsettings_chk
         self.animatedsettings.setToolTip(la.TT_SETTINGS[self.animatedsettings.objectName()])
-        
+
         # thirdrow
         self.ui.defaulthotkey_lbl.setToolTip(la.TT_SETTINGS[self.ui.defaulthotkey_lbl.objectName()])
         self.defaulthotkey = self.ui.defaulthotkey_txt
         self.defaulthotkey.setToolTip(la.TT_SETTINGS[self.defaulthotkey.objectName()])
-        
+
         # fourthrow
         self.ui.dbpath_lbl.setToolTip(la.TT_SETTINGS[self.ui.dbpath_lbl.objectName()])
         self.database_path = self.ui.databasepath_txt
         self.database_path.setToolTip(la.TT_SETTINGS[self.database_path.objectName()])
-        self.dbpath_btn = self.ui.dbpath_icon 
+        self.dbpath_btn = self.ui.dbpath_icon
+        self.dbpath_btn.setToolTip(la.TT_SETTINGS[self.dbpath_btn.objectName()])
         dbpath_button_size = hou.ui.scaledSize(16)
         self.dbpath_btn.setProperty("flat", True)
         self.dbpath_btn.setIcon(util.FILE_ICON)
@@ -172,8 +177,8 @@ class SearcherSettings(QtWidgets.QWidget):
         self.metrics = self.ui.metrics_chk
         self.metrics.setVisible(bc(self.settings[util.SETTINGS_KEYS[4]]))
         self.metrics.setToolTip(la.TT_SETTINGS[self.metrics.objectName()])
-        self.cleardata = self.ui.cleardata_btn
-        self.cleardata.setToolTip(la.TT_SETTINGS[self.cleardata.objectName()])
+        # self.cleardata = self.ui.cleardata_btn
+        # self.cleardata.setToolTip(la.TT_SETTINGS[self.cleardata.objectName()])
 
         # sixthrow
         self.aboutbtn = self.ui.about_btn
@@ -223,7 +228,7 @@ class SearcherSettings(QtWidgets.QWidget):
 
         self.savedata = self.ui.save_btn
         self.savedata.setToolTip(la.TT_SETTINGS[self.savedata.objectName()])
-        
+
         self.discarddata = self.ui.discard_btn
         self.discarddata.setToolTip(la.TT_SETTINGS[self.discarddata.objectName()])
 
@@ -241,7 +246,7 @@ class SearcherSettings(QtWidgets.QWidget):
         # NOTE connect ----------------------------------------
         self.hotkey_icon.clicked.connect(self.hotkeyicon_cb)
         self.dbpath_btn.clicked.connect(self.dbpath_cb)
-        self.cleardata.clicked.connect(self.cleardata_cb)
+        # self.cleardata.clicked.connect(self.cleardata_cb)
         self.aboutbtn.clicked.connect(self.window_cb)
         self.bugreportbtn.clicked.connect(self.window_cb)
         self.themebtn.clicked.connect(self.window_cb)
@@ -252,7 +257,7 @@ class SearcherSettings(QtWidgets.QWidget):
         # NOTE about_cb ---------------------------------------
         self.settingslayout = self.ui.verticallayout
         self.setLayout(self.ui.gridLayout)
-        
+
         # ----------------------------------- Startup Functions
         # NOTE Startup Functions ------------------------------
         self.updatecurrentvalues()
@@ -269,16 +274,17 @@ class SearcherSettings(QtWidgets.QWidget):
     # ----------------------------------------- mapposition
     # NOTE mapposition ------------------------------------
     def mapposition(self, w, h, s):
-        parent =  s.parent()
-        pos = parent.mapToGlobal(QtCore.QPoint(w ,h))
+        parent = s.parent()
+        pos = parent.mapToGlobal(QtCore.QPoint(w, h))
         getattr(self, s.objectName()).setGeometry(
             pos.x(),
             pos.y() + parent.height(),
             getattr(self, s.objectName()).width(),
-            getattr(self, s.objectName()).height()) 
+            getattr(self, s.objectName()).height())
         getattr(self, s.objectName()).show()
+
     # !SECTION Functions
-        
+
     # --------------------------------------------------------------- Callbacks
     # SECTION Callbacks -------------------------------------------------------
     # ------------------------------------------- window_cb
@@ -290,18 +296,19 @@ class SearcherSettings(QtWidgets.QWidget):
         self.closewindows()
         s = self.sender()
 
-        if toggled == True and not getattr(self, s.objectName()).isVisible():
+        if toggled is True and not getattr(self, s.objectName()).isVisible():
             self.mapposition(0, 0, s) if self.animatedsettings.isChecked() else self.mapposition(0, 0, s)
             getattr(self, s.objectName()).initmenu()
         else:
             if s.objectName() in self.windowlist:
                 getattr(self, s.objectName()).close()
-        
+
     # --------------------------------------- hotkeyicon_cb
     # NOTE hotkeyicon_cb ----------------------------------
     def hotkeyicon_cb(self):
-        self.settings['in_memory_db'] = self.in_memory_db.isChecked()
-        print(self.settings['in_memory_db'])
+        return
+        # self.settings['in_memory_db'] = self.in_memory_db.isChecked()
+        # print(self.settings['in_memory_db'])
 
     # ------------------------------------------- dbpath_cb
     # NOTE dbpath_cb --------------------------------------
@@ -330,16 +337,16 @@ class SearcherSettings(QtWidgets.QWidget):
         for i in range(len(util.HOTKEYLIST)):
             result = hou.hotkeys.findConflicts("h", util.HOTKEYLIST[i])
             if result:
-                print ("Confliction found: {}".format(result))
+                print("Confliction found: {}".format(result))
             else:
                 print("No Confliction: {}".format(result))
             hkeys.append(result)
-        print (hkeys)
+        print(hkeys)
 
     # --------------------------------------- cleardata_cb
     # NOTE cleardata_cb ----------------------------------
-    def cleardata_cb(self):
-        self.datahandler.cleardb()
+    # def cleardata_cb(self):
+    #     self.datahandler.cleardb()
 
     # --------------------------------------------- save_cb
     # NOTE save_cb ----------------------------------------
@@ -365,7 +372,7 @@ class SearcherSettings(QtWidgets.QWidget):
                 print(self.settings)
 
             settings_data.savesettings(self.settings)
-            
+
             if self.resetdb:
                 hou.session.DBCONNECTION = None
                 hou.session.DATABASE = None
@@ -397,7 +404,7 @@ class SearcherSettings(QtWidgets.QWidget):
         if self.settings[util.SETTINGS_KEYS[8]]:
             self.parentwindow.anim.start_animation(False)
             self.isopened = True
-            self.performcheck=True
+            self.performcheck = True
         else:
             self.close()
 
@@ -418,7 +425,7 @@ class SearcherSettings(QtWidgets.QWidget):
                 getattr(self, util.SETTINGS_KEYS[i]).setValue(int(self.currentsettings[util.SETTINGS_KEYS[i]]))
             elif util.SETTINGS_TYPES[util.SETTINGS_KEYS[i]] == "cbx":
                 getattr(self, util.SETTINGS_KEYS[i]).setCurrentText(str(self.currentsettings[util.SETTINGS_KEYS[i]]))
-    
+
     # ------------------------------------------ fieldsetup
     # NOTE fieldsetup -------------------------------------
     def fieldsetup(self):
@@ -453,7 +460,7 @@ class SearcherSettings(QtWidgets.QWidget):
                     print("Shown settings: ", getattr(self, util.SETTINGS_KEYS[i]).isChecked())
                     print("Current settings: ", bc(self.currentsettings[util.SETTINGS_KEYS[i]]))
                 if getattr(self, util.SETTINGS_KEYS[i]).isChecked() != bc(self.currentsettings[util.SETTINGS_KEYS[i]]):
-                    if util.SETTINGS_KEYS[i] == util.SETTINGS_KEYS[0]: 
+                    if util.SETTINGS_KEYS[i] == util.SETTINGS_KEYS[0]:
                         self.resetdb = True
                     elif util.SETTINGS_KEYS[i] == util.SETTINGS_KEYS[8]:
                         self.waitforclose = True
@@ -466,7 +473,7 @@ class SearcherSettings(QtWidgets.QWidget):
                 if self.isdebug and self.isdebug.level in {"ALL"}:
                     print("Name: ", getattr(self, util.SETTINGS_KEYS[i]).objectName())
                     print("Shown settings: ", getattr(self, util.SETTINGS_KEYS[i]).text())
-                    print("Current settings: ",self.currentsettings[util.SETTINGS_KEYS[i]])
+                    print("Current settings: ", self.currentsettings[util.SETTINGS_KEYS[i]])
                 if getattr(self, util.SETTINGS_KEYS[i]).text() != self.currentsettings[util.SETTINGS_KEYS[i]]:
                     if self.isdebug and self.isdebug.level in {"ALL"}:
                         print("Offending item: ", i)
@@ -475,7 +482,7 @@ class SearcherSettings(QtWidgets.QWidget):
                 if self.isdebug and self.isdebug.level in {"ALL"}:
                     print("Name: ", getattr(self, util.SETTINGS_KEYS[i]).objectName())
                     print("Shown settings: ", getattr(self, util.SETTINGS_KEYS[i]).value())
-                    print("Current settings: ",self.currentsettings[util.SETTINGS_KEYS[i]])
+                    print("Current settings: ", self.currentsettings[util.SETTINGS_KEYS[i]])
                 if getattr(self, util.SETTINGS_KEYS[i]).value() != int(self.currentsettings[util.SETTINGS_KEYS[i]]):
                     if self.isdebug and self.isdebug.level in {"ALL"}:
                         print("Offending item: ", i)
@@ -485,11 +492,13 @@ class SearcherSettings(QtWidgets.QWidget):
                     print("Name: ", getattr(self, util.SETTINGS_KEYS[i]).objectName())
                     print("Shown settings: ", getattr(self, util.SETTINGS_KEYS[i]).currentText())
                     print("Current settings: ", str(self.currentsettings[util.SETTINGS_KEYS[i]]))
-                if getattr(self, util.SETTINGS_KEYS[i]).currentText() != str(self.currentsettings[util.SETTINGS_KEYS[i]]):
+                if getattr(self, util.SETTINGS_KEYS[i]).currentText() != str(
+                        self.currentsettings[util.SETTINGS_KEYS[i]]):
                     if self.isdebug and self.isdebug.level in {"ALL"}:
                         print("Offending item: ", i)
                     return True
         return False
+
     # ------------------------------------------- savecheck
     # NOTE savecheck --------------------------------------
     def savecheck(self):
@@ -504,7 +513,7 @@ class SearcherSettings(QtWidgets.QWidget):
             self.hkholder = ""
         elif buttonindex == 1:
             self.hkholder = ""
-    
+
     # ------------------------------------ closeroutine
     # NOTE closeroutine -------------------------------
     def closeroutine(self):
@@ -527,6 +536,7 @@ class SearcherSettings(QtWidgets.QWidget):
 
     # !SECTION Actions
 
+    # @formatter:off
     def movesubwindows(self, pos, resize=False):
         if self.about.isVisible():
             if resize: self.about.move(self.about.x() + pos.x(), self.about.y())
@@ -544,9 +554,11 @@ class SearcherSettings(QtWidgets.QWidget):
     # NOTE addeventfilters --------------------------------
     def addeventfilters(self):
         self.installEventFilter(self)
-        self.about.installEventFilter(self)
+        self.aboutbtn.installEventFilter(self)
+        self.themebtn.installEventFilter(self)
         self.savedata.installEventFilter(self)
-        self.cleardata.installEventFilter(self)
+        self.dbpath_btn.installEventFilter(self)
+        # self.cleardata.installEventFilter(self)
         self.discarddata.installEventFilter(self)
         self.bugreportbtn.installEventFilter(self)
         self.ui.dbpath_lbl.installEventFilter(self)
@@ -557,9 +569,11 @@ class SearcherSettings(QtWidgets.QWidget):
     # NOTE removeeventfilters -----------------------------
     def removeeventfilters(self):
         self.removeEventFilter(self)
-        self.about.removeEventFilter(self)
+        self.aboutbtn.removeEventFilter(self)
+        self.themebtn.removeEventFilter(self)
         self.savedata.removeEventFilter(self)
-        self.cleardata.removeEventFilter(self)
+        self.dbpath_btn.removeEventFilter(self)
+        # self.cleardata.removeEventFilter(self)
         self.discarddata.removeEventFilter(self)
         self.bugreportbtn.removeEventFilter(self)
         self.ui.dbpath_lbl.removeEventFilter(self)
@@ -612,28 +626,28 @@ class SearcherSettings(QtWidgets.QWidget):
         # ---------------------------------------- Keypress
         # SECTION Keypress --------------------------------
         if event_type == QtCore.QEvent.KeyPress:
-        # ---------------------------------- Key_D
-        # NOTE Key_D -----------------------------
+            # ---------------------------------- Key_D
+            # NOTE Key_D -----------------------------
             if event.key() == QtCore.Qt.Key_D:
                 if obj != self.defaulthotkey:
                     if not self.debugflag.isVisible():
                         self.debugflag.setVisible(True)
 
-        # ----------------------------- Key_Escape
-        # NOTE Key_Escape ------------------------
+            # ----------------------------- Key_Escape
+            # NOTE Key_Escape ------------------------
             if event.key() == QtCore.Qt.Key_Escape:
                 if obj == self:
                     self.closeroutine()
                     return True
 
-        # ----------------------------------- else
-        # NOTE else ------------------------------
+            # ----------------------------------- else
+            # NOTE else ------------------------------
             else:
                 if obj == self.defaulthotkey:
                     self.keyindex += 1
                     self.keystring = hou.qt.qtKeyToString(
-                        event.key(), 
-                        int(event.modifiers()), 
+                        event.key(),
+                        int(event.modifiers()),
                         event.text()
                     )
                     if self.canedit:
@@ -665,22 +679,21 @@ class SearcherSettings(QtWidgets.QWidget):
             self.ui.isopened = False
             self.resetdb = False
             self.parentwindow.opensettingstool.setChecked(False)
-            self.performcheck=True
+            self.performcheck = True
             if not self.parentwindow.isActiveWindow():
                 self.parentwindow.activateWindow()
             self.removeeventfilters()
-            
+
         return QtCore.QObject.eventFilter(self, obj, event)
-    
+
     # !SECTION Events
 
-class LinkLabel(QtWidgets.QLabel):
-    def __init__(self, parent, text):
-        super(LinkLabel, self).__init__(parent)
 
-        self.setText(text)
-        self.setTextFormat(Qt.RichText)
-        self.setTextInteractionFlags(Qt.TextBrowserInteraction)
-        self.setOpenExternalLinks(True)
-
-
+# class LinkLabel(QtWidgets.QLabel):
+#     def __init__(self, parent, text):
+#         super(LinkLabel, self).__init__(parent)
+# 
+#         self.setText(text)
+#         self.setTextFormat(Qt.RichText)
+#         self.setTextInteractionFlags(Qt.TextBrowserInteraction)
+#         self.setOpenExternalLinks(True)

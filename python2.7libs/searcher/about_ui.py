@@ -4,6 +4,7 @@ import os
 scriptpath = os.path.dirname(os.path.realpath(__file__))
 
 
+# noinspection PyAttributeOutsideInit,DuplicatedCode,PyPep8Naming
 class Ui_About(object):
     def setupUi(self, About):
         About.setObjectName("About")
@@ -34,12 +35,14 @@ class Ui_About(object):
         self.secondrow.setObjectName("secondrow")
         self.web = QtWidgets.QLabel(About)
         self.web.setObjectName("web")
+        # self.web.setOpenExternalLinks(True)
         self.secondrow.addWidget(self.web)
         self.verticalLayout.addLayout(self.secondrow)
         self.headerrow = QtWidgets.QHBoxLayout()
         self.headerrow.setObjectName("headerrow")
         self.github = QtWidgets.QLabel(About)
         self.github.setObjectName("github")
+        # self.github.setOpenExternalLinks(True)
         self.headerrow.addWidget(self.github)
         self.verticalLayout.addLayout(self.headerrow)
         self.horizontalLayout.addLayout(self.verticalLayout)

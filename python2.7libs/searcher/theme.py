@@ -14,14 +14,14 @@ import hdefereval as hd
 hver = 0
 if os.environ["HFS"] != "":
     ver = os.environ["HFS"]
-    hver = int(ver[ver.rindex('.')+1:])
+    # hver = int(ver[ver.rindex('.')+1:])
     from hutil.Qt import QtGui
     from hutil.Qt import QtCore
     from hutil.Qt import QtWidgets
 else:
-    from PyQt5 import QtGui
-    from PyQt5 import QtCore
-    from PyQt5 import QtWidgets
+    from qtpy import QtGui
+    from qtpy import QtCore
+    from qtpy import QtWidgets
 
 scriptpath = os.path.dirname(os.path.realpath(__file__))
 

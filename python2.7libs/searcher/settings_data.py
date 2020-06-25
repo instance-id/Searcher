@@ -11,7 +11,7 @@ import hou
 hver = 0
 if os.environ["HFS"] != "":
     ver = os.environ["HFS"]
-    hver = int(ver[ver.rindex('.') + 1:])
+    # hver = int(ver[ver.rindex('.') + 1:])
     from hutil.Qt import QtCore
 
 # ------------------------------------------------------ Setting Paths
@@ -26,10 +26,12 @@ searcher_path = os.path.join(
 searcher_settings = os.path.join(
     searcher_path, settingsfile
 )
-defaultdbpath =  os.path.join(
+defaultdbpath = os.path.join(
     searcher_path, dbfile
 )
 settingsdata = QtCore.QSettings(searcher_settings, QtCore.QSettings.IniFormat)
+
+
 # !SECTION Setting Paths
 
 # -------------------------------------------------- Setting Functions
@@ -55,6 +57,7 @@ def createdefaults(platform):
     settingsdata.setIniCodec('UTF-8')
     settingsdata.sync()
 
+
 # ---------------------------------------- savesettings
 # NOTE savesettings -----------------------------------
 def savesettings(settingdict):
@@ -71,6 +74,7 @@ def savesettings(settingdict):
                 (la.SETTINGSMESSAGES['savesettings'] + str(e)), severity=hou.severityType.Warning)
         else:
             print(la.SETTINGSMESSAGES['savesettings'] + str(e))
+
 
 # ---------------------------------------- loadsettings
 # NOTE loadsettings -----------------------------------

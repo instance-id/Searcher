@@ -4,13 +4,14 @@ from __future__ import absolute_import
 import hou
 import os
 from searcher import util
+
 hver = 0
 if os.environ["HFS"] != "":
     ver = os.environ["HFS"]
-    hver = int(ver[ver.rindex('.')+1:])
+    # hver = int(ver[ver.rindex('.')+1:])
     from hutil.Qt import QtGui
 else:
-    from PyQt5 import QtGui
+    from qtpy import QtGui
 
 # --------------------------------------------------- Paths
 # NOTE Paths ----------------------------------------------
@@ -20,6 +21,7 @@ imgroot = PATH.replace("\\", "/")
 
 settings = util.get_settings()
 
+
 # ----------------------------------------------- Functions
 # NOTE Functions ------------------------------------------
 def count_chars(txt):
@@ -28,14 +30,17 @@ def count_chars(txt):
         result += 1
     return result
 
+
 # --------------------------------------------------------------- UI Style
 # SECTION UI Style -------------------------------------------------------
 # ---------------------------------------------- MAINWINDOW
 # NOTE MAINWINDOW -----------------------------------------
+# @formatter:off
 MAINWINDOW = """ background-color: rgb(42, 42, 42); """
 
 # ------------------------------------------- CONTEXTTOGGLE
 # NOTE CONTEXTTOGGLE --------------------------------------
+# @formatter:off
 CONTEXTTOGGLE = """ QPushButton { width: 8px; border: none; }
                     QPushButton:checked { width: 8px; border: none;} """
 
@@ -45,6 +50,7 @@ INFOLABEL = """ background-color: rgba(11,11,11,1); border-bottom: 1px solid rgb
 
 # ----------------------------------------------- MENUSTYLE
 # NOTE MENUSTYLE ------------------------------------------
+# @formatter:off
 MENUSTYLE = """QMenu { background-color: rgb(64,64,64); menu-scrollable: 1; margin: 0px; }
                    QMenu:item { background-color: rgb(46,46,46);  padding: 5px 25px; margin: 1px; height:16px; }
                    QMenu:item:selected { background-color: rgb(64,64,64); }
@@ -54,6 +60,7 @@ MENUSTYLE = """QMenu { background-color: rgb(64,64,64); menu-scrollable: 1; marg
 
 # ------------------------------------------------- TOOLTIP
 # NOTE TOOLTIP --------------------------------------------
+# @formatter:off
 TOOLTIP = """QToolTip { background-color: rgb(64,64,64); menu-scrollable: 1; margin: 0px; }
                    QToolTip:item { background-color: rgb(46,46,46);  padding: 5px 25px ; margin: 1px; height:16px; }
                    QToolTip:icon { padding: 5px; }
@@ -61,11 +68,13 @@ TOOLTIP = """QToolTip { background-color: rgb(64,64,64); menu-scrollable: 1; mar
 
 # -------------------------------------------- SETTINGSMENU
 # NOTE SETTINGSMENU ---------------------------------------
+# @formatter:off
 SETTINGSMENU = """ QWidget { background: rgb(58, 58, 58); }
                    QWidget#SearcherSettings { border: 0px solid rgb(35, 35, 35); }  """
 
 # --------------------------------------- styleresizehandle
 # NOTE styleresizehandle ----------------------------------
+# @formatter:off
 def styleresizehandle(obj, enter):
     if enter:
         resizeimg = (imgroot + "/%s.png" % obj.objectName())
@@ -79,7 +88,7 @@ def styleresizehandle(obj, enter):
                 width: 25px;
                 height: 25px;
                 background-color: rgba(0, 0, 0, 0);
-                }""" 
+                }"""
             % resizeimg
             )
         obj.setStyleSheet(sheet)
@@ -91,12 +100,13 @@ def styleresizehandle(obj, enter):
                 width: 15px;
                 height: 15px;
                 background-color: rgba(0, 0, 0, 0);
-                }""" 
+                }"""
             )
         obj.setStyleSheet(sheet)
 
 # ---------------------------------------- styleresulttotal
 # NOTE styleresulttotal -----------------------------------
+# @formatter:off
 def styleresulttotal(treecatnum, treeitemsnum):
     appcolors = settings[util.SETTINGS_KEYS[14]]
     return (("<font color='%s'><b>%s</b></font> : <font color='%s'>Contexts </font> | " % (appcolors[util.COLORFIELDS[2]], treecatnum, appcolors[util.COLORFIELDS[0]]))
@@ -104,6 +114,7 @@ def styleresulttotal(treecatnum, treeitemsnum):
 
 # --------------------------------------------- styletimers
 # NOTE styletimers ----------------------------------------
+# @formatter:off
 def styletimers(outdata):
     appcolors = settings[util.SETTINGS_KEYS[14]]
     return (("<font color='%s'>Search Regex <font color='%s'> <b>%0.4f</b> </font> ms</font> | " % (str(appcolors[util.COLORFIELDS[0]]), str(appcolors[util.COLORFIELDS[2]]), outdata[0])) 
@@ -114,6 +125,7 @@ def styletimers(outdata):
 
 # -------------------------------------------- returntimers
 # NOTE returntimers ---------------------------------------
+# @formatter:off
 def returntimers(outdata):
     return (("Search Regex  %0.4f ms | " % outdata[0])
               + ("Context Search  %0.4f ms | " % outdata[1])
@@ -123,6 +135,7 @@ def returntimers(outdata):
 
 # -------------------------------------------- setstatusmsg
 # NOTE setstatusmsg ---------------------------------------
+# @formatter:off
 def setstatusmsg(text, severity):
     stype, scolor = util.SEVERITY[severity]
     msg = (("<font color='%s'>%s</font>" % (scolor, text)))
@@ -130,11 +143,13 @@ def setstatusmsg(text, severity):
 
 # ----------------------------------------- gettooltipstyle
 # NOTE gettooltipstyle ------------------------------------
+# @formatter:off
 def gettooltipstyle(text):
     return (("<font color='%s'>%s</font>" % (settings[util.SETTINGS_KEYS[14]][util.COLORFIELDS[4]], text)))
 
 # ---------------------------------------- gettreeviewstyle
 # NOTE gettreeviewstyle -----------------------------------
+# @formatter:off
 def gettreeviewstyle():
     PATH = os.path.join(script_path, "images")
     root = PATH.replace("\\", "/")

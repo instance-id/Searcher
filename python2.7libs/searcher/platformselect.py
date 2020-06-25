@@ -22,10 +22,10 @@ def get_platform():
     return PLATFORM
 
 def get_sqlite():
-    if  get_platform() == "Windows":
+    if get_platform() == "Windows":
         path_sqlite_dll = os.path.join(SEARCHER_PATH, 'python27/dlls/sqlite3.dll')
         ctypes.cdll.LoadLibrary(path_sqlite_dll)
-    elif  get_platform() == "Darwin":
+    elif get_platform() == "Darwin":
         path_sqlite_dll = os.path.join(SEARCHER_PATH, 'python27/dlls/sqlite3.dll')
     else:
         path_sqlite_dll = os.path.join(SEARCHER_PATH, 'python27/dlls/sqlite3.dll')
