@@ -21,7 +21,7 @@ import sys
 
 # info
 __author__ = "instance.id"
-__copyright__ = "2020 All rights reserved. See LICENSE for more details."
+__copyright__ = "2020 All rights reserved."
 __status__ = "Prototype"
 
 current_file_path = os.path.abspath(
@@ -50,9 +50,6 @@ dbpath = os.path.join(
 hou.session.SETTINGS = {}
 hou.session.DBCONNECTION = DatabaseProxy()
 db = DatabaseProxy()
-settingdata = {}
-isloading = True
-tempkey = ""
 
 
 # --------------------------------------------------------- DatabaseModels

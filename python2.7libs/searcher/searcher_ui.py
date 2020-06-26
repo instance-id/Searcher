@@ -67,7 +67,7 @@ class Ui_Searcher(object):
         self.contexttoggle = QtWidgets.QPushButton()
         self.contexttoggle.setObjectName("contexttoggle")
 
-        self.helpButton = HelpButton.HelpButton("main", la.TT_MW['helpButton'], 16)
+        self.helpButton = HelpButton.HelpButton("main", la.TT_MW['helpButton'], 16, Searcher)
         self.helpButton.setObjectName("helpButton")
 
         self.pinwindow_btn = QtWidgets.QToolButton()

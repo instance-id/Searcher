@@ -1,0 +1,31 @@
+= <font style="color:#D2A00C">Searcher</font> =
+<!-- ----------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------- Page Config -->
+
+#display: inverted notoc
+#billboard: /images/billboards/blueprint.png
+#style: background-color: #000000; background-size: auto;
+#version: 1.00
+
+<!-- ----------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------- Header Image -->
+== <font style="color:#D2A00C">Change Log</font> ==
+
+<!-- ----------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------- Main Menu -->
+<font style="color:#607FAE"> [ Main Window |/searcher/main] | [ Settings Window |/searcher/settings/] | [ Change Log |/searcher/changelog/] </font>
+
+<!-- ----------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------ Settings Info -->
+
+:disclosure:<font style="color:#D2A00C">v1.00</font>
+
+    table width="100%">>       
+        tr>>           
+            td>> 
+                :new:
+                    * First release of Searcher!
+                :bug:
+                   :platform:Mac
+                    * Due to a discrepancy with the way MacOS handles windowing, the MacOS version of Searcher will be released at a later date.
+    

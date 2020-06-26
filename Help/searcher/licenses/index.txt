@@ -1,0 +1,95 @@
+= Searcher third-party libraries and tools =
+#index: no
+
+Houdini %{HOUDINI_MAJOR_VERSION}.%{HOUDINI_MINOR_VERSION} is fully compliant with the VFX Reference Platform CY2019 specification ([http://www.vfxplatform.com]).
+
+Houdini uses the following third party libraries:
+
+table width="100%">>
+    tr>>
+        th width="33%">>Third-Party Tool
+        th width="33%">>Version
+        th>>License
+	th>>VFX Platform Compliant
+    tr>>
+	td>>[Beaker|https://pypi.org/project/Beaker]
+        td>>1.5.1
+        td>>[BSD License|http://opensource.org/licenses/bsd-license.php]
+        td>>N/A
+    tr>>
+        td>>[decorator|https://pypi.python.org/pypi/decorator]
+        td>>3.0.0
+        td>>[BSD License|http://opensource.org/licenses/bsd-license.php]
+	td>>N/A
+    tr>>
+        td>>[FormEncode|http://www.formencode.org/en/latest/]
+        td>>1.2.1
+        td>>[Python Software Foundation License|http://opensource.org/licenses/Python-2.0]
+	td>>N/A
+    tr>>
+        td>>[Mako|http://www.makotemplates.org/]
+        td>>0.2.5
+        td>>[MIT License|http://www.opensource.org/licenses/mit-license.php]
+        td>>N/A
+    tr>>
+        td>>[Pylons|http://www.pylonsproject.org/]
+        td>>0.9.7
+        td>>[BSD License|http://www.pylonsproject.org/about/license]
+	td>>N/A
+    tr>>
+        td>>[Routes|https://pypi.python.org/pypi/Routes]
+        td>>1.10.1
+        td>>[BSD License|http://opensource.org/licenses/bsd-license.php]
+	td>>N/A
+    tr>>
+	td>>[setuptools|https://pypi.org/project/setuptools]
+	td>>0.6c11
+        td>>[MIT License|http://opensource.org/licenses/MIT]
+	td>>N/A
+    tr>>
+        td>>[Six|http://pythonhosted.org/six/]
+        td>>1.13.0
+        td>>[License|six]
+        td>>N/A
+    tr>>
+        td>>[SQLAlchemy|https://www.sqlalchemy.org/]
+        td>>0.7.10
+        td>>[License|SQLAlchemy]
+        td>>N/A
+    tr>>
+        td>>[Tempita|http://pythonpaste.org/tempita/]
+        td>>0.2
+        td>>[BSD License|http://pythonpaste.org/tempita/license.html]
+	td>>N/A
+    tr>>
+        td>>[virtualenv|https://pypi.python.org/pypi/virtualenv]
+        td>>1.3.2
+        td>>[MIT License|http://opensource.org/licenses/MIT]
+	td>>N/A
+    tr>>
+        td>>[WebError|https://pypi.python.org/pypi/WebError]
+        td>>0.9.1
+        td>>[MIT License|http://opensource.org/licenses/MIT]
+	td>>N/A
+    tr>>
+        td>>[WebHelpers|https://pypi.python.org/pypi/WebHelpers/0.6.4]
+        td>>0.6.3
+        td>>[BSD License|http://opensource.org/licenses/bsd-license.php]
+	td>>N/A
+    tr>>
+        td>>[WebOb|http://pythonpaste.org]
+        td>>0.9.4
+        td>>[MIT License|http://www.opensource.org/licenses/mit-license.php]
+        td>>N/A
+    tr>>
+        td>>[WebTest|https://pypi.python.org/pypi/WebTest]
+        td>>1.1
+        td>>[MIT License|http://opensource.org/licenses/MIT]
+	td>>N/A
+    tr>>
+        td>>[WSGIref|https://pypi.python.org/pypi/wsgiref]
+        td>>0.1.2
+        td>>[Python Software Foundation License|http://opensource.org/licenses/Python-2.0]
+	td>>N/A
+
+

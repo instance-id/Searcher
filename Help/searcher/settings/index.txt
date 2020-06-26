@@ -1,0 +1,43 @@
+= <font style="color:#D2A00C">Searcher</font> =
+<!-- ----------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------- Page Config -->
+
+#display: inverted notoc
+#billboard: /images/billboards/blueprint.png
+#style: background-color: #000000; background-size: auto;
+#version: 1.00
+
+<!-- ----------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------- Header Image -->
+[Image:/searcher/images/searcher.png]
+== <font style="color:#D2A00C">Settings Window</font> ==
+
+<!-- ----------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------- Main Menu -->
+<font style="color:#607FAE"> [ Main Window |/searcher/main] | [ Settings Window |/searcher/settings/] | [ Change Log |/searcher/changelog/] </font>
+
+<!-- ----------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------ Settings Info -->
+
+table width="100%">>
+    tr>>
+        td>>
+            === <font style="color:#D2A00C">Settings Items</font> === 
+            #id: menu   
+    tr>>
+        td>> 
+            [Image:/searcher/images/settings.png]        
+    tr>>           
+        td>> 
+            # Enable/Disable animation of the settings menu
+            # Enable/Disable saving the current size and position of the settings window. Disabled resets to default size and position
+            # Limit the maximum number of search results. Depending on your system speed, an amount too high could cause search delay
+            # If your system experiences issues with an on-disk database, you can enable an in-memory only database while Houdini is opened 
+            # The hotkey combination used to activate actions which currently do not have a hotkey set. (If this key-combo is in use by another command, it can be changed)
+            # The default location of the Searcher database file. This can be changed if desired
+            # Save current settings to Searcher ini file
+            # Discard current changes and retain prior settings
+            # Theme menu allows you to change font colors 
+            # Bug report menu allows you to submit a bug report, suggestion, or feature request (Invokes browser window for proper submission type)
+            # Info menu contains links to our website and GitHub pages
+
