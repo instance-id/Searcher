@@ -23,10 +23,10 @@ import sys
 import hou
 import threading
 import hdefereval as hd
+# noinspection PyUnresolvedReferences
 from canvaseventtypes import *
 from collections import Iterable
 
-hver = 0
 if os.environ["HFS"] != "":
     ver = os.environ["HFS"]
     # hver = int(ver[ver.rindex('.')+1:])
@@ -1631,6 +1631,7 @@ def CreateSearcherPanel(searcher_window=None, **kwargs):
     # timerprofile = hou.perfMon.startProfile("Load_Timer")  # ANCHOR hou perf timer ---------------- hou perf timer
     # loadevent = hou.perfMon.startEvent("Start _Timer")     # ANCHOR hou perf timer ---------------- hou perf timer
     # starttime = ptime.time()
+
     kwargs = kwargs
     settings = get_settings()
     windowsettings = QtCore.QSettings("instance.id", "Searcher")

@@ -30,7 +30,7 @@ class DataHandler(object):
         if not self.db:
             hou.session.DATABASE = database.Databases()
             self.db = get_db()
-            
+
         self.isdebug = debug
         self.scriptpath = os.path.dirname(os.path.realpath(__file__))
 

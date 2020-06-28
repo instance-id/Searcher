@@ -13,24 +13,11 @@
 
 <!-- ----------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------- Main Menu -->
-<font style="color:#607FAE"> [ Main Window |/searcher/main] | [ Settings Window |/searcher/settings/] | [ Change Log |/searcher/changelog/] </font>
+<font style="color:#607FAE"> [ Main Window |/searcher/main] | [ Settings Window |/searcher/settings/] | [ Change Log |/searcher/changelog/]| [ Contact |/searcher/contact/] </font>
 
 <!-- ----------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------ Settings Info -->
 
-:disclosure:<font style="color:#D2A00C">{#version}</font>
-
-    table width="100%">>       
-        tr>>           
-            td>> 
-                :new:
-                    * First release of Searcher!
-                :bug:
-                   :platform:Mac
-                    * Due to a discrepancy with the way MacOS handles windowing, the MacOS version of Searcher will be released at a later date.
-    
-<!-- ----------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------ Contact -->
 
 table width="100%">>       
     tr>>           

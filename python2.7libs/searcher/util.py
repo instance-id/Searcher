@@ -55,9 +55,9 @@ def get_settings():
 # @formatter:off ----------------------------- get_settings
 # NOTE get_settings ---------------------------------------
 def get_path(folders=None):
-    script_path = os.path.dirname(os.path.realpath(__file__))
-    PATH = os.path.join(script_path, '/'.join(folders))
-    return PATH.replace("\\", "/")
+    s_path = os.path.dirname(os.path.realpath(__file__))
+    path = os.path.join(s_path, '/'.join(folders))
+    return path.replace("\\", "/")
 
 # @formatter:off --------------------------- Bool Converter
 # NOTE Bool Converter -------------------------------------
@@ -146,11 +146,11 @@ DEFAULT_SETTINGS = {
     SETTINGS_KEYS[12]: "False",              # metrics
     SETTINGS_KEYS[13]: "False",              # metricsmainwindow
     SETTINGS_KEYS[14]: {                     # appcolors
-        COLORFIELDS[0] : "#607FAE",          # text1
-        COLORFIELDS[1] : "#D2A00C",          # text2
-        COLORFIELDS[2] : "#c2efe5",          # stats1
-        COLORFIELDS[3] : "#c2efe5",          # stats2
-        COLORFIELDS[4] : "#607FAE",          # tooltip
+        COLORFIELDS[0]: "#607FAE",          # text1
+        COLORFIELDS[1]: "#D2A00C",          # text2
+        COLORFIELDS[2]: "#c2efe5",          # stats1
+        COLORFIELDS[3]: "#c2efe5",          # stats2
+        COLORFIELDS[4]: "#607FAE",          # tooltip
     },
     SETTINGS_KEYS[15]: "True",              # expanditems
 }
@@ -582,6 +582,7 @@ SEVERITY = {
 
 # vop_terminals_connected
 # vop_terminals_collapsed
+
 # @formatter:off ------------------------------------ Icons
 # NOTE Icons ----------------------------------------------
 ICON_SIZE = hou.ui.scaledSize(32)
@@ -627,7 +628,7 @@ DOWN_ICON = hou.ui.createQtIcon(
 )
 
 EXPAND_ALL_ICON = hou.ui.createQtIcon(
-     (root + "/expand_all.png"),
+    (root + "/expand_all.png"),
     EDIT_ICON_SIZE,
     EDIT_ICON_SIZE
 )
@@ -693,7 +694,7 @@ UP_ICON = hou.ui.createQtIcon(
     EDIT_ICON_SIZE
 )
 
-# !SECTION  UI Info 
+# !SECTION  UI Info
 
 
 # SECTION Widget Tools ---------------------------------------------------

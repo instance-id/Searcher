@@ -9,8 +9,6 @@ from searcher import util
 from searcher import settings_data
 from searcher import ptime as ptime
 
-
-
 from peewee import *
 from playhouse.sqlite_ext import SqliteExtDatabase, RowIDField, FTS5Model, SearchField
 import time
@@ -22,6 +20,7 @@ def get_settings():
 
 def get_dbconnection():
     return getattr(hou.session, "DBCONNECTION", None)
+
 
 scriptpath = os.path.dirname(os.path.realpath(__file__))
 db = get_dbconnection()
@@ -213,7 +212,7 @@ class Databases(object):
                     if len(hkcheck) is 0:
                         self.settings[util.SETTINGS_KEYS[11]] = ""
                         settings_data.savesettings(settingdata)
-                        updatechangeindex(int(currentidx))
+                        self.updatechangeindex(int(currentidx))
                     else:
                         hou.hotkeys.clearAssignments(str(lasthk[0]))
                         hou.hotkeys.saveOverrides()
@@ -221,7 +220,7 @@ class Databases(object):
                         if len(hkcheck) is 0:
                             self.settings[util.SETTINGS_KEYS[11]] = ""
                             settings_data.savesettings(settingdata)
-                            updatechangeindex(int(currentidx))
+                            self.updatechangeindex(int(currentidx))
                         else:
                             if hou.isUIAvailable():
                                 hou.ui.setStatusMessage(("Could not clear last assigned temp hotkey on last attempt:"), severity=hou.severityType.Warning)
@@ -291,7 +290,7 @@ class Databases(object):
             return uniqueresult
         except(AttributeError, TypeError) as e:
             hou.ui.setStatusMessage(("Could not get Searcher context results: " + str(e)), severity=hou.severityType.Error)
-    
+
     # ------------------------------------------- searchresults
     # NOTE searchresults --------------------------------------
     def searchresults(self, inputTerm, debug, limit=0):
@@ -307,7 +306,7 @@ class Databases(object):
             )
             result = self.cur.fetchall()
             uniqueresult = py_unique(result)
-            
+
             time2 = ptime.time()
             self.hotkeystime = ((time2 - time1) * 1000.0)
 

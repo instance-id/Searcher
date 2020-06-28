@@ -42,7 +42,7 @@ def createdefaults(platform):
     def_set = util.DEFAULT_SETTINGS
     def_set[util.SETTINGS_KEYS[1]] = str(defaultdbpath)
     if platform == "unix":
-        def_set[util.SETTINGS_KEYS[8]] = False
+        def_set[util.SETTINGS_KEYS[8]] = True
     settingsdata.beginGroup('Searcher')
     try:
         for i in range(len(util.SETTINGS_KEYS)):

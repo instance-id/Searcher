@@ -1,17 +1,38 @@
+// ------------------------------ Searcher --------------------------------------
+// --- Make sure this file resides in your Houdini settings/packages           --
+// --- folder as listed below:                                                 --
+// --- Windows: C:\Users\<user>\Documents\houdini18.0\packages                 --
+// --- Linux:   /home/<user>/houdini18.0/packages                              --
+// --- MacOS:   /Users/<user>/Library/Preferences/houdini/18.0/packages        --
+// ----------------------------- instance.id ------------------------------------
 {
-	"enable": "houdini_version <= '18.0.418'",
+	// --- Not compatible with versions under 18.0.348 | MacOS not operational --
+	"enable": "houdini_version >= '18.0.348' and (houdini_os != 'macos')",
+	// --------------------------------------------------------------------------
 	"env": [
-		// --- Add path to Searcher root folder here using "/" as separator:
-		// --- ex. Windows : C:/Users/Me/houdini_addons/searcher
-		// --- ex. Linux :   /home/me/houdini_addons/searcher
+		// ----------------------------------------------------------------------
+		// --- Add path to Searcher root folder below using "/" as separator:  --
+		// --- The folder can reside wherever you would like. Examples below:  --
+		// ----------------------------------------------------------------------
+		// --- ex. Windows:                                                    --
+		// ---	"SEARCHERLOCATION": "C:/Users/<user>/houdini_addons/searcher"  --
+		// --- ex. Linux:                                                      --
+		// ---	"SEARCHERLOCATION": "/home/<user>/houdini_addons/searcher"     --
+		// --- ex. MacOS:                                                      --
+		// ---	"SEARCHERLOCATION": "/Users/<user>/Library/h_addons/searcher"  --
+		// ----------------------------------------------------------------------
 		{
-			"SEARCHERLOCATION": "E:/GitHub/Searcher"
+		// -------------------------------------------
+		// --------------------- Change Path Here ----
+			"SEARCHERLOCATION": "",
+		// -------------------------------------------
 		},
-		// -----------------------------------------
 		{
-			"SEARCHER": "$SEARCHERLOCATION"
+		// -------------------- Do not edit
+			"SEARCHER": "$SEARCHERLOCATION",
 		},
 		{
+		// -------------------- Do not edit
 			"HOUDINI_PATH": "$SEARCHER/"
 		}
 	]

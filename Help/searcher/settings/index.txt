@@ -5,7 +5,7 @@
 #display: inverted notoc
 #billboard: /images/billboards/blueprint.png
 #style: background-color: #000000; background-size: auto;
-#version: 1.00
+#version: {#version}
 
 <!-- ----------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------- Header Image -->
@@ -41,3 +41,23 @@ table width="100%">>
             # Bug report menu allows you to submit a bug report, suggestion, or feature request (Invokes browser window for proper submission type)
             # Info menu contains links to our website and GitHub pages
 
+<!-- ----------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------ Contact -->
+
+table width="100%">>       
+    tr>>           
+        td>> 
+            * [website|https://instance.id/]
+                #glyph: fa-firefox
+        td>> 
+            * [twitter| https://twitter.com/instance_id]
+                #glyph: fa-twitter
+        td>> 
+            * [github|https://github.com/instance-id]
+                #glyph: fa-github
+        td>> 
+            * [issues|https://github.com/instance-id/searcher_addon/issues?q=]
+                #glyph: fa-bug
+        td>> 
+            * [email|mailto:support@instance.id]
+                #glyph: fa-at
