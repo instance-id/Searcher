@@ -1,7 +1,8 @@
 <!-- Open me in a markdown capable browser, or go to https://github.com/instance-id/searcher_addon -->
 
 ## Searcher
-##### {#version}
+
+![](https://i.imgur.com/2JCkraG.png)
 
 #### [Installation](#install) | [Compatability Details](#notes)
 ---
