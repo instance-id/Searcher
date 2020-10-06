@@ -6,7 +6,7 @@
 
 #### [Installation](#install) | [Compatability Details](#notes)
 ---
-Thanks for checking out Searcher. Below are the instructions to get you up and running.
+Thanks for checking out Searcher. Below are the instructions to get you up and running. Currently only for Windows and Linux. If there is interest in a working Mac version, let me know.
 
 #### Install
 
