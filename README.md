@@ -10,6 +10,9 @@
 ---
 Thanks for checking out Searcher. Below are the instructions to get you up and running. 
 
+## Help Docs
+https://help.instance.id/searcher/
+
 #### Install
 
 1. Extract/unzip 'Searcher_\<version>.zip'. (ex. Searcher_{#version}.zip) Inside will be a packages and Searcher folder as well as a README.md and a url link to this page.
