@@ -4,9 +4,14 @@
 
 ![](https://i.imgur.com/2JCkraG.png)
 
+### Currently only *fully* working on Windows and Linux. If there is interest in a working Mac version, let me know.
+
 #### [Installation](#install) | [Compatability Details](#notes)
 ---
-Thanks for checking out Searcher. Below are the instructions to get you up and running.
+Thanks for checking out Searcher. Below are the instructions to get you up and running. 
+
+## Help Docs
+https://help.instance.id/searcher/
 
 ## Note for Houdini 18.5  
 SideFX has only included SQLite v 3.31.0 with H18.5 and their support has told me they have no plans to upgrade it to 3.33.0 (which has FTS5 enabled (Full-Text Search), which is needed by Searcher). Because of this, an extra step is required to install/use Searcher with Houdini 18.5 until/unless they decide to include SQLite 3.33.0 instead of 3.31.0.
@@ -77,7 +82,7 @@ Ex. If using Windows and following the example listed above, line 27 would look 
 | ---------- | -------------------------------------- |
 | ⊞ Windows: | Windows 10 Pro v10.0.19041.264 (v2004) |
 | 🐧 Linux:   | Pop_OS! (Ubuntu) 19.04/19.10/20.04     |
-| 🍎 MacOS:   | Coming soon!                           |
+| 🍎 MacOS:   | Possibly coming soon, if requested     |
 
 
 
