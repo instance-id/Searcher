@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Demo</title>
+</head>
+
+<body>
+
+
+    <script src="https://cdn.jsdelivr.net/gh/pixeline/portable-github-issues-form/bundle.js?v=1.0" ></script>
+    <script>
+        // This is to bypass the github protection against committed auth tokens.
+        var token1 = '';
+        var token2 = '';
+        var token = token1+token2;
+var Issue =  new GithubIssueForm({ 'token': token, 'useragent': 'portable-github-issues-form', 'repository': 'pixeline/portable-github-issues-form', 'milestone': null });
+Issue.inject();
+    </script>
+</body>
+
+</html>

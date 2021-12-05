@@ -8,6 +8,7 @@
   <interface name="searcher" label="Searcher" icon="MISC_python" showNetworkNavigationBar="false" help_url="">
     <script><![CDATA[from searcher import bugreport
 import os
+from hutil.py23 import reload
 
 reload(bugreport)
 

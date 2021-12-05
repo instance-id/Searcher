@@ -1,0 +1,14 @@
+{
+	"env": [
+		{
+			"MODELER": "C:/Users/PATH/TO/modeler/"
+		},
+		{
+            "HOUDINI_PATH" : 
+            {
+                "value": "$MODELER/",
+                "method": "append"
+            }
+        }
+	]
+}

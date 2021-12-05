@@ -5,9 +5,13 @@ import sys
 sys.dont_write_bytecode = True
 
 import hou
+
 from PySide2 import QtWidgets
+
 from houdini_markingmenu import markingmenu as mm
+
 from canvaseventtypes import *
+
 import nodegraphbase as base
 
 sys.path.insert(0, os.path.join(hou.getenv('HOUDINI_USER_PREF_DIR'),

@@ -1,8 +1,12 @@
 from __future__ import absolute_import
+
+from hutil.py23 import reload
+
 from searcher import bugreport_ui
 import os
 
 import hou
+
 hver = 0
 if os.environ["HFS"] != "":
     ver = os.environ["HFS"]

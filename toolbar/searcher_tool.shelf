@@ -13,9 +13,12 @@
     <script scriptType="python"><![CDATA[from __future__ import print_function
 from __future__ import absolute_import
 from searcher import searcher
+from hutil.py23 import *
 import toolutils
+# from toolutils import safe_reload
 import os
-reload(searcher) 
+
+reload(searcher)
 
 import sys
 

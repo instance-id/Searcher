@@ -1,5 +1,5 @@
 #General ------------------------------------------------------------
-**.idea*
+**.idea/*
 **.experiments*
 
 #Golang -------------------------------------------------------------
@@ -49,13 +49,13 @@ share/python-wheels/
 *.egg
 MANIFEST
 *.db
-python2.7libs/*
-!python2.7libs/searcher/
-python2.7libs/searcher/.history
+python*.7libs/*
+!python*.7libs/searcher/
+python*.7libs/searcher/.history
 **.history*
-python2.7libs/searcher/go/houdini
-python2.7libs/searcher/db
-python2.7libs/searcher/_conversion
+python*.7libs/searcher/go/houdini
+python*.7libs/searcher/db
+python*.7libs/searcher/_conversion
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
@@ -158,3 +158,5 @@ dmypy.json
 .pyre/
 venv1/*
 .DS_Store
+
+.idea/
