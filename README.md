@@ -4,6 +4,8 @@
 
 ![](https://i.imgur.com/2JCkraG.png)
 
+![](https://i.imgur.com/RqYgyEs.gif)
+
 ### Currently only *fully* working on Windows and Linux. If there is interest in a working Mac version, let me know.
 
 #### [Installation](#install) | [Compatability Details](#notes)
