@@ -16,17 +16,18 @@ if ($Version) {
 $date = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'
 $exclude = '--exclude-from=build/exclude.excl'
 $include = '--include-from=build/include.incl'
-$config = '--config=C:/Users/mosthated/.backup/rclone.conf'
 $cmd = ''
 $source1 = ''
 $destination1 = ''
 
 if ($IsWindows) {
+    $config = '--config=C:/Users/mosthated/.backup/rclone.conf'
     $cmd = 'C:\files\rclone\rclone.exe'
     $source1 = 'E:\GitHub\Searcher\'
     $destination1 = 'E:\Searcher'
     $log1 = "--log-file=C:\files\rclone\logs\Searcher_Build_$date.log"
 } elseif ($IsLinux) {
+    $config = '--config=/home/mosthated/.config/rclone/rclone.conf'
     $cmd = 'rclone'
     $source1 = '/mnt/x/GitHub/instance-id/1_Projects/Searcher'
     $destination1 = '/mnt/x/_dev/Searcher'
@@ -71,6 +72,7 @@ if ($Version) {
     Move-Item -Path $destination1\help -Destination $folderVer\$searcher\help
     Move-Item -Path $destination1\python2.7libs -Destination $folderVer\$searcher\python2.7libs
     Move-Item -Path $destination1\python3.7libs -Destination $folderVer\$searcher\python3.7libs
+    Move-Item -Path $destination1\python3.9libs -Destination $folderVer\$searcher\python3.9libs
     Move-Item -Path $destination1\toolbar -Destination $folderVer\$searcher\toolbar
 
     $listfiles = Get-ChildItem $folderVer -Recurse -File -Include '*.md', '*.txt'
