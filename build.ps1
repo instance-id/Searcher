@@ -73,6 +73,7 @@ if ($Version) {
     Move-Item -Path $destination1\python2.7libs -Destination $folderVer\$searcher\python2.7libs
     Move-Item -Path $destination1\python3.7libs -Destination $folderVer\$searcher\python3.7libs
     Move-Item -Path $destination1\python3.9libs -Destination $folderVer\$searcher\python3.9libs
+    Move-Item -Path $destination1\python3.10libs -Destination $folderVer\$searcher\python3.10libs
     Move-Item -Path $destination1\toolbar -Destination $folderVer\$searcher\toolbar
 
     $listfiles = Get-ChildItem $folderVer -Recurse -File -Include '*.md', '*.txt'
