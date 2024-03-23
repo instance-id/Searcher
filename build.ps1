@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+#!/usr/bin/env -S pwsh -noProfile -nologo
 
 # .\build.ps1 -Zip -Version v0.1.0
 Param (
@@ -75,6 +75,19 @@ if ($Version) {
     Move-Item -Path $destination1\python3.9libs -Destination $folderVer\$searcher\python3.9libs
     Move-Item -Path $destination1\python3.10libs -Destination $folderVer\$searcher\python3.10libs
     Move-Item -Path $destination1\toolbar -Destination $folderVer\$searcher\toolbar
+
+    # --| Move and rename compiled runtime files -----
+    $searcherLibs = [System.IO.Path]::Combine($folderVer, $searcher, "python3.10libs", "searcher")
+    $cachePath = [System.IO.Path]::Combine($searcherLibs, "__pycache__")
+    $compiledFiles = Get-ChildItem -Path $cachePath -Recurse -Include "*.pyc", "*.pyo"
+
+    # --| Remove 'cpython-310' from the file names ---
+    foreach ($file in $compiledFiles) {
+        $newName = $file.Name.Replace('.cpython-310', '')
+        $newPath = [System.IO.Path]::Combine($file.DirectoryName, $newName)
+        Rename-Item -Path $file.FullName -NewName $newName
+        Move-Item -Path $newPath -Destination $searcherLibs
+    }
 
     $listfiles = Get-ChildItem $folderVer -Recurse -File -Include '*.md', '*.txt'
     $old = '{#version}'
