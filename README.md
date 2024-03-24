@@ -22,9 +22,28 @@ https://help.instance.id/searcher/
 
 ## Change Log:
 
-### v0.1.3
+<details>
+<summary>v0.1.5/summary>
+
+Fixed build script and repackaged release with proper Searcher compiled runtime files for py3.10
+
+</details>
+
+<details>
+<summary>v0.1.4</summary>
+
+Added Houdini v20 compatibility
+
+</details>
+
+<details>
+<summary>v0.1.3</summary>
 
 Added Houdini v19.5 compatibility
+
+</details>
+
+
 
 ---
 

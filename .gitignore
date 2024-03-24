@@ -133,8 +133,8 @@ celerybeat.pid
 # Environments
 .env
 .venv
-env/
-venv/
+env*/
+venv*/
 ENV/
 env.bak/
 venv.bak/
@@ -160,3 +160,6 @@ venv1/*
 .DS_Store
 
 .idea/
+.lh/
+.local[Hh]istory/
+out/*
