@@ -23,7 +23,7 @@ https://help.instance.id/searcher/
 ## Change Log:
 
 <details>
-<summary>v0.1.5/summary>
+<summary>v0.1.5</summary>
 
 Fixed build script and repackaged release with proper Searcher compiled runtime files for py3.10
 
