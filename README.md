@@ -47,7 +47,7 @@ Added Houdini v19.5 compatibility
 
 ---
 
-## Note for Houdini 18.5-19.5 (Windows)
+## Note for Houdini 18.5-20 (Windows)
 
 SideFX has only included SQLite v 3.31.0 with H18.5+ and their support has told me they have no plans to upgrade it to 3.33.0 (which has FTS5 enabled (Full-Text Search), which is needed by Searcher). Because of this, an extra step is required to install/use Searcher with Houdini 18.5+ until/unless they decide to include SQLite 3.33.0 instead of 3.31.0.
 
@@ -55,7 +55,7 @@ Download:
 Windows x64: [SQLite v3.33.0](https://www.sqlite.org/2020/sqlite-dll-win64-x64-3330000.zip)   
 
 - Extract the downloaded sqlite-dll-win64-x64-3330000.zip file, then in another window browse to your Houdini installation directory: aka `$HFS/bin`.  
-  By default this is located at: `C:\Program Files\SideFX\Houdini19.0.xxx\bin`
+  By default this is located at: `C:\Program Files\SideFX\Houdini20.0.xxx\bin`
 - In the Houdini $HFS/bin folder, locate the `sqlite3.dll` file and either make a backup copy to save elsewhere (just in case), or simply rename it to `sqlite3.dll.bak`
 - From the extracted sqlite-dll-win64-x64-3330000.zip, locate the new `sqlite3.dll` then copy and paste it into the `$HFS/bin` folder.
 
